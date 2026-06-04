@@ -1,0 +1,86 @@
+[
+  {
+    "id": "4001",
+    "title": "employee_payroll_records",
+    "type": "Table",
+    "description": "Active corporate employee payroll records. Stores monthly salary payments, taxes, bank details, and bonuses.",
+    "owner": "hr_stewards@company.com",
+    "terms": [
+      "Employee Salary",
+      "Bank Details",
+      "Corporate Compensation"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 30,
+      "rulesPassed": 29,
+      "profiledDate": "2026-06-01T12:41:26.626511Z"
+    },
+    "lineage": {
+      "sources": [
+        "ataccama_4002"
+      ],
+      "targets": []
+    },
+    "usage": {
+      "reads": 150,
+      "users": 8,
+      "lastRead": "2026-06-03T12:41:26.626511Z"
+    },
+    "sizeBytes": 12582912
+  },
+  {
+    "id": "4002",
+    "title": "employee_onboarding_raw",
+    "type": "Table",
+    "description": "Staging area for fresh employee onboarding records, containing SSN numbers, phone numbers, and home addresses.",
+    "owner": "",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 1,
+      "profiledDate": "2026-06-03T12:41:26.626511Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": [
+        "ataccama_4001"
+      ]
+    },
+    "usage": {
+      "reads": 520,
+      "users": 24,
+      "lastRead": "2026-06-04T10:41:26.626511Z"
+    },
+    "sizeBytes": 89128960
+  },
+  {
+    "id": "4003",
+    "title": "hr_database_container",
+    "type": "Database Catalog",
+    "description": "Logical workspace containing all HR databases, staging logs, and employee registers.",
+    "owner": "hr_stewards@company.com",
+    "terms": [
+      "HR Domain"
+    ],
+    "securityClassification": "Confidential",
+    "dataQuality": {
+      "rulesRun": 34,
+      "rulesPassed": 30,
+      "profiledDate": "2026-06-03T12:41:26.626511Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": [
+        "ataccama_4002"
+      ]
+    },
+    "usage": {
+      "reads": 670,
+      "users": 10,
+      "lastRead": "2026-06-04T07:41:26.626511Z"
+    },
+    "sizeBytes": 104152956928
+  }
+]

@@ -205,7 +205,10 @@ class ROICalculationEngine:
             "compliance_risk": roi_df["opportunity_risk_savings"].sum()
         }
 
-        total_program_cost = sum(self.platform_costs.values())
+        # Calculate program cost dynamically for only the active platforms in the ingested data
+        active_platforms = roi_df["source_platform"].unique()
+        total_program_cost = sum(self.platform_costs.get(plat, 0.0) for plat in active_platforms)
+        
         net_realized_roi = total_realized - total_program_cost
         roi_percentage = (net_realized_roi / total_program_cost) * 100.0 if total_program_cost > 0 else 0.0
 

@@ -1,0 +1,160 @@
+[
+  {
+    "guid": "5001",
+    "name": "executive_financial_dashboard",
+    "typeName": "powerbi_dashboard",
+    "attributes": {
+      "description": "Executive dashboard visualizing monthly corporate profits, operating margins, EBITDA, and quarterly forecast data.",
+      "qualifiedName": "powerbi://finance/dashboards/exec_financials",
+      "sizeInBytes": 0,
+      "createdTime": "2025-06-04T12:41:26.436423Z",
+      "lastModifiedTime": "2026-05-30T12:41:26.436423Z"
+    },
+    "contacts": {
+      "Owner": [
+        {
+          "id": "finance_leadership_group",
+          "info": "cfo_office@company.com"
+        }
+      ],
+      "Expert": [
+        {
+          "id": "dan.analyst",
+          "info": "dan.analyst@company.com"
+        }
+      ]
+    },
+    "classifications": [
+      {
+        "typeName": "Financial.Restricted",
+        "validity": "CONFIRMED"
+      }
+    ],
+    "meanings": [
+      {
+        "displayText": "EBITDA",
+        "termGuid": "t_ebitda"
+      },
+      {
+        "displayText": "Revenue",
+        "termGuid": "t_revenue"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 5,
+      "lastProfiled": "2026-06-03T12:41:26.436423Z"
+    },
+    "lineage": {
+      "inputs": [
+        "informatica_3001"
+      ],
+      "outputs": []
+    },
+    "usage": {
+      "queries": 1200,
+      "users": 45,
+      "lastAccessed": "2026-06-04T11:41:26.436423Z"
+    }
+  },
+  {
+    "guid": "5002",
+    "name": "archive_backup_database_2020",
+    "typeName": "azure_synapse_table",
+    "attributes": {
+      "description": "Synapse database backup file from legacy migration back in 2020. Retained post-deprecation.",
+      "qualifiedName": "synapse://archive/backup_2020",
+      "sizeInBytes": 49478023249920,
+      "createdTime": "2021-06-30T12:41:26.436423Z"
+    },
+    "contacts": {},
+    "classifications": [],
+    "meanings": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "inputs": [],
+      "outputs": []
+    },
+    "usage": {
+      "queries": 0,
+      "users": 0,
+      "lastAccessed": "2024-07-04T12:41:26.436423Z"
+    }
+  },
+  {
+    "guid": "5003",
+    "name": "vendor_billing_info",
+    "typeName": "azure_sql_table",
+    "attributes": {
+      "description": "Table storing global vendor bank routing numbers, addresses, and payment histories.",
+      "qualifiedName": "mssql://proddb/finance/vendor_billing_info",
+      "sizeInBytes": 335544320
+    },
+    "contacts": {
+      "Owner": [
+        {
+          "id": "ap_stewards",
+          "info": "accounts_payable@company.com"
+        }
+      ]
+    },
+    "classifications": [
+      {
+        "typeName": "MICROSOFT.FINANCIAL.CREDIT_CARD_NUMBER",
+        "validity": "CONFIRMED"
+      },
+      {
+        "typeName": "PII",
+        "validity": "CONFIRMED"
+      }
+    ],
+    "meanings": [
+      {
+        "displayText": "Vendor Account",
+        "termGuid": "t_vendor_acc"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 15,
+      "rulesPassed": 15,
+      "lastProfiled": "2026-06-04T00:41:26.436423Z"
+    },
+    "lineage": {
+      "inputs": [],
+      "outputs": [
+        "purview_5001"
+      ]
+    },
+    "usage": {
+      "queries": 450,
+      "users": 12,
+      "lastAccessed": "2026-06-04T09:41:26.436423Z"
+    },
+    "columns": [
+      {
+        "guid": "5003_1",
+        "name": "vendor_id",
+        "typeName": "azure_sql_column",
+        "attributes": {
+          "description": "Primary key identifier for vendors."
+        }
+      },
+      {
+        "guid": "5003_2",
+        "name": "bank_routing_no",
+        "typeName": "azure_sql_column",
+        "attributes": {
+          "description": "ACH bank routing code. Highly sensitive."
+        },
+        "classifications": [
+          {
+            "typeName": "PII"
+          }
+        ]
+      }
+    ]
+  }
+]

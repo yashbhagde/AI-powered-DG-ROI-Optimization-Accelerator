@@ -1,0 +1,96 @@
+[
+  {
+    "assetId": "3001",
+    "assetName": "FINANCIAL_TRANSACTIONS_FACT",
+    "assetType": "Table",
+    "description": "Core ledger transactions fact table. High volume financial records mapping credit and debit exposures.",
+    "owners": [
+      {
+        "name": "Robert Miller",
+        "role": "Business Owner",
+        "email": "robert.miller@company.com"
+      },
+      {
+        "name": "Cloud Data Team",
+        "role": "Technical Owner",
+        "email": "cloud_data@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      },
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 25,
+    "dqRulesPassed": 24,
+    "dqLastRun": "2026-06-04T00:41:26.802369Z",
+    "lineageInfo": {
+      "upstream": [
+        "informatica_3003"
+      ],
+      "downstream": [
+        "purview_5001"
+      ]
+    },
+    "usageStats": {
+      "readsCount": 8500,
+      "usersCount": 110,
+      "sizeInBytes": 4398046511104,
+      "lastAccessTime": "2026-06-04T12:26:26.802369Z"
+    }
+  },
+  {
+    "assetId": "3002",
+    "assetName": "TRANSACTIONS_LOG_ARCHIVE_2023",
+    "assetType": "File",
+    "description": "Raw JSON backup logs of payroll and credit transactions from 2023. Restored temporarily for audit, but never deleted.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": true,
+    "dqRulesCount": 0,
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 19791209299968,
+      "lastAccessTime": "2025-11-16T12:41:26.802369Z"
+    }
+  },
+  {
+    "assetId": "3003",
+    "assetName": "CORE_FINANCE_DB",
+    "assetType": "Database Schema",
+    "description": "Main Oracle database schema staging financial assets.",
+    "owners": [
+      {
+        "name": "Robert Miller",
+        "role": "Business Owner",
+        "email": "robert.miller@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 9,
+    "dqLastRun": "2026-06-03T12:41:26.802369Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": [
+        "informatica_3001"
+      ]
+    },
+    "usageStats": {
+      "readsCount": 500,
+      "usersCount": 5,
+      "sizeInBytes": 10995116277760,
+      "lastAccessTime": "2026-06-04T09:41:26.802369Z"
+    }
+  }
+]

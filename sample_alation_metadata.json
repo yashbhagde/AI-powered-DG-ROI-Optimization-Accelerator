@@ -1,0 +1,222 @@
+[
+  {
+    "id": "100",
+    "name": "sales_dw_schema",
+    "type": "Schema",
+    "description": "Enterprise Sales Data Warehouse containing raw transactional and customer dimension data.",
+    "stewards": [
+      {
+        "username": "steward.mark@company.com",
+        "email": "steward.mark@company.com"
+      }
+    ],
+    "popularity": 90,
+    "view_count": 820,
+    "size_in_bytes": 161061273600,
+    "last_accessed": "2026-06-04T10:41:26.075796Z",
+    "custom_fields": {
+      "Classification": "Internal",
+      "Glossary Term": "Sales Domain",
+      "Data Owner": "sales_analytics_leads@company.com"
+    },
+    "data_quality": {
+      "rules_run": 5,
+      "rules_passed": 5,
+      "last_profiled": "2026-06-03T12:41:26.075796Z"
+    },
+    "lineage": {
+      "upstream": [],
+      "downstream": [
+        "alation_101",
+        "alation_102"
+      ]
+    }
+  },
+  {
+    "id": "101",
+    "name": "corporate_customers",
+    "type": "Table",
+    "description": "Master table containing verified corporate customer details and credit limits.",
+    "stewards": [
+      {
+        "username": "sarah.steward@company.com",
+        "email": "sarah.steward@company.com"
+      }
+    ],
+    "popularity": 95,
+    "view_count": 1450,
+    "size_in_bytes": 524288000,
+    "last_accessed": "2026-06-03T12:41:26.075796Z",
+    "custom_fields": {
+      "PII": "Yes",
+      "Classification": "Confidential",
+      "Glossary Term": "Corporate Customer",
+      "Subject Area": "Customer MDM"
+    },
+    "data_quality": {
+      "rules_run": 10,
+      "rules_passed": 10,
+      "last_profiled": "2026-06-02T12:41:26.075796Z",
+      "dq_metrics": {
+        "null_count": 0,
+        "uniqueness_pct": 100.0,
+        "completeness_pct": 100.0
+      }
+    },
+    "lineage": {
+      "upstream": [
+        "collibra_2001"
+      ],
+      "downstream": [
+        "alation_103",
+        "purview_5001"
+      ]
+    },
+    "columns": [
+      {
+        "column_id": "101_1",
+        "name": "customer_id",
+        "data_type": "VARCHAR(50)",
+        "description": "Unique identifier for the corporate client.",
+        "is_primary_key": true,
+        "custom_fields": {
+          "PII": "No",
+          "Glossary Term": "Customer Identifier"
+        }
+      },
+      {
+        "column_id": "101_2",
+        "name": "tax_id_ssn",
+        "data_type": "VARCHAR(15)",
+        "description": "Tax Identification or SSN number for credit checks.",
+        "is_primary_key": false,
+        "custom_fields": {
+          "PII": "Yes",
+          "Classification": "Confidential PII",
+          "Glossary Term": "Tax Identifier"
+        }
+      },
+      {
+        "column_id": "101_3",
+        "name": "credit_limit",
+        "data_type": "DECIMAL(15,2)",
+        "description": "Approved credit threshold for corporate transactions.",
+        "is_primary_key": false,
+        "custom_fields": {
+          "PII": "No",
+          "Glossary Term": "Credit Limit"
+        }
+      }
+    ]
+  },
+  {
+    "id": "102",
+    "name": "transactions_fact",
+    "type": "Table",
+    "description": "Fact table recording daily corporate sales transactions and order status.",
+    "stewards": [
+      {
+        "username": "sarah.steward@company.com",
+        "email": "sarah.steward@company.com"
+      }
+    ],
+    "popularity": 85,
+    "view_count": 1100,
+    "size_in_bytes": 91268055040,
+    "last_accessed": "2026-06-04T11:41:26.075796Z",
+    "custom_fields": {
+      "PII": "No",
+      "Classification": "Internal",
+      "Glossary Term": "Sales Transaction"
+    },
+    "data_quality": {
+      "rules_run": 8,
+      "rules_passed": 7,
+      "last_profiled": "2026-06-03T12:41:26.075796Z"
+    },
+    "lineage": {
+      "upstream": [
+        "alation_100"
+      ],
+      "downstream": [
+        "alation_103"
+      ]
+    },
+    "columns": [
+      {
+        "column_id": "102_1",
+        "name": "transaction_id",
+        "data_type": "VARCHAR(64)",
+        "description": "Globally unique order hash.",
+        "is_primary_key": true
+      },
+      {
+        "column_id": "102_2",
+        "name": "customer_id",
+        "data_type": "VARCHAR(50)",
+        "description": "Foreign key referencing corporate_customers.customer_id."
+      },
+      {
+        "column_id": "102_3",
+        "name": "amount_usd",
+        "data_type": "NUMERIC(18,4)",
+        "description": "Total order amount in USD."
+      }
+    ]
+  },
+  {
+    "id": "103",
+    "name": "customer_credit_report",
+    "type": "Dashboard",
+    "description": "Executive BI report summarizing credit ratings, transactional volumes, and exposures.",
+    "stewards": [
+      {
+        "username": "steward.mark@company.com",
+        "email": "steward.mark@company.com"
+      }
+    ],
+    "popularity": 80,
+    "view_count": 950,
+    "size_in_bytes": 0,
+    "last_accessed": "2026-06-02T12:41:26.075796Z",
+    "custom_fields": {
+      "PII": "No",
+      "Classification": "Confidential",
+      "Glossary Term": "Credit Summary Dashboard"
+    },
+    "data_quality": {
+      "rules_run": 0,
+      "rules_passed": 0
+    },
+    "lineage": {
+      "upstream": [
+        "alation_101",
+        "alation_102"
+      ],
+      "downstream": []
+    }
+  },
+  {
+    "id": "104",
+    "name": "temp_customer_export_2024",
+    "type": "Table",
+    "description": "Temporary sandbox export of customers containing SSN and credit ratings for a one-off audit.",
+    "stewards": [],
+    "popularity": 1,
+    "view_count": 3,
+    "size_in_bytes": 128849018880,
+    "last_accessed": "2025-11-26T12:41:26.075796Z",
+    "custom_fields": {
+      "PII": "Yes",
+      "Classification": "Public"
+    },
+    "data_quality": {
+      "rules_run": 0,
+      "rules_passed": 0
+    },
+    "lineage": {
+      "upstream": [],
+      "downstream": []
+    }
+  }
+]

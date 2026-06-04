@@ -14,7 +14,7 @@
       "popularity": 95,
       "view_count": 1450,
       "size_in_bytes": 524288000,
-      "last_accessed": "2026-06-03T09:24:31.529262Z",
+      "last_accessed": "2026-06-03T12:42:19.713374Z",
       "custom_fields": {
         "PII": "Yes",
         "Classification": "Confidential",
@@ -23,7 +23,7 @@
       "data_quality": {
         "rules_run": 10,
         "rules_passed": 10,
-        "last_profiled": "2026-06-02T09:24:31.529262Z"
+        "last_profiled": "2026-06-02T12:42:19.713374Z"
       },
       "lineage": {
         "upstream": [
@@ -43,7 +43,7 @@
       "popularity": 80,
       "view_count": 950,
       "size_in_bytes": 0,
-      "last_accessed": "2026-06-02T09:24:31.529262Z",
+      "last_accessed": "2026-06-02T12:42:19.713374Z",
       "custom_fields": {
         "PII": "No",
         "Classification": "Confidential"
@@ -68,7 +68,7 @@
       "popularity": 2,
       "view_count": 5,
       "size_in_bytes": 128849018880,
-      "last_accessed": "2025-12-01T09:24:31.529262Z",
+      "last_accessed": "2025-12-01T12:42:19.713374Z",
       "custom_fields": {
         "PII": "Yes",
         "Classification": "Public"
@@ -113,13 +113,13 @@
       "dataQuality": {
         "rulesRun": 5,
         "rulesPassed": 3,
-        "lastProfiled": "2026-06-03T09:24:31.529262Z"
+        "lastProfiled": "2026-06-03T12:42:19.713374Z"
       },
       "usage": {
         "queryCount": 670,
         "userCount": 15,
         "sizeInBytes": 5368709120,
-        "lastAccessed": "2026-06-04T05:24:31.529262Z"
+        "lastAccessed": "2026-06-04T08:42:19.713374Z"
       }
     },
     {
@@ -141,7 +141,7 @@
         "queryCount": 0,
         "userCount": 0,
         "sizeInBytes": 912680550400,
-        "lastAccessed": "2025-06-04T09:24:31.529262Z"
+        "lastAccessed": "2025-06-04T12:42:19.713374Z"
       }
     }
   ],
@@ -177,7 +177,7 @@
       "classification": "Confidential",
       "dqRulesCount": 25,
       "dqRulesPassed": 24,
-      "dqLastRun": "2026-06-03T21:24:31.529262Z",
+      "dqLastRun": "2026-06-04T00:42:19.713374Z",
       "lineageInfo": {
         "upstream": [
           "informatica_3002"
@@ -190,7 +190,7 @@
         "readsCount": 8500,
         "usersCount": 110,
         "sizeInBytes": 4398046511104,
-        "lastAccessTime": "2026-06-04T09:09:31.529262Z"
+        "lastAccessTime": "2026-06-04T12:27:19.713374Z"
       }
     },
     {
@@ -206,7 +206,7 @@
         "readsCount": 0,
         "usersCount": 0,
         "sizeInBytes": 19791209299968,
-        "lastAccessTime": "2025-11-16T09:24:31.529262Z"
+        "lastAccessTime": "2025-11-16T12:42:19.713374Z"
       }
     }
   ],
@@ -225,7 +225,7 @@
       "dataQuality": {
         "rulesRun": 30,
         "rulesPassed": 29,
-        "profiledDate": "2026-06-01T09:24:31.529262Z"
+        "profiledDate": "2026-06-01T12:42:19.713374Z"
       },
       "lineage": {
         "sources": [
@@ -236,7 +236,7 @@
       "usage": {
         "reads": 150,
         "users": 8,
-        "lastRead": "2026-06-03T09:24:31.529262Z"
+        "lastRead": "2026-06-03T12:42:19.713374Z"
       },
       "sizeBytes": 12582912
     },
@@ -251,7 +251,7 @@
       "dataQuality": {
         "rulesRun": 4,
         "rulesPassed": 1,
-        "profiledDate": "2026-06-03T09:24:31.529262Z"
+        "profiledDate": "2026-06-03T12:42:19.713374Z"
       },
       "lineage": {
         "sources": [],
@@ -262,7 +262,7 @@
       "usage": {
         "reads": 520,
         "users": 24,
-        "lastRead": "2026-06-04T07:24:31.529262Z"
+        "lastRead": "2026-06-04T10:42:19.713374Z"
       },
       "sizeBytes": 89128960
     }
@@ -306,7 +306,7 @@
       "dataQuality": {
         "rulesRun": 8,
         "rulesPassed": 5,
-        "lastProfiled": "2026-06-03T09:24:31.529262Z"
+        "lastProfiled": "2026-06-03T12:42:19.713374Z"
       },
       "lineage": {
         "inputs": [
@@ -317,7 +317,7 @@
       "usage": {
         "queries": 1200,
         "users": 45,
-        "lastAccessed": "2026-06-04T08:24:31.529262Z"
+        "lastAccessed": "2026-06-04T11:42:19.713374Z"
       }
     },
     {
@@ -343,7 +343,7 @@
       "usage": {
         "queries": 0,
         "users": 0,
-        "lastAccessed": "2024-07-04T09:24:31.529262Z"
+        "lastAccessed": "2024-07-04T12:42:19.713374Z"
       }
     }
   ]
