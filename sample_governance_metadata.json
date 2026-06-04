@@ -1,0 +1,350 @@
+{
+  "alation": [
+    {
+      "id": "1001",
+      "name": "corporate_customers",
+      "type": "Table",
+      "description": "Master table containing verified corporate customer details and credit limits.",
+      "stewards": [
+        {
+          "username": "sarah.steward@company.com",
+          "email": "sarah.steward@company.com"
+        }
+      ],
+      "popularity": 95,
+      "view_count": 1450,
+      "size_in_bytes": 524288000,
+      "last_accessed": "2026-06-03T09:24:31.529262Z",
+      "custom_fields": {
+        "PII": "Yes",
+        "Classification": "Confidential",
+        "Glossary Term": "Corporate Customer"
+      },
+      "data_quality": {
+        "rules_run": 10,
+        "rules_passed": 10,
+        "last_profiled": "2026-06-02T09:24:31.529262Z"
+      },
+      "lineage": {
+        "upstream": [
+          "collibra_2001"
+        ],
+        "downstream": [
+          "alation_1002"
+        ]
+      }
+    },
+    {
+      "id": "1002",
+      "name": "customer_credit_report",
+      "type": "Dashboard",
+      "description": "BI report summarizing credit ratings and exposures for corporate clients.",
+      "stewards": [],
+      "popularity": 80,
+      "view_count": 950,
+      "size_in_bytes": 0,
+      "last_accessed": "2026-06-02T09:24:31.529262Z",
+      "custom_fields": {
+        "PII": "No",
+        "Classification": "Confidential"
+      },
+      "data_quality": {
+        "rules_run": 0,
+        "rules_passed": 0
+      },
+      "lineage": {
+        "upstream": [
+          "alation_1001"
+        ],
+        "downstream": []
+      }
+    },
+    {
+      "id": "1003",
+      "name": "temp_customer_export_2024",
+      "type": "Table",
+      "description": "Temporary sandbox export of customers for audit.",
+      "stewards": [],
+      "popularity": 2,
+      "view_count": 5,
+      "size_in_bytes": 128849018880,
+      "last_accessed": "2025-12-01T09:24:31.529262Z",
+      "custom_fields": {
+        "PII": "Yes",
+        "Classification": "Public"
+      },
+      "data_quality": {
+        "rules_run": 0,
+        "rules_passed": 0
+      },
+      "lineage": {
+        "upstream": [],
+        "downstream": []
+      }
+    }
+  ],
+  "collibra": [
+    {
+      "id": "2001",
+      "name": "Staging Customer CRM Data",
+      "type": "Database Table",
+      "attributes": [
+        {
+          "type": "Description",
+          "value": "Landing zone table for CRM customer contact details."
+        },
+        {
+          "type": "Data Classification",
+          "value": "Confidential"
+        }
+      ],
+      "relations": [
+        {
+          "type": "Owned By",
+          "target": "CRM Data Team",
+          "role": "Technical Owner",
+          "email": "crm_devs@company.com"
+        },
+        {
+          "type": "Associated Glossary Term",
+          "target": "Customer Contact"
+        }
+      ],
+      "dataQuality": {
+        "rulesRun": 5,
+        "rulesPassed": 3,
+        "lastProfiled": "2026-06-03T09:24:31.529262Z"
+      },
+      "usage": {
+        "queryCount": 670,
+        "userCount": 15,
+        "sizeInBytes": 5368709120,
+        "lastAccessed": "2026-06-04T05:24:31.529262Z"
+      }
+    },
+    {
+      "id": "2002",
+      "name": "Legacy Marketing Prospects 2021",
+      "type": "Database Table",
+      "attributes": [
+        {
+          "type": "Description",
+          "value": "Old marketing prospect list from 2021 campaigns."
+        }
+      ],
+      "relations": [],
+      "dataQuality": {
+        "rulesRun": 0,
+        "rulesPassed": 0
+      },
+      "usage": {
+        "queryCount": 0,
+        "userCount": 0,
+        "sizeInBytes": 912680550400,
+        "lastAccessed": "2025-06-04T09:24:31.529262Z"
+      }
+    }
+  ],
+  "informatica_idmc": [
+    {
+      "assetId": "3001",
+      "assetName": "FINANCIAL_TRANSACTIONS_FACT",
+      "assetType": "Table",
+      "description": "Core ledger transactions fact table. High volume financial records.",
+      "owners": [
+        {
+          "name": "Robert Miller",
+          "role": "Business Owner",
+          "email": "robert.miller@company.com"
+        },
+        {
+          "name": "Cloud Data Team",
+          "role": "Technical Owner",
+          "email": "cloud_data@company.com"
+        }
+      ],
+      "glossaryAssignments": [
+        {
+          "termId": "t_101",
+          "termName": "Transaction"
+        },
+        {
+          "termId": "t_102",
+          "termName": "Revenue"
+        }
+      ],
+      "sensitive": false,
+      "classification": "Confidential",
+      "dqRulesCount": 25,
+      "dqRulesPassed": 24,
+      "dqLastRun": "2026-06-03T21:24:31.529262Z",
+      "lineageInfo": {
+        "upstream": [
+          "informatica_3002"
+        ],
+        "downstream": [
+          "purview_5001"
+        ]
+      },
+      "usageStats": {
+        "readsCount": 8500,
+        "usersCount": 110,
+        "sizeInBytes": 4398046511104,
+        "lastAccessTime": "2026-06-04T09:09:31.529262Z"
+      }
+    },
+    {
+      "assetId": "3002",
+      "assetName": "TRANSACTIONS_LOG_ARCHIVE_2023",
+      "assetType": "File",
+      "description": "Raw JSON backup logs of transactions from 2023.",
+      "owners": [],
+      "glossaryAssignments": [],
+      "sensitive": true,
+      "dqRulesCount": 0,
+      "usageStats": {
+        "readsCount": 0,
+        "usersCount": 0,
+        "sizeInBytes": 19791209299968,
+        "lastAccessTime": "2025-11-16T09:24:31.529262Z"
+      }
+    }
+  ],
+  "ataccama": [
+    {
+      "id": "4001",
+      "title": "employee_payroll_records",
+      "type": "Table",
+      "description": "Active employee salary, tax, and bank account information.",
+      "owner": "hr_stewards@company.com",
+      "terms": [
+        "Employee Salary",
+        "Bank Details"
+      ],
+      "securityClassification": "Highly Confidential PII",
+      "dataQuality": {
+        "rulesRun": 30,
+        "rulesPassed": 29,
+        "profiledDate": "2026-06-01T09:24:31.529262Z"
+      },
+      "lineage": {
+        "sources": [
+          "ataccama_4002"
+        ],
+        "targets": []
+      },
+      "usage": {
+        "reads": 150,
+        "users": 8,
+        "lastRead": "2026-06-03T09:24:31.529262Z"
+      },
+      "sizeBytes": 12582912
+    },
+    {
+      "id": "4002",
+      "title": "employee_onboarding_raw",
+      "type": "Table",
+      "description": "Raw details from applicant onboarding forms containing SSN, phone numbers.",
+      "owner": "",
+      "terms": [],
+      "securityClassification": "",
+      "dataQuality": {
+        "rulesRun": 4,
+        "rulesPassed": 1,
+        "profiledDate": "2026-06-03T09:24:31.529262Z"
+      },
+      "lineage": {
+        "sources": [],
+        "targets": [
+          "ataccama_4001"
+        ]
+      },
+      "usage": {
+        "reads": 520,
+        "users": 24,
+        "lastRead": "2026-06-04T07:24:31.529262Z"
+      },
+      "sizeBytes": 89128960
+    }
+  ],
+  "purview": [
+    {
+      "guid": "5001",
+      "name": "executive_financial_dashboard",
+      "typeName": "powerbi_dashboard",
+      "attributes": {
+        "description": "Executive dashboard visualizing quarterly profits, EBITDA, and forecasts.",
+        "qualifiedName": "powerbi://finance/dashboards/exec_financials",
+        "sizeInBytes": 0
+      },
+      "contacts": {
+        "Owner": [
+          {
+            "id": "finance_leadership",
+            "info": "cfo_office@company.com"
+          }
+        ],
+        "Expert": [
+          {
+            "id": "dan.analyst",
+            "info": "dan.analyst@company.com"
+          }
+        ]
+      },
+      "classifications": [
+        {
+          "typeName": "Financial.Restricted",
+          "validity": "CONFIRMED"
+        }
+      ],
+      "meanings": [
+        {
+          "displayText": "EBITDA",
+          "termGuid": "t_ebitda"
+        }
+      ],
+      "dataQuality": {
+        "rulesRun": 8,
+        "rulesPassed": 5,
+        "lastProfiled": "2026-06-03T09:24:31.529262Z"
+      },
+      "lineage": {
+        "inputs": [
+          "informatica_3001"
+        ],
+        "outputs": []
+      },
+      "usage": {
+        "queries": 1200,
+        "users": 45,
+        "lastAccessed": "2026-06-04T08:24:31.529262Z"
+      }
+    },
+    {
+      "guid": "5002",
+      "name": "archive_backup_database_2020",
+      "typeName": "azure_synapse_table",
+      "attributes": {
+        "description": "Database backup file from old system migration in 2020.",
+        "qualifiedName": "synapse://archive/backup_2020",
+        "sizeInBytes": 49478023249920
+      },
+      "contacts": {},
+      "classifications": [],
+      "meanings": [],
+      "dataQuality": {
+        "rulesRun": 0,
+        "rulesPassed": 0
+      },
+      "lineage": {
+        "inputs": [],
+        "outputs": []
+      },
+      "usage": {
+        "queries": 0,
+        "users": 0,
+        "lastAccessed": "2024-07-04T09:24:31.529262Z"
+      }
+    }
+  ]
+}
