@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_purview_metadata():
+def generate_purview_metadata(num_assets=None):
     now = datetime.utcnow()
     
     # Rich mock data representing Microsoft Purview catalog entities.
@@ -126,10 +126,104 @@ def generate_purview_metadata():
             ]
         }
     ]
+    
+    if num_assets and num_assets > len(purview_export):
+        import random
+        target_count = num_assets
+        current_id = 5004
+        
+        types = ["powerbi_dashboard", "azure_synapse_table", "azure_sql_table", "azure_blob_file"]
+        names_pool = {
+            "powerbi_dashboard": ["sales_insights", "inventory_flow", "hr_retention_kpi", "cloud_spending_dashboard"],
+            "azure_synapse_table": ["customer_dim", "orders_fact", "web_clicks_archive", "product_catalog"],
+            "azure_sql_table": ["users", "orders", "subscription_plans", "payment_receipts"],
+            "azure_blob_file": ["raw_events_2025.json", "user_export_temp.csv", "backup_v1.bak"]
+        }
+        classifications = ["PII", "Financial.Restricted", "MICROSOFT.PERSONAL.US_SOCIAL_SECURITY_NUMBER", "CONFIDENTIAL"]
+        meanings = ["Customer", "EBITDA", "Revenue", "Transaction", "Invoice"]
+        
+        while len(purview_export) < target_count:
+            asset_type = random.choice(types)
+            name = f"{random.choice(names_pool[asset_type])}_{current_id}"
+            
+            is_rot = random.random() < 0.15
+            
+            if is_rot:
+                queries = 0
+                users = 0
+                size_in_bytes = random.randint(1024 * 1024 * 500, 1024 * 1024 * 1024 * 500)
+                last_accessed = (now - timedelta(days=random.randint(185, 600))).isoformat() + "Z"
+            else:
+                queries = random.randint(100, 3000)
+                users = random.randint(5, 50)
+                size_in_bytes = 0 if asset_type == "powerbi_dashboard" else random.randint(1024 * 1024 * 10, 1024 * 1024 * 1024 * 20)
+                last_accessed = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
+                
+            attributes = {
+                "description": f"Mock Purview asset for large-scale tests representing {name}.",
+                "qualifiedName": f"{asset_type}://{name}",
+                "sizeInBytes": size_in_bytes,
+                "createdTime": (now - timedelta(days=random.randint(100, 1000))).isoformat() + "Z"
+            }
+            
+            contacts = {}
+            if random.random() > 0.4: # 60% chance of contacts
+                contacts["Owner"] = [{"id": f"owner_group_{random.randint(1,5)}", "info": f"steward.{random.randint(1,5)}@company.com"}]
+                
+            asset_classifications = []
+            if random.random() < 0.25:
+                asset_classifications.append({"typeName": random.choice(classifications), "validity": "CONFIRMED"})
+                
+            asset_meanings = []
+            if random.random() > 0.5:
+                asset_meanings.append({"displayText": random.choice(meanings), "termGuid": f"t_{random.randint(100, 200)}"})
+                
+            rules_run = random.choice([0, 5, 10])
+            if rules_run > 0:
+                rules_passed = random.randint(int(rules_run * 0.4), rules_run)
+                dq = {
+                    "rulesRun": rules_run,
+                    "rulesPassed": rules_passed,
+                    "lastProfiled": (now - timedelta(days=random.randint(1, 5))).isoformat() + "Z"
+                }
+            else:
+                dq = {
+                    "rulesRun": 0,
+                    "rulesPassed": 0
+                }
+                
+            asset = {
+                "guid": str(current_id),
+                "name": name,
+                "typeName": asset_type,
+                "attributes": attributes,
+                "contacts": contacts,
+                "classifications": asset_classifications,
+                "meanings": asset_meanings,
+                "dataQuality": dq,
+                "lineage": {
+                    "inputs": [],
+                    "outputs": []
+                },
+                "usage": {
+                    "queries": queries,
+                    "users": users,
+                    "lastAccessed": last_accessed
+                }
+            }
+            
+            purview_export.append(asset)
+            current_id += 1
+            
     return purview_export
 
 def main():
-    metadata = generate_purview_metadata()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate Purview mock metadata.")
+    parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
+    args = parser.parse_args()
+    
+    metadata = generate_purview_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_purview_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)

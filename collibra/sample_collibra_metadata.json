@@ -24,13 +24,13 @@
     "dataQuality": {
       "rulesRun": 4,
       "rulesPassed": 4,
-      "lastProfiled": "2026-06-03T14:47:38.254154Z"
+      "lastProfiled": "2026-06-03T15:08:06.870093Z"
     },
     "usage": {
       "queryCount": 1400,
       "userCount": 28,
       "sizeInBytes": 966367641600,
-      "lastAccessed": "2026-06-04T14:02:38.254154Z"
+      "lastAccessed": "2026-06-04T14:23:06.870093Z"
     }
   },
   {
@@ -74,13 +74,13 @@
     "dataQuality": {
       "rulesRun": 10,
       "rulesPassed": 6,
-      "lastProfiled": "2026-06-03T14:47:38.254154Z"
+      "lastProfiled": "2026-06-03T15:08:06.870093Z"
     },
     "usage": {
       "queryCount": 670,
       "userCount": 15,
       "sizeInBytes": 5368709120,
-      "lastAccessed": "2026-06-04T10:47:38.254154Z"
+      "lastAccessed": "2026-06-04T11:08:06.870093Z"
     },
     "columns": [
       {
@@ -141,7 +141,7 @@
       "queryCount": 0,
       "userCount": 0,
       "sizeInBytes": 912680550400,
-      "lastAccessed": "2025-06-04T14:47:38.254154Z"
+      "lastAccessed": "2025-06-04T15:08:06.870093Z"
     }
   },
   {
@@ -178,7 +178,1286 @@
       "queryCount": 200,
       "userCount": 50,
       "sizeInBytes": 0,
-      "lastAccessed": "2026-05-30T14:47:38.254154Z"
+      "lastAccessed": "2026-05-30T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2004",
+    "name": "Monthly Financial Summary 2004",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 2,
+      "lastProfiled": "2026-05-30T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1879,
+      "userCount": 88,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-12T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2005",
+    "name": "device_logs 2005",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 567,
+      "userCount": 93,
+      "sizeInBytes": 42973994398,
+      "lastAccessed": "2026-05-05T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2006",
+    "name": "Inventory_DB 2006",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 7,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 406,
+      "userCount": 97,
+      "sizeInBytes": 45067624906,
+      "lastAccessed": "2026-05-13T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2007",
+    "name": "Employee Level 2007",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 4",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 825,
+      "userCount": 97,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-23T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2008",
+    "name": "Account Balance 2008",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Highly Restricted"
+      },
+      {
+        "type": "Security Level",
+        "value": "Restricted PII"
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1012,
+      "userCount": 67,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-12T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2009",
+    "name": "Operational KPI Dashboard 2009",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-29T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 909,
+      "userCount": 78,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-31T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2010",
+    "name": "Account Balance 2010",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 11,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 858,
+      "userCount": 63,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-10T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2011",
+    "name": "Vendor Tier 2011",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1123,
+      "userCount": 11,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-19T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2012",
+    "name": "Inventory_DB 2012",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 65,
+      "userCount": 51,
+      "sizeInBytes": 2231220766,
+      "lastAccessed": "2026-05-23T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2013",
+    "name": "HR_Prod_DB 2013",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 2,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 844,
+      "userCount": 80,
+      "sizeInBytes": 50610804129,
+      "lastAccessed": "2026-05-17T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2014",
+    "name": "Compliance_DB 2014",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 2",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 7,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1020,
+      "userCount": 83,
+      "sizeInBytes": 3845333201,
+      "lastAccessed": "2026-05-15T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2015",
+    "name": "payroll_adjustments 2015",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 2,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1811,
+      "userCount": 70,
+      "sizeInBytes": 1233784192,
+      "lastAccessed": "2026-05-20T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2016",
+    "name": "Inventory_DB 2016",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 2",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 693,
+      "userCount": 73,
+      "sizeInBytes": 17453285278,
+      "lastAccessed": "2026-05-28T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2017",
+    "name": "Account Balance 2017",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Internal"
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 3,
+      "lastProfiled": "2026-06-03T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1496,
+      "userCount": 90,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-05T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2018",
+    "name": "Monthly Financial Summary 2018",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 8,
+      "lastProfiled": "2026-05-30T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 0,
+      "userCount": 0,
+      "sizeInBytes": 39930918446,
+      "lastAccessed": "2025-10-16T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2019",
+    "name": "device_logs 2019",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 11,
+      "lastProfiled": "2026-06-02T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 416,
+      "userCount": 100,
+      "sizeInBytes": 38285447201,
+      "lastAccessed": "2026-05-06T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2020",
+    "name": "Employee Level 2020",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 4,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1895,
+      "userCount": 12,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-26T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2021",
+    "name": "Operational KPI Dashboard 2021",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 4",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 7,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1440,
+      "userCount": 22,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-21T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2022",
+    "name": "Risk Score 2022",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 5",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 1226,
+      "userCount": 68,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-22T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2023",
+    "name": "Compliance_DB 2023",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 2,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 0,
+      "userCount": 0,
+      "sizeInBytes": 288455024493,
+      "lastAccessed": "2025-01-22T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2024",
+    "name": "Account Balance 2024",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Confidential"
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 5",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 10,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 653,
+      "userCount": 32,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-30T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2025",
+    "name": "supplier_list 2025",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 239,
+      "userCount": 86,
+      "sizeInBytes": 16307658246,
+      "lastAccessed": "2026-05-22T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2026",
+    "name": "payroll_adjustments 2026",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Highly Restricted"
+      },
+      {
+        "type": "Security Level",
+        "value": "Restricted PII"
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 4,
+      "lastProfiled": "2026-05-29T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1009,
+      "userCount": 17,
+      "sizeInBytes": 49245692678,
+      "lastAccessed": "2026-05-29T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2027",
+    "name": "Inventory_DB 2027",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 8,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1235,
+      "userCount": 66,
+      "sizeInBytes": 14719690882,
+      "lastAccessed": "2026-05-16T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2028",
+    "name": "device_logs 2028",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1475,
+      "userCount": 23,
+      "sizeInBytes": 53478489349,
+      "lastAccessed": "2026-05-22T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2029",
+    "name": "Inventory_DB 2029",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Highly Restricted"
+      },
+      {
+        "type": "Security Level",
+        "value": "Restricted PII"
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 163,
+      "userCount": 7,
+      "sizeInBytes": 36803136895,
+      "lastAccessed": "2026-05-30T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2030",
+    "name": "user_profiles 2030",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 6,
+      "lastProfiled": "2026-05-29T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 356,
+      "userCount": 53,
+      "sizeInBytes": 8062855234,
+      "lastAccessed": "2026-05-18T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2031",
+    "name": "Vendor Tier 2031",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 5",
+        "role": "Business Steward",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 7,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 411,
+      "userCount": 51,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-06-03T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2032",
+    "name": "Operational KPI Dashboard 2032",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 12,
+      "lastProfiled": "2026-06-01T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 392,
+      "userCount": 18,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-18T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2033",
+    "name": "Monthly Financial Summary 2033",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 5",
+        "role": "Business Steward",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 875,
+      "userCount": 20,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-31T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2034",
+    "name": "session_metrics 2034",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Confidential"
+      },
+      {
+        "type": "Security Level",
+        "value": "Restricted PII"
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 9,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 88,
+      "userCount": 70,
+      "sizeInBytes": 40319069727,
+      "lastAccessed": "2026-05-08T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2035",
+    "name": "user_profiles 2035",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 2",
+        "role": "Business Steward",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 5,
+      "lastProfiled": "2026-06-03T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 564,
+      "userCount": 73,
+      "sizeInBytes": 50884066976,
+      "lastAccessed": "2026-06-04T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2036",
+    "name": "Analytics_DB 2036",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 2",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 164,
+      "userCount": 90,
+      "sizeInBytes": 25718068387,
+      "lastAccessed": "2026-06-03T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2037",
+    "name": "Inventory_DB 2037",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 665,
+      "userCount": 26,
+      "sizeInBytes": 2598535548,
+      "lastAccessed": "2026-05-21T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2038",
+    "name": "Employee Level 2038",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 5",
+        "role": "Business Steward",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 7,
+      "lastProfiled": "2026-05-29T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 0,
+      "userCount": 0,
+      "sizeInBytes": 35131530069,
+      "lastAccessed": "2025-04-14T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2039",
+    "name": "session_metrics 2039",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 8,
+      "rulesPassed": 4,
+      "lastProfiled": "2026-06-02T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 0,
+      "userCount": 0,
+      "sizeInBytes": 5826149309,
+      "lastAccessed": "2025-08-26T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2040",
+    "name": "Risk Score 2040",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 1,
+      "lastProfiled": "2026-05-31T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1190,
+      "userCount": 90,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-25T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2041",
+    "name": "HR_Prod_DB 2041",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Internal"
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 786,
+      "userCount": 87,
+      "sizeInBytes": 49696513919,
+      "lastAccessed": "2026-05-28T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2042",
+    "name": "Analytics_DB 2042",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 1088,
+      "userCount": 95,
+      "sizeInBytes": 20018306470,
+      "lastAccessed": "2026-06-04T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2043",
+    "name": "Compliance Auditing Log 2043",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 3,
+      "lastProfiled": "2026-05-30T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 254,
+      "userCount": 26,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-26T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2044",
+    "name": "device_logs 2044",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 1",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 2,
+      "lastProfiled": "2026-05-28T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 219,
+      "userCount": 11,
+      "sizeInBytes": 16838316536,
+      "lastAccessed": "2026-05-27T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2045",
+    "name": "Employee Level 2045",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 1485,
+      "userCount": 55,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-22T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2046",
+    "name": "supplier_list 2046",
+    "type": "Database Table",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database Table for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 3,
+      "lastProfiled": "2026-06-03T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 86,
+      "userCount": 68,
+      "sizeInBytes": 15942339379,
+      "lastAccessed": "2026-05-23T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2047",
+    "name": "HR_Prod_DB 2047",
+    "type": "Database",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Database for scaled dataset tests."
+      },
+      {
+        "type": "Data Classification",
+        "value": "Confidential"
+      },
+      {
+        "type": "Security Level",
+        "value": "Restricted PII"
+      }
+    ],
+    "relations": [
+      {
+        "type": "Owned By",
+        "target": "Steward Group 3",
+        "role": "Business Steward",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "dataQuality": {
+      "rulesRun": 12,
+      "rulesPassed": 12,
+      "lastProfiled": "2026-05-30T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 753,
+      "userCount": 86,
+      "sizeInBytes": 24965337395,
+      "lastAccessed": "2026-05-13T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2048",
+    "name": "Compliance Auditing Log 2048",
+    "type": "Report",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Report for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "usage": {
+      "queryCount": 1302,
+      "userCount": 42,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-12T15:08:06.870093Z"
+    }
+  },
+  {
+    "id": "2049",
+    "name": "Account Balance 2049",
+    "type": "Business Term",
+    "attributes": [
+      {
+        "type": "Description",
+        "value": "Mock Collibra Business Term for scaled dataset tests."
+      }
+    ],
+    "relations": [],
+    "dataQuality": {
+      "rulesRun": 4,
+      "rulesPassed": 3,
+      "lastProfiled": "2026-05-29T15:08:06.870093Z"
+    },
+    "usage": {
+      "queryCount": 1890,
+      "userCount": 78,
+      "sizeInBytes": 0,
+      "lastAccessed": "2026-05-18T15:08:06.870093Z"
     }
   }
 ]

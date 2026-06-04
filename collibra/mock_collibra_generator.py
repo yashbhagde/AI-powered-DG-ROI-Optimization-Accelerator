@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_collibra_metadata():
+def generate_collibra_metadata(num_assets=None):
     now = datetime.utcnow()
     
     # Rich mock data representing a Collibra asset export.
@@ -133,10 +133,97 @@ def generate_collibra_metadata():
             }
         }
     ]
+    
+    if num_assets and num_assets > len(collibra_export):
+        import random
+        target_count = num_assets
+        current_id = 2004
+        
+        types = ["Database", "Database Table", "Business Term", "Report"]
+        names_pool = {
+            "Database": ["Analytics_DB", "HR_Prod_DB", "Inventory_DB", "Compliance_DB"],
+            "Database Table": ["billing_history", "user_profiles", "session_metrics", "device_logs", "payroll_adjustments", "supplier_list"],
+            "Business Term": ["Billing Date", "Account Balance", "Employee Level", "Risk Score", "Vendor Tier"],
+            "Report": ["Monthly Financial Summary", "Operational KPI Dashboard", "Compliance Auditing Log"]
+        }
+        classifications = ["Confidential", "Internal", "Public", "Highly Restricted"]
+        
+        while len(collibra_export) < target_count:
+            asset_type = random.choice(types)
+            name = f"{random.choice(names_pool[asset_type])} {current_id}"
+            
+            is_rot = random.random() < 0.15
+            
+            if is_rot:
+                query_count = 0
+                user_count = 0
+                size_in_bytes = random.randint(1024 * 1024 * 500, 1024 * 1024 * 1024 * 300) # 500MB to 300GB
+                last_accessed = (now - timedelta(days=random.randint(185, 500))).isoformat() + "Z"
+            else:
+                query_count = random.randint(50, 2000)
+                user_count = random.randint(5, 100)
+                size_in_bytes = 0 if asset_type in ["Report", "Business Term"] else random.randint(1024 * 1024 * 20, 1024 * 1024 * 1024 * 50)
+                last_accessed = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
+                
+            attributes = [{"type": "Description", "value": f"Mock Collibra {asset_type} for scaled dataset tests."}]
+            
+            # PII & Classification
+            if random.random() < 0.3:
+                classification = random.choice(classifications)
+                attributes.append({"type": "Data Classification", "value": classification})
+                if classification in ["Confidential", "Highly Restricted"] and random.random() > 0.5:
+                    attributes.append({"type": "Security Level", "value": "Restricted PII"})
+                    
+            relations = []
+            if random.random() > 0.4: # 60% chance of owner/steward
+                relations.append({
+                    "type": "Owned By",
+                    "target": f"Steward Group {random.randint(1,5)}",
+                    "role": "Business Steward",
+                    "email": f"steward.{random.randint(1,5)}@company.com"
+                })
+                
+            rules_run = random.choice([0, 4, 8, 12])
+            if rules_run > 0:
+                rules_passed = random.randint(int(rules_run * 0.4), rules_run)
+                dq = {
+                    "rulesRun": rules_run,
+                    "rulesPassed": rules_passed,
+                    "lastProfiled": (now - timedelta(days=random.randint(1, 7))).isoformat() + "Z"
+                }
+            else:
+                dq = {
+                    "rulesRun": 0,
+                    "rulesPassed": 0
+                }
+                
+            asset = {
+                "id": str(current_id),
+                "name": name,
+                "type": asset_type,
+                "attributes": attributes,
+                "relations": relations,
+                "dataQuality": dq,
+                "usage": {
+                    "queryCount": query_count,
+                    "userCount": user_count,
+                    "sizeInBytes": size_in_bytes,
+                    "lastAccessed": last_accessed
+                }
+            }
+            
+            collibra_export.append(asset)
+            current_id += 1
+            
     return collibra_export
 
 def main():
-    metadata = generate_collibra_metadata()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate Collibra mock metadata.")
+    parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
+    args = parser.parse_args()
+    
+    metadata = generate_collibra_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_collibra_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)

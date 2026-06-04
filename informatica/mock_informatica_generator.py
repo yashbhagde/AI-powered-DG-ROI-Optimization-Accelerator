@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_informatica_metadata():
+def generate_informatica_metadata(num_assets=None):
     now = datetime.utcnow()
     
     # Rich mock data representing Informatica IDMC assets.
@@ -83,10 +83,98 @@ def generate_informatica_metadata():
             }
         }
     ]
+    
+    if num_assets and num_assets > len(informatica_export):
+        import random
+        target_count = num_assets
+        current_id = 3004
+        
+        types = ["Table", "File", "Database Schema"]
+        names_pool = {
+            "Table": ["ledger_fact", "invoicing_dim", "balance_sheet", "reconciliation_log"],
+            "File": ["tax_invoice_dump.json", "payroll_extract.csv", "ledger_backup.zip"],
+            "Database Schema": ["GL_ledger_db", "taxation_raw_db", "reconciliations_staging"]
+        }
+        classifications = ["Confidential", "Internal", "Public"]
+        glossary_terms = [("t_101", "Transaction"), ("t_102", "Revenue"), ("t_103", "Asset"), ("t_104", "Liability")]
+        
+        while len(informatica_export) < target_count:
+            asset_type = random.choice(types)
+            name = f"{random.choice(names_pool[asset_type])}_{current_id}"
+            
+            is_rot = random.random() < 0.15
+            
+            if is_rot:
+                reads = 0
+                users = 0
+                size_in_bytes = random.randint(1024 * 1024 * 100, 1024 * 1024 * 1024 * 1024 * 5) # 100MB to 5TB
+                last_access = (now - timedelta(days=random.randint(185, 500))).isoformat() + "Z"
+            else:
+                reads = random.randint(10, 2000)
+                users = random.randint(2, 50)
+                size_in_bytes = random.randint(1024 * 1024 * 1, 1024 * 1024 * 1024 * 50)
+                last_access = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
+                
+            owners = []
+            if random.random() > 0.4:
+                owners.append({
+                    "name": f"Steward {random.randint(1,5)}",
+                    "role": "Business Owner",
+                    "email": f"steward.{random.randint(1,5)}@company.com"
+                })
+                
+            terms = []
+            if random.random() > 0.5:
+                term = random.choice(glossary_terms)
+                terms.append({"termId": term[0], "termName": term[1]})
+                
+            classification = random.choice(classifications)
+            sensitive = random.random() < 0.2
+            
+            rules_run = random.choice([0, 5, 10, 20])
+            if rules_run > 0:
+                rules_passed = random.randint(int(rules_run * 0.4), rules_run)
+                dq_last_run = (now - timedelta(days=random.randint(1, 5))).isoformat() + "Z"
+            else:
+                rules_passed = 0
+                dq_last_run = ""
+                
+            asset = {
+                "assetId": str(current_id),
+                "assetName": name,
+                "assetType": asset_type,
+                "description": f"Mock Informatica asset representing {name} for performance checking.",
+                "owners": owners,
+                "glossaryAssignments": terms,
+                "sensitive": sensitive,
+                "classification": classification,
+                "dqRulesCount": rules_run,
+                "dqRulesPassed": rules_passed,
+                "dqLastRun": dq_last_run,
+                "lineageInfo": {
+                    "upstream": [],
+                    "downstream": []
+                },
+                "usageStats": {
+                    "readsCount": reads,
+                    "usersCount": users,
+                    "sizeInBytes": size_in_bytes,
+                    "lastAccessTime": last_access
+                }
+            }
+            
+            informatica_export.append(asset)
+            current_id += 1
+            
     return informatica_export
 
 def main():
-    metadata = generate_informatica_metadata()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate Informatica mock metadata.")
+    parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
+    args = parser.parse_args()
+    
+    metadata = generate_informatica_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_informatica_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)

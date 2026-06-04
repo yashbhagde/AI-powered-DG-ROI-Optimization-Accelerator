@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_ataccama_metadata():
+def generate_ataccama_metadata(num_assets=None):
     now = datetime.utcnow()
     
     # Rich mock data representing Ataccama assets.
@@ -85,10 +85,89 @@ def generate_ataccama_metadata():
             "sizeBytes": 1024 * 1024 * 1024 * 97 # 97 GB
         }
     ]
+    
+    if num_assets and num_assets > len(ataccama_export):
+        import random
+        target_count = num_assets
+        current_id = 4004
+        
+        types = ["Table", "Database Catalog", "Data Set"]
+        names_pool = {
+            "Table": ["salary_records", "benefit_plans", "training_log", "performance_reviews", "recruiting_pipeline"],
+            "Database Catalog": ["talent_acquisition_dw", "benefits_portal_db", "learning_mgmt_sys"],
+            "Data Set": ["annual_diversity_report", "contractor_invoices_csv", "attrition_predictions"]
+        }
+        classifications = ["Highly Confidential PII", "Confidential", "Internal", "Public"]
+        glossary_terms = ["Employee Compensation", "Tax Record", "Personal Address", "Job Grade"]
+        
+        while len(ataccama_export) < target_count:
+            asset_type = random.choice(types)
+            name = f"{random.choice(names_pool[asset_type])}_{current_id}"
+            
+            is_rot = random.random() < 0.15
+            
+            if is_rot:
+                reads = random.randint(0, 5)
+                users = random.randint(0, 2)
+                size_bytes = random.randint(1024 * 1024 * 10, 1024 * 1024 * 1024 * 100)
+                last_read = (now - timedelta(days=random.randint(185, 400))).isoformat() + "Z"
+            else:
+                reads = random.randint(50, 1500)
+                users = random.randint(3, 40)
+                size_bytes = random.randint(1024 * 1024 * 1, 1024 * 1024 * 1024 * 10)
+                last_read = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
+                
+            owner = f"steward.{random.randint(1,5)}@company.com" if random.random() > 0.4 else ""
+            classification = random.choice(classifications) if random.random() > 0.3 else ""
+            terms = [random.choice(glossary_terms)] if random.random() > 0.5 else []
+            
+            rules_run = random.choice([0, 10, 20])
+            if rules_run > 0:
+                rules_passed = random.randint(int(rules_run * 0.4), rules_run)
+                dq = {
+                    "rulesRun": rules_run,
+                    "rulesPassed": rules_passed,
+                    "profiledDate": (now - timedelta(days=random.randint(1, 6))).isoformat() + "Z"
+                }
+            else:
+                dq = {
+                    "rulesRun": 0,
+                    "rulesPassed": 0
+                }
+                
+            asset = {
+                "id": str(current_id),
+                "title": name,
+                "type": asset_type,
+                "description": f"Mock Ataccama asset representing {name} for performance tests.",
+                "owner": owner,
+                "terms": terms,
+                "securityClassification": classification,
+                "dataQuality": dq,
+                "lineage": {
+                    "sources": [],
+                    "targets": []
+                },
+                "usage": {
+                    "reads": reads,
+                    "users": users,
+                    "lastRead": last_read
+                },
+                "sizeBytes": size_bytes
+            }
+            
+            ataccama_export.append(asset)
+            current_id += 1
+            
     return ataccama_export
 
 def main():
-    metadata = generate_ataccama_metadata()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate Ataccama mock metadata.")
+    parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
+    args = parser.parse_args()
+    
+    metadata = generate_ataccama_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_ataccama_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)

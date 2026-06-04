@@ -30,7 +30,7 @@
     "classification": "Confidential",
     "dqRulesCount": 25,
     "dqRulesPassed": 24,
-    "dqLastRun": "2026-06-04T02:47:38.530318Z",
+    "dqLastRun": "2026-06-04T03:08:07.092206Z",
     "lineageInfo": {
       "upstream": [
         "informatica_3003"
@@ -43,7 +43,7 @@
       "readsCount": 8500,
       "usersCount": 110,
       "sizeInBytes": 4398046511104,
-      "lastAccessTime": "2026-06-04T14:32:38.530318Z"
+      "lastAccessTime": "2026-06-04T14:53:07.092206Z"
     }
   },
   {
@@ -59,7 +59,7 @@
       "readsCount": 0,
       "usersCount": 0,
       "sizeInBytes": 19791209299968,
-      "lastAccessTime": "2025-11-16T14:47:38.530318Z"
+      "lastAccessTime": "2025-11-16T15:08:07.092206Z"
     }
   },
   {
@@ -79,7 +79,7 @@
     "classification": "Internal",
     "dqRulesCount": 10,
     "dqRulesPassed": 9,
-    "dqLastRun": "2026-06-03T14:47:38.530318Z",
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
     "lineageInfo": {
       "upstream": [],
       "downstream": [
@@ -90,7 +90,1389 @@
       "readsCount": 500,
       "usersCount": 5,
       "sizeInBytes": 10995116277760,
-      "lastAccessTime": "2026-06-04T11:47:38.530318Z"
+      "lastAccessTime": "2026-06-04T12:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3004",
+    "assetName": "payroll_extract.csv_3004",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing payroll_extract.csv_3004 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 3",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 8,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 409,
+      "usersCount": 48,
+      "sizeInBytes": 34358365932,
+      "lastAccessTime": "2026-05-23T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3005",
+    "assetName": "taxation_raw_db_3005",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing taxation_raw_db_3005 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_104",
+        "termName": "Liability"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 2,
+    "dqLastRun": "2026-06-02T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1342,
+      "usersCount": 3,
+      "sizeInBytes": 30280034547,
+      "lastAccessTime": "2026-05-15T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3006",
+    "assetName": "GL_ledger_db_3006",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3006 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 5,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 317092160592,
+      "lastAccessTime": "2025-05-04T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3007",
+    "assetName": "balance_sheet_3007",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing balance_sheet_3007 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 11,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1316,
+      "usersCount": 29,
+      "sizeInBytes": 287085318,
+      "lastAccessTime": "2026-05-28T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3008",
+    "assetName": "ledger_fact_3008",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3008 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 1934457970200,
+      "lastAccessTime": "2025-03-26T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3009",
+    "assetName": "tax_invoice_dump.json_3009",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing tax_invoice_dump.json_3009 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 5,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 787642525261,
+      "lastAccessTime": "2025-04-10T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3010",
+    "assetName": "reconciliation_log_3010",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3010 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 6,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1250,
+      "usersCount": 23,
+      "sizeInBytes": 46720301031,
+      "lastAccessTime": "2026-05-16T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3011",
+    "assetName": "reconciliation_log_3011",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3011 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": true,
+    "classification": "Public",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1972,
+      "usersCount": 46,
+      "sizeInBytes": 32316910299,
+      "lastAccessTime": "2026-05-12T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3012",
+    "assetName": "GL_ledger_db_3012",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3012 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": true,
+    "classification": "Public",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 5,
+    "dqLastRun": "2026-06-01T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 1888054435966,
+      "lastAccessTime": "2025-08-01T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3013",
+    "assetName": "balance_sheet_3013",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing balance_sheet_3013 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 9,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1071,
+      "usersCount": 16,
+      "sizeInBytes": 34690154984,
+      "lastAccessTime": "2026-05-07T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3014",
+    "assetName": "reconciliations_staging_3014",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3014 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 8,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1109,
+      "usersCount": 24,
+      "sizeInBytes": 1261299737,
+      "lastAccessTime": "2026-05-20T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3015",
+    "assetName": "GL_ledger_db_3015",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3015 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 8,
+    "dqLastRun": "2026-06-01T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1607,
+      "usersCount": 48,
+      "sizeInBytes": 24711852599,
+      "lastAccessTime": "2026-06-02T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3016",
+    "assetName": "invoicing_dim_3016",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing invoicing_dim_3016 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 9,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 5493853860705,
+      "lastAccessTime": "2025-06-13T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3017",
+    "assetName": "ledger_fact_3017",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3017 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 10,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1415,
+      "usersCount": 31,
+      "sizeInBytes": 24022973165,
+      "lastAccessTime": "2026-05-14T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3018",
+    "assetName": "ledger_backup.zip_3018",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing ledger_backup.zip_3018 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 3",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": true,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 9,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 571,
+      "usersCount": 33,
+      "sizeInBytes": 31707327470,
+      "lastAccessTime": "2026-05-27T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3019",
+    "assetName": "tax_invoice_dump.json_3019",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing tax_invoice_dump.json_3019 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": true,
+    "classification": "Internal",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 12,
+    "dqLastRun": "2026-06-01T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 418,
+      "usersCount": 14,
+      "sizeInBytes": 19008361408,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3020",
+    "assetName": "reconciliations_staging_3020",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3020 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": true,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 5,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 925,
+      "usersCount": 4,
+      "sizeInBytes": 49975787722,
+      "lastAccessTime": "2026-06-03T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3021",
+    "assetName": "invoicing_dim_3021",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing invoicing_dim_3021 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 13,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1117,
+      "usersCount": 4,
+      "sizeInBytes": 8642679945,
+      "lastAccessTime": "2026-06-04T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3022",
+    "assetName": "ledger_fact_3022",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3022 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 12,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1153,
+      "usersCount": 41,
+      "sizeInBytes": 32399306287,
+      "lastAccessTime": "2026-05-14T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3023",
+    "assetName": "ledger_backup.zip_3023",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing ledger_backup.zip_3023 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1660,
+      "usersCount": 30,
+      "sizeInBytes": 52459618391,
+      "lastAccessTime": "2026-05-13T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3024",
+    "assetName": "taxation_raw_db_3024",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing taxation_raw_db_3024 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 18,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 477,
+      "usersCount": 23,
+      "sizeInBytes": 23677991947,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3025",
+    "assetName": "ledger_fact_3025",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3025 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 3",
+        "role": "Business Owner",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 12,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1817,
+      "usersCount": 36,
+      "sizeInBytes": 10337030422,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3026",
+    "assetName": "tax_invoice_dump.json_3026",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing tax_invoice_dump.json_3026 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 5003759265746,
+      "lastAccessTime": "2025-09-20T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3027",
+    "assetName": "reconciliations_staging_3027",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3027 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1713,
+      "usersCount": 6,
+      "sizeInBytes": 11298309045,
+      "lastAccessTime": "2026-05-15T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3028",
+    "assetName": "invoicing_dim_3028",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing invoicing_dim_3028 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 8,
+    "dqLastRun": "2026-06-02T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 4368083673844,
+      "lastAccessTime": "2025-03-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3029",
+    "assetName": "taxation_raw_db_3029",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing taxation_raw_db_3029 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 565,
+      "usersCount": 30,
+      "sizeInBytes": 26484182578,
+      "lastAccessTime": "2026-05-24T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3030",
+    "assetName": "GL_ledger_db_3030",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3030 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.1@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 19,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1785,
+      "usersCount": 18,
+      "sizeInBytes": 53532805723,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3031",
+    "assetName": "ledger_fact_3031",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3031 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [
+      {
+        "termId": "t_104",
+        "termName": "Liability"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 16,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 161,
+      "usersCount": 20,
+      "sizeInBytes": 26887124627,
+      "lastAccessTime": "2026-05-20T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3032",
+    "assetName": "reconciliation_log_3032",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3032 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 10,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1366,
+      "usersCount": 6,
+      "sizeInBytes": 46166564196,
+      "lastAccessTime": "2026-05-11T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3033",
+    "assetName": "payroll_extract.csv_3033",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing payroll_extract.csv_3033 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 3,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1940,
+      "usersCount": 4,
+      "sizeInBytes": 9569658423,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3034",
+    "assetName": "reconciliations_staging_3034",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3034 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 542,
+      "usersCount": 4,
+      "sizeInBytes": 31802541131,
+      "lastAccessTime": "2026-05-16T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3035",
+    "assetName": "reconciliation_log_3035",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3035 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 2",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1519,
+      "usersCount": 47,
+      "sizeInBytes": 1040296997,
+      "lastAccessTime": "2026-05-11T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3036",
+    "assetName": "taxation_raw_db_3036",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing taxation_raw_db_3036 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 12,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1284,
+      "usersCount": 15,
+      "sizeInBytes": 29441921736,
+      "lastAccessTime": "2026-05-29T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3037",
+    "assetName": "GL_ledger_db_3037",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3037 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 15,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 774,
+      "usersCount": 14,
+      "sizeInBytes": 27362651852,
+      "lastAccessTime": "2026-05-08T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3038",
+    "assetName": "ledger_backup.zip_3038",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing ledger_backup.zip_3038 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 1",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 451,
+      "usersCount": 10,
+      "sizeInBytes": 32833452267,
+      "lastAccessTime": "2026-05-18T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3039",
+    "assetName": "reconciliation_log_3039",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3039 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 11,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 967,
+      "usersCount": 3,
+      "sizeInBytes": 31697248667,
+      "lastAccessTime": "2026-05-20T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3040",
+    "assetName": "payroll_extract.csv_3040",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing payroll_extract.csv_3040 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 4773502575287,
+      "lastAccessTime": "2025-03-17T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3041",
+    "assetName": "taxation_raw_db_3041",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing taxation_raw_db_3041 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 7,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1833,
+      "usersCount": 36,
+      "sizeInBytes": 22165787232,
+      "lastAccessTime": "2026-05-10T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3042",
+    "assetName": "reconciliation_log_3042",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3042 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 3",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_103",
+        "termName": "Asset"
+      }
+    ],
+    "sensitive": true,
+    "classification": "Public",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 6,
+    "dqLastRun": "2026-06-02T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 253,
+      "usersCount": 30,
+      "sizeInBytes": 10119902334,
+      "lastAccessTime": "2026-05-11T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3043",
+    "assetName": "reconciliations_staging_3043",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3043 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 0,
+    "dqRulesPassed": 0,
+    "dqLastRun": "",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 451,
+      "usersCount": 23,
+      "sizeInBytes": 36619080532,
+      "lastAccessTime": "2026-05-27T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3044",
+    "assetName": "tax_invoice_dump.json_3044",
+    "assetType": "File",
+    "description": "Mock Informatica asset representing tax_invoice_dump.json_3044 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.3@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_101",
+        "termName": "Transaction"
+      }
+    ],
+    "sensitive": true,
+    "classification": "Public",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1706,
+      "usersCount": 37,
+      "sizeInBytes": 11980292632,
+      "lastAccessTime": "2026-05-17T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3045",
+    "assetName": "reconciliations_staging_3045",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing reconciliations_staging_3045 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Internal",
+    "dqRulesCount": 10,
+    "dqRulesPassed": 6,
+    "dqLastRun": "2026-05-31T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1387,
+      "usersCount": 46,
+      "sizeInBytes": 43536307585,
+      "lastAccessTime": "2026-05-28T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3046",
+    "assetName": "ledger_fact_3046",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3046 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 2,
+    "dqLastRun": "2026-06-03T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 80,
+      "usersCount": 9,
+      "sizeInBytes": 43903294872,
+      "lastAccessTime": "2026-05-14T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3047",
+    "assetName": "reconciliation_log_3047",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing reconciliation_log_3047 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.4@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 4,
+    "dqLastRun": "2026-06-02T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 0,
+      "usersCount": 0,
+      "sizeInBytes": 4387040811058,
+      "lastAccessTime": "2025-10-28T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3048",
+    "assetName": "GL_ledger_db_3048",
+    "assetType": "Database Schema",
+    "description": "Mock Informatica asset representing GL_ledger_db_3048 for performance checking.",
+    "owners": [],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 20,
+    "dqLastRun": "2026-06-02T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 369,
+      "usersCount": 6,
+      "sizeInBytes": 34363199117,
+      "lastAccessTime": "2026-05-10T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3049",
+    "assetName": "ledger_fact_3049",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing ledger_fact_3049 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 5",
+        "role": "Business Owner",
+        "email": "steward.5@company.com"
+      }
+    ],
+    "glossaryAssignments": [
+      {
+        "termId": "t_102",
+        "termName": "Revenue"
+      }
+    ],
+    "sensitive": false,
+    "classification": "Public",
+    "dqRulesCount": 20,
+    "dqRulesPassed": 16,
+    "dqLastRun": "2026-05-30T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 1895,
+      "usersCount": 39,
+      "sizeInBytes": 18323784357,
+      "lastAccessTime": "2026-05-08T15:08:07.092206Z"
+    }
+  },
+  {
+    "assetId": "3050",
+    "assetName": "balance_sheet_3050",
+    "assetType": "Table",
+    "description": "Mock Informatica asset representing balance_sheet_3050 for performance checking.",
+    "owners": [
+      {
+        "name": "Steward 4",
+        "role": "Business Owner",
+        "email": "steward.2@company.com"
+      }
+    ],
+    "glossaryAssignments": [],
+    "sensitive": false,
+    "classification": "Confidential",
+    "dqRulesCount": 5,
+    "dqRulesPassed": 3,
+    "dqLastRun": "2026-06-01T15:08:07.092206Z",
+    "lineageInfo": {
+      "upstream": [],
+      "downstream": []
+    },
+    "usageStats": {
+      "readsCount": 669,
+      "usersCount": 28,
+      "sizeInBytes": 2616651593,
+      "lastAccessTime": "2026-05-29T15:08:07.092206Z"
     }
   }
 ]

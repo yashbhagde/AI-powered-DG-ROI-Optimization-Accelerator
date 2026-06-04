@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-def generate_alation_metadata():
+def generate_alation_metadata(num_assets=None):
     now = datetime.utcnow()
     
     # Rich mock data representing an Alation catalog export.
@@ -208,10 +208,110 @@ def generate_alation_metadata():
             }
         }
     ]
+    
+    if num_assets and num_assets > len(alation_export):
+        import random
+        target_count = num_assets
+        current_id = 105
+        
+        types = ["Table", "View", "Schema", "Dashboard", "File"]
+        names_pool = {
+            "Table": ["orders", "payments", "invoices", "users", "sessions", "products", "inventory", "reviews", "logs", "metrics", "subscribers", "campaigns", "leads", "accounts"],
+            "View": ["active_users_v", "monthly_revenue_v", "top_products_v", "daily_orders_v"],
+            "Schema": ["analytics", "core_prod", "staging_raw", "reporting", "archive"],
+            "Dashboard": ["executive_kpi", "sales_performance", "marketing_attribution", "user_retention", "infrastructure_costs"],
+            "File": ["audit_trail_2025.csv", "clickstream_raw.json", "backup_restore.tar.gz", "temp_export.csv"]
+        }
+        
+        classifications = ["Confidential", "Internal", "Public", "Restricted"]
+        glossary_terms = ["Customer Record", "Financial Transaction", "User Session", "Product Details", "Vendor Account"]
+        
+        while len(alation_export) < target_count:
+            asset_type = random.choice(types)
+            name = f"{random.choice(names_pool[asset_type])}_{current_id}"
+            
+            # 15% chance of being ROT (Redundant, Obsolete, Trivial)
+            is_rot = random.random() < 0.15
+            
+            if is_rot:
+                popularity = random.randint(0, 5)
+                view_count = random.randint(0, 10)
+                last_accessed = (now - timedelta(days=random.randint(185, 730))).isoformat() + "Z"
+                size_in_bytes = random.randint(1024 * 1024 * 100, 1024 * 1024 * 1024 * 500) # 100MB to 500GB
+            else:
+                popularity = random.randint(30, 100)
+                view_count = random.randint(100, 5000)
+                last_accessed = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
+                if asset_type == "Dashboard":
+                    size_in_bytes = 0
+                else:
+                    size_in_bytes = random.randint(1024 * 1024 * 5, 1024 * 1024 * 1024 * 50) # 5MB to 50GB
+            
+            # Stewards (optional)
+            stewards = []
+            if random.random() > 0.35: # 65% have stewards
+                stewards.append({
+                    "username": f"steward.{random.randint(1,10)}@company.com",
+                    "email": f"steward.{random.randint(1,10)}@company.com"
+                })
+            
+            # PII / Classification Risk
+            pii = "Yes" if random.random() < 0.25 else "No"
+            classification = random.choice(classifications)
+            
+            # Data Quality rules
+            rules_run = random.choice([0, 5, 10, 15])
+            if rules_run > 0:
+                rules_passed = random.randint(int(rules_run * 0.4), rules_run)
+                last_profiled = (now - timedelta(days=random.randint(1, 7))).isoformat() + "Z"
+                dq = {
+                    "rules_run": rules_run,
+                    "rules_passed": rules_passed,
+                    "last_profiled": last_profiled
+                }
+            else:
+                dq = {
+                    "rules_run": 0,
+                    "rules_passed": 0
+                }
+                
+            custom_fields = {
+                "Classification": classification,
+                "PII": pii
+            }
+            if random.random() > 0.5:
+                custom_fields["Glossary Term"] = random.choice(glossary_terms)
+                
+            asset = {
+                "id": str(current_id),
+                "name": name,
+                "type": asset_type,
+                "description": f"Mock {asset_type} generated for scaled simulation.",
+                "stewards": stewards,
+                "popularity": popularity,
+                "view_count": view_count,
+                "size_in_bytes": size_in_bytes,
+                "last_accessed": last_accessed,
+                "custom_fields": custom_fields,
+                "data_quality": dq,
+                "lineage": {
+                    "upstream": [],
+                    "downstream": []
+                }
+            }
+            
+            alation_export.append(asset)
+            current_id += 1
+            
     return alation_export
 
 def main():
-    metadata = generate_alation_metadata()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate Alation mock metadata.")
+    parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
+    args = parser.parse_args()
+    
+    metadata = generate_alation_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_alation_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)
