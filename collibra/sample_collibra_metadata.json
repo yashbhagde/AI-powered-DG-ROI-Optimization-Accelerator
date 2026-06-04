@@ -24,13 +24,13 @@
     "dataQuality": {
       "rulesRun": 4,
       "rulesPassed": 4,
-      "lastProfiled": "2026-06-03T12:41:26.250897Z"
+      "lastProfiled": "2026-06-03T14:47:38.254154Z"
     },
     "usage": {
       "queryCount": 1400,
       "userCount": 28,
       "sizeInBytes": 966367641600,
-      "lastAccessed": "2026-06-04T11:56:26.250897Z"
+      "lastAccessed": "2026-06-04T14:02:38.254154Z"
     }
   },
   {
@@ -74,13 +74,13 @@
     "dataQuality": {
       "rulesRun": 10,
       "rulesPassed": 6,
-      "lastProfiled": "2026-06-03T12:41:26.250897Z"
+      "lastProfiled": "2026-06-03T14:47:38.254154Z"
     },
     "usage": {
       "queryCount": 670,
       "userCount": 15,
       "sizeInBytes": 5368709120,
-      "lastAccessed": "2026-06-04T08:41:26.250897Z"
+      "lastAccessed": "2026-06-04T10:47:38.254154Z"
     },
     "columns": [
       {
@@ -141,7 +141,7 @@
       "queryCount": 0,
       "userCount": 0,
       "sizeInBytes": 912680550400,
-      "lastAccessed": "2025-06-04T12:41:26.250897Z"
+      "lastAccessed": "2025-06-04T14:47:38.254154Z"
     }
   },
   {
@@ -178,7 +178,7 @@
       "queryCount": 200,
       "userCount": 50,
       "sizeInBytes": 0,
-      "lastAccessed": "2026-05-30T12:41:26.250897Z"
+      "lastAccessed": "2026-05-30T14:47:38.254154Z"
     }
   }
 ]

@@ -30,7 +30,7 @@
     "classification": "Confidential",
     "dqRulesCount": 25,
     "dqRulesPassed": 24,
-    "dqLastRun": "2026-06-04T00:41:26.802369Z",
+    "dqLastRun": "2026-06-04T02:47:38.530318Z",
     "lineageInfo": {
       "upstream": [
         "informatica_3003"
@@ -43,7 +43,7 @@
       "readsCount": 8500,
       "usersCount": 110,
       "sizeInBytes": 4398046511104,
-      "lastAccessTime": "2026-06-04T12:26:26.802369Z"
+      "lastAccessTime": "2026-06-04T14:32:38.530318Z"
     }
   },
   {
@@ -59,7 +59,7 @@
       "readsCount": 0,
       "usersCount": 0,
       "sizeInBytes": 19791209299968,
-      "lastAccessTime": "2025-11-16T12:41:26.802369Z"
+      "lastAccessTime": "2025-11-16T14:47:38.530318Z"
     }
   },
   {
@@ -79,7 +79,7 @@
     "classification": "Internal",
     "dqRulesCount": 10,
     "dqRulesPassed": 9,
-    "dqLastRun": "2026-06-03T12:41:26.802369Z",
+    "dqLastRun": "2026-06-03T14:47:38.530318Z",
     "lineageInfo": {
       "upstream": [],
       "downstream": [
@@ -90,7 +90,7 @@
       "readsCount": 500,
       "usersCount": 5,
       "sizeInBytes": 10995116277760,
-      "lastAccessTime": "2026-06-04T09:41:26.802369Z"
+      "lastAccessTime": "2026-06-04T11:47:38.530318Z"
     }
   }
 ]

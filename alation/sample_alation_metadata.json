@@ -13,7 +13,7 @@
     "popularity": 90,
     "view_count": 820,
     "size_in_bytes": 161061273600,
-    "last_accessed": "2026-06-04T10:41:26.075796Z",
+    "last_accessed": "2026-06-04T12:47:38.192895Z",
     "custom_fields": {
       "Classification": "Internal",
       "Glossary Term": "Sales Domain",
@@ -22,7 +22,7 @@
     "data_quality": {
       "rules_run": 5,
       "rules_passed": 5,
-      "last_profiled": "2026-06-03T12:41:26.075796Z"
+      "last_profiled": "2026-06-03T14:47:38.192895Z"
     },
     "lineage": {
       "upstream": [],
@@ -46,7 +46,7 @@
     "popularity": 95,
     "view_count": 1450,
     "size_in_bytes": 524288000,
-    "last_accessed": "2026-06-03T12:41:26.075796Z",
+    "last_accessed": "2026-06-03T14:47:38.192895Z",
     "custom_fields": {
       "PII": "Yes",
       "Classification": "Confidential",
@@ -56,7 +56,7 @@
     "data_quality": {
       "rules_run": 10,
       "rules_passed": 10,
-      "last_profiled": "2026-06-02T12:41:26.075796Z",
+      "last_profiled": "2026-06-02T14:47:38.192895Z",
       "dq_metrics": {
         "null_count": 0,
         "uniqueness_pct": 100.0,
@@ -123,7 +123,7 @@
     "popularity": 85,
     "view_count": 1100,
     "size_in_bytes": 91268055040,
-    "last_accessed": "2026-06-04T11:41:26.075796Z",
+    "last_accessed": "2026-06-04T13:47:38.192895Z",
     "custom_fields": {
       "PII": "No",
       "Classification": "Internal",
@@ -132,7 +132,7 @@
     "data_quality": {
       "rules_run": 8,
       "rules_passed": 7,
-      "last_profiled": "2026-06-03T12:41:26.075796Z"
+      "last_profiled": "2026-06-03T14:47:38.192895Z"
     },
     "lineage": {
       "upstream": [
@@ -178,7 +178,7 @@
     "popularity": 80,
     "view_count": 950,
     "size_in_bytes": 0,
-    "last_accessed": "2026-06-02T12:41:26.075796Z",
+    "last_accessed": "2026-06-02T14:47:38.192895Z",
     "custom_fields": {
       "PII": "No",
       "Classification": "Confidential",
@@ -205,7 +205,7 @@
     "popularity": 1,
     "view_count": 3,
     "size_in_bytes": 128849018880,
-    "last_accessed": "2025-11-26T12:41:26.075796Z",
+    "last_accessed": "2025-11-26T14:47:38.192895Z",
     "custom_fields": {
       "PII": "Yes",
       "Classification": "Public"

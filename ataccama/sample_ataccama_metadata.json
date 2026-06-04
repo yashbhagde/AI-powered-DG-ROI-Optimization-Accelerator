@@ -14,7 +14,7 @@
     "dataQuality": {
       "rulesRun": 30,
       "rulesPassed": 29,
-      "profiledDate": "2026-06-01T12:41:26.626511Z"
+      "profiledDate": "2026-06-01T14:47:38.425233Z"
     },
     "lineage": {
       "sources": [
@@ -25,7 +25,7 @@
     "usage": {
       "reads": 150,
       "users": 8,
-      "lastRead": "2026-06-03T12:41:26.626511Z"
+      "lastRead": "2026-06-03T14:47:38.425233Z"
     },
     "sizeBytes": 12582912
   },
@@ -40,7 +40,7 @@
     "dataQuality": {
       "rulesRun": 4,
       "rulesPassed": 1,
-      "profiledDate": "2026-06-03T12:41:26.626511Z"
+      "profiledDate": "2026-06-03T14:47:38.425233Z"
     },
     "lineage": {
       "sources": [],
@@ -51,7 +51,7 @@
     "usage": {
       "reads": 520,
       "users": 24,
-      "lastRead": "2026-06-04T10:41:26.626511Z"
+      "lastRead": "2026-06-04T12:47:38.425233Z"
     },
     "sizeBytes": 89128960
   },
@@ -68,7 +68,7 @@
     "dataQuality": {
       "rulesRun": 34,
       "rulesPassed": 30,
-      "profiledDate": "2026-06-03T12:41:26.626511Z"
+      "profiledDate": "2026-06-03T14:47:38.425233Z"
     },
     "lineage": {
       "sources": [],
@@ -79,7 +79,7 @@
     "usage": {
       "reads": 670,
       "users": 10,
-      "lastRead": "2026-06-04T07:41:26.626511Z"
+      "lastRead": "2026-06-04T09:47:38.425233Z"
     },
     "sizeBytes": 104152956928
   }

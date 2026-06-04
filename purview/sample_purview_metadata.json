@@ -7,8 +7,8 @@
       "description": "Executive dashboard visualizing monthly corporate profits, operating margins, EBITDA, and quarterly forecast data.",
       "qualifiedName": "powerbi://finance/dashboards/exec_financials",
       "sizeInBytes": 0,
-      "createdTime": "2025-06-04T12:41:26.436423Z",
-      "lastModifiedTime": "2026-05-30T12:41:26.436423Z"
+      "createdTime": "2025-06-04T14:47:38.327360Z",
+      "lastModifiedTime": "2026-05-30T14:47:38.327360Z"
     },
     "contacts": {
       "Owner": [
@@ -43,7 +43,7 @@
     "dataQuality": {
       "rulesRun": 8,
       "rulesPassed": 5,
-      "lastProfiled": "2026-06-03T12:41:26.436423Z"
+      "lastProfiled": "2026-06-03T14:47:38.327360Z"
     },
     "lineage": {
       "inputs": [
@@ -54,7 +54,7 @@
     "usage": {
       "queries": 1200,
       "users": 45,
-      "lastAccessed": "2026-06-04T11:41:26.436423Z"
+      "lastAccessed": "2026-06-04T13:47:38.327360Z"
     }
   },
   {
@@ -65,7 +65,7 @@
       "description": "Synapse database backup file from legacy migration back in 2020. Retained post-deprecation.",
       "qualifiedName": "synapse://archive/backup_2020",
       "sizeInBytes": 49478023249920,
-      "createdTime": "2021-06-30T12:41:26.436423Z"
+      "createdTime": "2021-06-30T14:47:38.327360Z"
     },
     "contacts": {},
     "classifications": [],
@@ -81,7 +81,7 @@
     "usage": {
       "queries": 0,
       "users": 0,
-      "lastAccessed": "2024-07-04T12:41:26.436423Z"
+      "lastAccessed": "2024-07-04T14:47:38.327360Z"
     }
   },
   {
@@ -120,7 +120,7 @@
     "dataQuality": {
       "rulesRun": 15,
       "rulesPassed": 15,
-      "lastProfiled": "2026-06-04T00:41:26.436423Z"
+      "lastProfiled": "2026-06-04T02:47:38.327360Z"
     },
     "lineage": {
       "inputs": [],
@@ -131,7 +131,7 @@
     "usage": {
       "queries": 450,
       "users": 12,
-      "lastAccessed": "2026-06-04T09:41:26.436423Z"
+      "lastAccessed": "2026-06-04T11:47:38.327360Z"
     },
     "columns": [
       {

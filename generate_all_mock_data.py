@@ -12,11 +12,11 @@ def run_script(script_name):
 
 def main():
     scripts = [
-        "mock_alation_generator.py",
-        "mock_collibra_generator.py",
-        "mock_purview_generator.py",
-        "mock_ataccama_generator.py",
-        "mock_informatica_generator.py"
+        os.path.join("alation", "mock_alation_generator.py"),
+        os.path.join("collibra", "mock_collibra_generator.py"),
+        os.path.join("purview", "mock_purview_generator.py"),
+        os.path.join("ataccama", "mock_ataccama_generator.py"),
+        os.path.join("informatica", "mock_informatica_generator.py")
     ]
     
     print("=" * 80)
@@ -31,11 +31,11 @@ def main():
             
     print("\nAll mock catalog metadata files have been created successfully!")
     print("Check the workspace directory for the generated JSON files:")
-    print(" - sample_alation_metadata.json")
-    print(" - sample_collibra_metadata.json")
-    print(" - sample_purview_metadata.json")
-    print(" - sample_ataccama_metadata.json")
-    print(" - sample_informatica_metadata.json")
+    print(" - alation/sample_alation_metadata.json")
+    print(" - collibra/sample_collibra_metadata.json")
+    print(" - purview/sample_purview_metadata.json")
+    print(" - ataccama/sample_ataccama_metadata.json")
+    print(" - informatica/sample_informatica_metadata.json")
     print("=" * 80)
 
 if __name__ == "__main__":
