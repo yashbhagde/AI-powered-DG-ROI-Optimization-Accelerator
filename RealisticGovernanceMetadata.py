@@ -9,7 +9,32 @@ from governance_scoring_engine import GovernanceScoringEngine
 from roi_calculation_engine import ROICalculationEngine
 
 def generate_sample_raw_metadata(num_assets=None):
-    # Delegate to the vendor-specific generator modules
+    # If num_assets is None, check if pre-existing 50-asset files exist and load them directly
+    if num_assets is None:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        vendor_files = {
+            "alation": os.path.join(base_dir, "alation", "sample_alation_metadata.json"),
+            "collibra": os.path.join(base_dir, "collibra", "sample_collibra_metadata.json"),
+            "informatica_idmc": os.path.join(base_dir, "informatica", "sample_informatica_metadata.json"),
+            "ataccama": os.path.join(base_dir, "ataccama", "sample_ataccama_metadata.json"),
+            "purview": os.path.join(base_dir, "purview", "sample_purview_metadata.json")
+        }
+        
+        all_exist = True
+        for path in vendor_files.values():
+            if not os.path.exists(path):
+                all_exist = False
+                break
+                
+        if all_exist:
+            print("Loading pre-existing 50-asset vendor-specific metadata files...")
+            metadata = {}
+            for key, path in vendor_files.items():
+                with open(path, "r") as f:
+                    metadata[key] = json.load(f)
+            return metadata
+
+    # Delegate to the vendor-specific generator modules as fallback
     from alation.mock_alation_generator import generate_alation_metadata
     from collibra.mock_collibra_generator import generate_collibra_metadata
     from purview.mock_purview_generator import generate_purview_metadata
@@ -82,10 +107,10 @@ def run_accelerator_demo(raw_metadata=None):
     
     # Display detailed ROI items
     print("\n--- ASSET FINANCIAL ROI CALCULATIONS ---")
-    roi_display_cols = ["asset_id", "name", "source_platform", "is_rot", "is_sensitive", "realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "total_realized_savings"]
+    roi_display_cols = ["asset_id", "name", "source_platform", "is_rot", "is_sensitive", "realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "realized_compute_savings", "total_realized_savings"]
     # Format dollars for display
     display_roi_df = roi_df[roi_display_cols].copy()
-    for col in ["realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "total_realized_savings"]:
+    for col in ["realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "realized_compute_savings", "total_realized_savings"]:
         display_roi_df[col] = display_roi_df[col].apply(lambda x: f"${x:,.2f}")
     try:
         from tabulate import tabulate
