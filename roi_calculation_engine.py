@@ -46,7 +46,7 @@ class ROICalculationEngine:
         realized_discovery_savings = max_possible_discovery_savings * doc_score_pct
         opportunity_discovery_savings = max_possible_discovery_savings * (1.0 - doc_score_pct)
 
-        # 2. Storage Savings (ROT Decommissioning)
+        # 2. Storage Savings (ROT Decommissioning with Dynamic Cloud Storage Tiers)
         # Check if asset is Redundant, Obsolete or Trivial (ROT)
         # Criteria: No usage (query count < 5/month), older than 6 months last accessed, and size > 0
         is_rot = False
@@ -59,13 +59,20 @@ class ROICalculationEngine:
             else:
                 is_rot = True # No access history, assume unused
 
+        # Precise storage cost based on cloud storage tier (Standard, Standard-IA, Glacier, DeepArchive)
+        tier_pricing = {
+            "standard": 0.023 * 12,       # $0.276/GB/year (Standard Hot Tier)
+            "standard-ia": 0.0125 * 12,   # $0.150/GB/year (Infrequent Access)
+            "glacier": 0.004 * 12,        # $0.048/GB/year (Cold Glacier)
+            "deeparchive": 0.00099 * 12,  # $0.01188/GB/year (Glacier Deep Archive)
+        }
+        tier_lower = (asset.usage.storage_tier or "standard").lower().replace(" ", "").replace("_", "")
+        storage_rate = tier_pricing.get(tier_lower, self.storage_cost_per_gb_year)
+
         size_in_gb = asset.usage.size_in_bytes / (1024 ** 3)
-        potential_storage_savings = size_in_gb * self.storage_cost_per_gb_year
+        potential_storage_savings = size_in_gb * storage_rate
         
         # Realized: We only realize storage savings if we ACTUALLY decommission it.
-        # But for reporting, we represent ROT assets as 'Opportunity Storage Savings' 
-        # (meaning waste reduction we can achieve). Realized storage savings = 0 until acted upon, 
-        # but we track it as active storage waste opportunity.
         realized_storage_savings = 0.0
         opportunity_storage_savings = potential_storage_savings if is_rot else 0.0
 
@@ -137,8 +144,38 @@ class ROICalculationEngine:
             # Opportunity: remaining risk that could be minimized by going to full governance (probability = 0.002)
             opportunity_risk_savings = max(0.0, (prob_current - self.breach_probability_governed) * self.cost_per_data_breach)
         
-        total_realized_savings = realized_discovery_savings + realized_storage_savings + realized_dq_savings + realized_risk_savings
-        total_opportunity_savings = opportunity_discovery_savings + opportunity_storage_savings + opportunity_dq_savings + opportunity_risk_savings
+        # 5. Precise Compute Cost Integration (Warehouse credit rates & compute hours)
+        wh_credits = {
+            "x-small": 1.0,
+            "small": 2.0,
+            "medium": 4.0,
+            "large": 8.0,
+            "x-large": 16.0
+        }
+        wh_size_lower = (asset.usage.data_warehouse_size or "x-small").lower().replace(" ", "").replace("_", "")
+        credits_rate = wh_credits.get(wh_size_lower, 1.0)
+        credit_cost = 3.00 # Snowflake standard credit cost in USD
+        
+        # Annualized compute cost = monthly query compute hours * hourly rate * 12
+        annual_compute_cost = (asset.usage.query_compute_hours or 0.0) * credits_rate * credit_cost * 12
+        
+        # Wasted compute rate scales inversely with data quality pass rate
+        dq_pass_rate = asset.data_quality.pass_rate if asset.data_quality.rules_run > 0 else 0.85
+        wasted_compute = annual_compute_cost * (1.0 - dq_pass_rate)
+        
+        if asset.data_quality.rules_run > 0 and asset.data_quality.pass_rate >= 0.95:
+            # We successfully avoided compute waste compared to the 15% baseline waste
+            realized_compute_savings = annual_compute_cost * 0.15
+            opportunity_compute_savings = 0.0
+        elif asset.data_quality.rules_run > 0:
+            realized_compute_savings = 0.0
+            opportunity_compute_savings = wasted_compute
+        else:
+            realized_compute_savings = 0.0
+            opportunity_compute_savings = annual_compute_cost * 0.15
+            
+        total_realized_savings = realized_discovery_savings + realized_storage_savings + realized_dq_savings + realized_risk_savings + realized_compute_savings
+        total_opportunity_savings = opportunity_discovery_savings + opportunity_storage_savings + opportunity_dq_savings + opportunity_risk_savings + opportunity_compute_savings
 
         return {
             "asset_id": asset.asset_id,
@@ -154,6 +191,8 @@ class ROICalculationEngine:
             "opportunity_dq_savings": opportunity_dq_savings,
             "realized_risk_savings": realized_risk_savings,
             "opportunity_risk_savings": opportunity_risk_savings,
+            "realized_compute_savings": realized_compute_savings,
+            "opportunity_compute_savings": opportunity_compute_savings,
             "total_realized_savings": total_realized_savings,
             "total_opportunity_savings": total_opportunity_savings
         }
@@ -195,14 +234,16 @@ class ROICalculationEngine:
             "productivity_discovery": roi_df["realized_discovery_savings"].sum(),
             "storage_cost": roi_df["realized_storage_savings"].sum(),
             "data_quality_incident": roi_df["realized_dq_savings"].sum(),
-            "compliance_risk": roi_df["realized_risk_savings"].sum()
+            "compliance_risk": roi_df["realized_risk_savings"].sum(),
+            "compute_optimization": roi_df["realized_compute_savings"].sum()
         }
 
         opportunity_breakdown = {
             "productivity_discovery": roi_df["opportunity_discovery_savings"].sum(),
             "storage_cost": roi_df["opportunity_storage_savings"].sum(),
             "data_quality_incident": roi_df["opportunity_dq_savings"].sum(),
-            "compliance_risk": roi_df["opportunity_risk_savings"].sum()
+            "compliance_risk": roi_df["opportunity_risk_savings"].sum(),
+            "compute_optimization": roi_df["opportunity_compute_savings"].sum()
         }
 
         # Calculate program cost dynamically for only the active platforms in the ingested data
@@ -232,6 +273,7 @@ class ROICalculationEngine:
             realized_storage_savings=("realized_storage_savings", "sum"),
             realized_dq_savings=("realized_dq_savings", "sum"),
             realized_risk_savings=("realized_risk_savings", "sum"),
+            realized_compute_savings=("realized_compute_savings", "sum"),
             total_realized_savings=("total_realized_savings", "sum"),
             opportunity_savings=("total_opportunity_savings", "sum")
         ).reset_index()
