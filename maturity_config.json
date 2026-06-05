@@ -1,0 +1,46 @@
+{
+  "disciplines": {
+    "metadata_management": {
+      "name": "Metadata Management",
+      "weight": 0.5,
+      "indicators": {
+        "documentation_coverage": {
+          "name": "Documentation Coverage",
+          "weight": 0.30,
+          "thresholds": [40, 60, 75, 90]
+        },
+        "ownership_coverage": {
+          "name": "Ownership Coverage",
+          "weight": 0.30,
+          "thresholds": [40, 60, 75, 90]
+        },
+        "glossary_linkage": {
+          "name": "Glossary Linkage",
+          "weight": 0.20,
+          "thresholds": [40, 60, 75, 90]
+        },
+        "classification_coverage": {
+          "name": "Classification Coverage",
+          "weight": 0.20,
+          "thresholds": [40, 60, 75, 90]
+        }
+      }
+    },
+    "data_quality": {
+      "name": "Data Quality",
+      "weight": 0.5,
+      "indicators": {
+        "rule_coverage": {
+          "name": "DQ Rule Coverage",
+          "weight": 0.40,
+          "thresholds": [25, 50, 70, 85]
+        },
+        "pass_rate": {
+          "name": "DQ Pass Rate",
+          "weight": 0.60,
+          "thresholds": [70, 80, 90, 95]
+        }
+      }
+    }
+  }
+}

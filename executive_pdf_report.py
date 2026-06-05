@@ -12,6 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from canonical_metadata_model import map_raw_to_canonical
 from governance_scoring_engine import GovernanceScoringEngine
 from roi_calculation_engine import ROICalculationEngine
+from maturity_assessment_engine import MaturityAssessmentEngine
 
 def add_page_decorations(canvas, doc):
     canvas.saveState()
@@ -68,6 +69,11 @@ def build_pdf_report(platform, input_file, output_file):
     roi_engine = ROICalculationEngine()
     roi_df = roi_engine.calculate_catalog_roi(canonical_assets, scored_df)
     
+    # Run Maturity Assessment Engine
+    maturity_engine = MaturityAssessmentEngine()
+    maturity_results = maturity_engine.assess_maturity(canonical_assets)
+    reco_results = maturity_engine.generate_recommendations_and_gaps(maturity_results)
+    
     # Aggregated calculations
     total_assets = len(canonical_assets)
     avg_doc = scored_df["documentation_score"].mean()
@@ -81,6 +87,10 @@ def build_pdf_report(platform, input_file, output_file):
     operating_cost = roi_engine.platform_costs.get(platform, 0.0)
     net_realized_roi = total_realized_savings - operating_cost
     roi_percentage = (net_realized_roi / operating_cost) * 100.0 if operating_cost > 0 else 0.0
+    
+    metadata_maturity = maturity_results["disciplines"]["metadata_management"]["score"]
+    dq_maturity = maturity_results["disciplines"]["data_quality"]["score"]
+    overall_maturity = maturity_results["overall_maturity_score"]
     
     # Build Document
     doc = SimpleDocTemplate(
@@ -181,14 +191,14 @@ def build_pdf_report(platform, input_file, output_file):
     
     # 2. Executive Summary Box
     summary_text = (
-        f"<b>Executive Summary:</b> An automated maturity assessment was conducted on "
+        f"<b>Executive Summary:</b> An automated audit-ready maturity assessment was conducted on "
         f"<b>{total_assets}</b> data assets managed by {platform.title()}. The implementation achieves a "
-        f"<b>Governance Health Index (GHI) of {avg_ghi:.2f}%</b>, reflecting moderate governance execution. "
+        f"<b>Maturity Score of {overall_maturity:.2f}/5.0</b> (Documentation Health: {avg_doc:.1f}%, DQ Pass Rate: {maturity_results['audit_trail']['raw_metrics']['pass_rate']:.1f}%). "
         f"Financially, the program has generated <b>${total_realized_savings:,.2f}</b> in realized business value "
-        f"(productivity savings, incident avoidance, and compliance risk mitigation) against an estimated annual cost of "
-        f"<b>${operating_cost:,.2f}</b>. This yields an outstanding net realized value of <b>${net_realized_roi:,.2f}</b>. "
+        f"against an estimated annual operating cost of "
+        f"<b>${operating_cost:,.2f}</b>, yielding a net realized value of <b>${net_realized_roi:,.2f}</b>. "
         f"Additionally, the engine has identified <b>${total_opportunity_savings:,.2f}</b> in unrealized, actionable opportunity savings "
-        f"that can be unlocked through targeted remediation efforts (such as decommissioning ROT storage and securing un-owned PII)."
+        f"that can be unlocked through targeted remediation efforts."
     )
     
     summary_table = Table([[Paragraph(summary_text, ParagraphStyle('SummaryText', parent=body_style, textColor=colors.HexColor("#2C5282")))]], colWidths=[504])
@@ -201,81 +211,108 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 15))
     
     # 3. Governance Maturity Scores Section
-    story.append(Paragraph("1. Governance Implementation Maturity Breakdown", heading_style))
-    story.append(Paragraph("Maturity is assessed across four key pillars mapped from raw vendor metadata:", body_style))
-    story.append(Spacer(1, 4))
+    story.append(Paragraph("1. Discipline-Level Data Governance Maturity Dashboard", heading_style))
+    story.append(Paragraph("Scores are computed across critical governance disciplines mapped directly from catalog metadata using transparent, auditable rules:", body_style))
+    story.append(Spacer(1, 6))
     
-    # Maturity Table
-    def get_status(score, is_risk=False):
-        if is_risk:
-            if score > 50: return "Critical Risk"
-            if score > 20: return "Moderate Risk"
-            return "Low Risk"
+    def get_maturity_status(score):
+        if score >= 4.0:
+            return "Optimized", "#48BB78"  # Green
+        elif score >= 2.5:
+            return "Amber", "#D69E2E"  # Amber/Dark Yellow
         else:
-            if score >= 80: return "Optimized"
-            if score >= 50: return "Adequate"
-            return "Action Needed"
+            return "Action Needed", "#F56565"  # Red
             
-    # Maturity Table
-    def get_status(score, is_risk=False):
-        if is_risk:
-            if score > 50: return "Critical Risk"
-            if score > 20: return "Moderate Risk"
-            return "Low Risk"
-        else:
-            if score >= 80: return "Optimized"
-            if score >= 50: return "Adequate"
-            return "Action Needed"
-            
-    maturity_data = [
-        [Paragraph("Pillar Parameter", th_style), Paragraph("Weight", th_style), Paragraph("Score", th_style), Paragraph("Calculation Formula & Variables Mapped", th_style), Paragraph("Status", th_style)],
+    maturity_dashboard_data = [
+        [Paragraph("Governance Discipline", th_style), Paragraph("Maturity Score", th_style), Paragraph("Status", th_style)],
         [
-            Paragraph("Documentation Completeness", td_style), 
-            Paragraph("30%", td_style), 
-            Paragraph(f"{avg_doc:.2f}%", td_bold_style), 
-            Paragraph("Avg of: 40 (description) + 10 (length > 50) + 30 (owner) + 20 (terms)", td_style), 
-            Paragraph(get_status(avg_doc), td_bold_style)
+            Paragraph("Metadata Management", td_style),
+            Paragraph(f"{metadata_maturity:.2f} / 5.0", td_bold_style),
+            Paragraph(f"<font color='{get_maturity_status(metadata_maturity)[1]}'><b>{get_maturity_status(metadata_maturity)[0]}</b></font>", td_bold_style)
         ],
         [
-            Paragraph("Data Quality Coverage", td_style), 
-            Paragraph("40%", td_style), 
-            Paragraph(f"{avg_dq:.2f}%", td_bold_style), 
-            Paragraph("Avg of: pass_rate * 100 (0.0% if unmonitored/no DQ rules)", td_style), 
-            Paragraph(get_status(avg_dq), td_bold_style)
+            Paragraph("Data Quality", td_style),
+            Paragraph(f"{dq_maturity:.2f} / 5.0", td_bold_style),
+            Paragraph(f"<font color='{get_maturity_status(dq_maturity)[1]}'><b>{get_maturity_status(dq_maturity)[0]}</b></font>", td_bold_style)
         ],
         [
-            Paragraph("Lineage Transparency", td_style), 
-            Paragraph("20%", td_style), 
-            Paragraph(f"{avg_lineage:.2f}%", td_bold_style), 
-            Paragraph("Avg of: 50 (upstream lineage) + 50 (downstream lineage)", td_style), 
-            Paragraph(get_status(avg_lineage), td_bold_style)
-        ],
-        [
-            Paragraph("Security & Policy Risk", td_style), 
-            Paragraph("10%", td_style), 
-            Paragraph(f"{avg_risk:.2f}%", td_bold_style), 
-            Paragraph("Avg of: 20 (sensitive) + 40 (unowned) + 20 (untagged) + 20 (0 DQ)", td_style), 
-            Paragraph(get_status(avg_risk, True), td_bold_style)
-        ],
-        [
-            Paragraph("<b>Governance Health Index</b>", td_bold_style), 
-            Paragraph("<b>100%</b>", td_bold_style), 
-            Paragraph(f"<b>{avg_ghi:.2f}%</b>", td_bold_style), 
-            Paragraph("<b>GHI = (Doc*0.3) + (DQ*0.4) + (Lineage*0.2) + ((100-Risk)*0.1)</b>", td_bold_style), 
-            Paragraph("<b>Active</b>", td_bold_style)
+            Paragraph("<b>Overall Maturity Index</b>", td_bold_style),
+            Paragraph(f"<b>{overall_maturity:.2f} / 5.0</b>", td_bold_style),
+            Paragraph(f"<font color='{get_maturity_status(overall_maturity)[1]}'><b>{get_maturity_status(overall_maturity)[0]}</b></font>", td_bold_style)
         ]
     ]
     
-    t_maturity = Table(maturity_data, colWidths=[120, 45, 55, 200, 84])
+    t_maturity = Table(maturity_dashboard_data, colWidths=[220, 140, 144])
     t_maturity.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")), # Dark navy header
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
         ('PADDING', (0,0), (-1,-1), 5),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
         ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
-        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#EDF2F7")), # Gray row for composite GHI
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#EDF2F7")), # Gray row for composite index
     ]))
     story.append(t_maturity)
+    story.append(Spacer(1, 15))
+
+    # 3.1 Governance Health Indicators Section
+    story.append(Paragraph("Governance Health Indicators Breakdown", ParagraphStyle('SubheadingHealth', parent=heading_style, fontSize=10, spaceBefore=4, spaceAfter=4)))
+    
+    raw_metrics = maturity_results["audit_trail"]["raw_metrics"]
+    def get_indicator_status(val, thresholds):
+        if val >= thresholds[3]:
+            return "Green", "#48BB78"
+        elif val >= thresholds[1]:
+            return "Amber", "#D69E2E"
+        else:
+            return "Red", "#F56565"
+
+    meta_thresholds = [40, 60, 75, 90]
+    dq_rule_thresholds = [25, 50, 70, 85]
+    dq_pass_thresholds = [70, 80, 90, 95]
+
+    indicators_data = [
+        [Paragraph("Health Indicator", th_style), Paragraph("Raw Metric %", th_style), Paragraph("Status", th_style)],
+        [
+            Paragraph("Documentation Coverage", td_style),
+            Paragraph(f"{raw_metrics['documentation_coverage']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['documentation_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['documentation_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
+        ],
+        [
+            Paragraph("Ownership Assignment", td_style),
+            Paragraph(f"{raw_metrics['ownership_coverage']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['ownership_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['ownership_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
+        ],
+        [
+            Paragraph("Glossary Linkage", td_style),
+            Paragraph(f"{raw_metrics['glossary_linkage']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['glossary_linkage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['glossary_linkage'], meta_thresholds)[0]}</b></font>", td_bold_style)
+        ],
+        [
+            Paragraph("Classification Coverage", td_style),
+            Paragraph(f"{raw_metrics['classification_coverage']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['classification_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['classification_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
+        ],
+        [
+            Paragraph("DQ Rule Coverage", td_style),
+            Paragraph(f"{raw_metrics['rule_coverage']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['rule_coverage'], dq_rule_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['rule_coverage'], dq_rule_thresholds)[0]}</b></font>", td_bold_style)
+        ],
+        [
+            Paragraph("DQ Pass Rate", td_style),
+            Paragraph(f"{raw_metrics['pass_rate']:.1f}%", td_style),
+            Paragraph(f"<font color='{get_indicator_status(raw_metrics['pass_rate'], dq_pass_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['pass_rate'], dq_pass_thresholds)[0]}</b></font>", td_bold_style)
+        ]
+    ]
+
+    t_indicators = Table(indicators_data, colWidths=[220, 140, 144])
+    t_indicators.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('PADDING', (0,0), (-1,-1), 4),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F7FAFC")]),
+    ]))
+    story.append(t_indicators)
     story.append(Spacer(1, 15))
     
     # 4. Program Financial Performance Section
@@ -284,59 +321,57 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 4))
     
     financial_data = [
-        [Paragraph("Financial Metric Category", th_style), Paragraph("Amount ($)", th_style), Paragraph("Calculation Formula & Constant Assumptions", th_style), Paragraph("Value Explanation", th_style)],
+        [Paragraph("Financial Metric Category", th_style), Paragraph("Amount ($)", th_style), Paragraph("Value Explanation", th_style)],
         [
             Paragraph("Annual Operating Cost", td_style), 
             Paragraph(f"${operating_cost:,.2f}", td_bold_style), 
-            Paragraph("Constant platform licensing & support headcount budget", td_style),
-            Paragraph("Fixed software cost", td_style)
+            Paragraph("Fixed software licensing and support overhead cost.", td_style)
         ],
         [
             Paragraph("Realized Discovery Savings", td_style), 
-            Paragraph(f"${total_realized_savings:,.2f}", td_bold_style), 
-            Paragraph("Sum of: (Annual Queries * 10% * 3.5 hrs saved * $75/hr) * Doc Score%", td_style),
-            Paragraph("Productivity savings", td_style)
+            Paragraph(f"${roi_df['realized_discovery_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph("Productivity savings from faster data discovery.", td_style)
         ],
         [
             Paragraph("Realized DQ Incident Avoidance", td_style), 
             Paragraph(f"${roi_df['realized_dq_savings'].sum():,.2f}", td_bold_style), 
-            Paragraph("Sum of: (4.0 baseline incidents - current incidents) * $15k per incident", td_style),
-            Paragraph("DQ debug savings", td_style)
+            Paragraph("Savings from avoiding pipeline failures and business downtime.", td_style)
         ],
         [
             Paragraph("Realized Risk Avoidance", td_style), 
             Paragraph(f"${roi_df['realized_risk_savings'].sum():,.2f}", td_bold_style), 
-            Paragraph("Sum of: (5% baseline breach probability - current probability) * $150k cost", td_style),
-            Paragraph("Risk mitigation", td_style)
+            Paragraph("Mitigated risk of security breaches and regulatory non-compliance.", td_style)
+        ],
+        [
+            Paragraph("Realized Compute Optimization", td_style), 
+            Paragraph(f"${roi_df['realized_compute_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph("Warehouse credit waste avoided via data quality monitoring.", td_style)
         ],
         [
             Paragraph("<b>Net Realized Program Value</b>", td_bold_style), 
             Paragraph(f"<b>${net_realized_roi:,.2f}</b>", td_bold_style), 
-            Paragraph("<b>Net Value = Total Realized Savings - Annual Operating Cost</b>", td_bold_style),
-            Paragraph("<b>Net dollar return</b>", td_bold_style)
+            Paragraph("<b>Net financial return of the program.</b>", td_bold_style)
         ],
         [
             Paragraph("<b>Return on Investment (ROI)</b>", td_bold_style), 
             Paragraph(f"<b>{roi_percentage:.2f}%</b>", td_bold_style), 
-            Paragraph("<b>ROI % = (Net Realized Program Value / Annual Operating Cost) * 100</b>", td_bold_style),
-            Paragraph("<b>Efficiency score</b>", td_bold_style)
+            Paragraph("<b>Program efficiency ratio.</b>", td_bold_style)
         ],
         [
             Paragraph("Unrealized Opportunity Value", td_style), 
             Paragraph(f"${total_opportunity_savings:,.2f}", td_bold_style), 
-            Paragraph("Sum of: remaining discovery opportunity + DQ opportunity + Risk + ROT storage", td_style),
-            Paragraph("Unrealized pipeline", td_style)
+            Paragraph("Value pipeline achievable through remediation tasks.", td_style)
         ]
     ]
     
-    t_financial = Table(financial_data, colWidths=[120, 80, 214, 90])
+    t_financial = Table(financial_data, colWidths=[180, 100, 224])
     t_financial.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
         ('PADDING', (0,0), (-1,-1), 5),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
         ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
-        ('BACKGROUND', (0,5), (-1,6), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
+        ('BACKGROUND', (0,6), (-1,7), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
     ]))
     story.append(t_financial)
     story.append(Spacer(1, 15))
@@ -346,52 +381,115 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("The engine has identified key prioritized actions to reduce costs and secure sensitive corporate data:", body_style))
     story.append(Spacer(1, 6))
     
-    # Sub-sections
-    story.append(Paragraph("<b>Category A: Storage Cost Optimization (Obsolete/ROT Data Decommissioning)</b>", ParagraphStyle('Subheading', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
-    story.append(Paragraph("Decommissioning the following zero-usage datasets yields direct cloud storage savings:", body_style))
+    remediation_table_data = [
+        [
+            Paragraph("Category", th_style), 
+            Paragraph("Asset Name", th_style), 
+            Paragraph("Risk / Telemetry Details", th_style), 
+            Paragraph("Recommended Action", th_style), 
+            Paragraph("Value Impact", th_style)
+        ]
+    ]
     
+    # 1. ROT Assets (Storage Cost Optimization)
     rot_assets = roi_df[roi_df["is_rot"] == True].sort_values("opportunity_storage_savings", ascending=False).head(3)
-    if not rot_assets.empty:
-        for idx, (_, row) in enumerate(rot_assets.iterrows(), 1):
-            canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-            size_gb = (canon_asset.usage.size_in_bytes / (1024**3)) if canon_asset else 0.0
-            last_acc_days = ""
-            if canon_asset and canon_asset.usage.last_accessed:
-                delta = datetime.now() - canon_asset.usage.last_accessed.replace(tzinfo=None)
-                last_acc_days = f" (stale for {delta.days} days)"
-            
-            story.append(Paragraph(f"• <b>{row['name']}</b> : Size: <b>{size_gb:.1f} GB</b>{last_acc_days}. Action: Decommission or archive. Potential annual savings: <b>${row['opportunity_storage_savings']:,.2f}</b>", bullet_style))
-    else:
-        story.append(Paragraph("• No outstanding ROT storage issues detected.", bullet_style))
+    for _, row in rot_assets.iterrows():
+        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
+        size_gb = (canon_asset.usage.size_in_bytes / (1024**3)) if canon_asset else 0.0
+        last_acc_days = ""
+        if canon_asset and canon_asset.usage.last_accessed:
+            delta = datetime.now() - canon_asset.usage.last_accessed.replace(tzinfo=None)
+            last_acc_days = f" ({delta.days}d stale)"
         
-    story.append(Spacer(1, 8))
-    
-    story.append(Paragraph("<b>Category B: Compliance & Exposure Mitigation (Sensitive Unowned PII/Confidential Assets)</b>", ParagraphStyle('Subheading2', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
-    story.append(Paragraph("High-exposure datasets containing sensitive tags or keywords that are missing technical owners:", body_style))
-    
+        remediation_table_data.append([
+            Paragraph("Storage / ROT", td_style),
+            Paragraph(f"<b>{row['name']}</b>", td_style),
+            Paragraph(f"Size: {size_gb:.1f} GB{last_acc_days}", td_style),
+            Paragraph("Decommission or archive storage", td_style),
+            Paragraph(f"Saves ${row['opportunity_storage_savings']:,.2f}/yr", td_bold_style)
+        ])
+        
+    # 2. Compliance Exposure (Sensitive unowned PII)
     risky_assets = scored_df[scored_df["security_risk_score"] > 40].sort_values("security_risk_score", ascending=False).head(3)
-    if not risky_assets.empty:
-        for idx, (_, row) in enumerate(risky_assets.iterrows(), 1):
-            canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-            queries = canon_asset.usage.query_count if canon_asset else 0
-            story.append(Paragraph(f"• <b>{row['name']}</b> (Risk: <b>{row['security_risk_score']:.1f}/100</b>) : Read queries: <b>{queries}/month</b>. Action: Assign Steward and apply classification tags to avoid compliance penalty risk.", bullet_style))
-    else:
-        story.append(Paragraph("• No high-risk compliance exposures detected.", bullet_style))
+    for _, row in risky_assets.iterrows():
+        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
+        queries = canon_asset.usage.query_count if canon_asset else 0
+        remediation_table_data.append([
+            Paragraph("Compliance / PII", td_style),
+            Paragraph(f"<b>{row['name']}</b>", td_style),
+            Paragraph(f"Risk: {row['security_risk_score']:.1f}/100<br/>Queries: {queries}/mo", td_style),
+            Paragraph("Assign Steward & classification tags", td_style),
+            Paragraph(f"Mitigates ${row['security_risk_score']*1500:,.2f} risk", td_bold_style)
+        ])
         
-    story.append(Spacer(1, 8))
-    
-    story.append(Paragraph("<b>Category C: Business Decision Quality (High-Usage Reporting with Poor Monitoring)</b>", ParagraphStyle('Subheading3', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
-    story.append(Paragraph("Critical dashboards and datasets used extensively by the business that have failing/unmonitored data quality rules:", body_style))
-    
+    # 3. Business Decision Quality (Low DQ)
     untrusted_assets = scored_df[(scored_df["governance_health_index"] < 60) & (scored_df["data_quality_score"] < 70)].sort_values("governance_health_index").head(3)
-    if not untrusted_assets.empty:
-        for idx, (_, row) in enumerate(untrusted_assets.iterrows(), 1):
-            canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-            queries = canon_asset.usage.query_count if canon_asset else 0
-            dq_pct = row["data_quality_score"]
-            story.append(Paragraph(f"• <b>{row['name']}</b> : Monthly queries: <b>{queries}</b> | DQ Pass Rate: <b>{dq_pct:.1f}%</b>. Action: Build data quality verification checks in data pipeline.", bullet_style))
-    else:
-        story.append(Paragraph("• No untrusted high-usage datasets detected.", bullet_style))
+    for _, row in untrusted_assets.iterrows():
+        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
+        queries = canon_asset.usage.query_count if canon_asset else 0
+        dq_pct = row["data_quality_score"]
+        remediation_table_data.append([
+            Paragraph("Trust / Low DQ", td_style),
+            Paragraph(f"<b>{row['name']}</b>", td_style),
+            Paragraph(f"DQ Pass Rate: {dq_pct:.1f}%<br/>Queries: {queries}/mo", td_style),
+            Paragraph("Implement validation rules in pipeline", td_style),
+            Paragraph("Avoids debug costs", td_bold_style)
+        ])
+        
+    if len(remediation_table_data) == 1:
+        remediation_table_data.append([
+            Paragraph("None", td_style),
+            Paragraph("No actions required", td_style),
+            Paragraph("-", td_style),
+            Paragraph("No actions required", td_style),
+            Paragraph("-", td_style)
+        ])
+        
+    t_remediation = Table(remediation_table_data, colWidths=[90, 110, 120, 110, 74])
+    t_remediation.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F7FAFC")]),
+    ]))
+    story.append(t_remediation)
+    story.append(Spacer(1, 15))
+
+    # Strengths and Gaps Section
+    story.append(Paragraph("4. Maturity Assessment Strengths & Gaps", heading_style))
+    story.append(Paragraph("<b>Key Governance Strengths (Green):</b>", td_bold_style))
+    for strength in reco_results["strengths"]:
+        story.append(Paragraph(f"• {strength}", bullet_style))
+    story.append(Spacer(1, 5))
+    
+    story.append(Paragraph("<b>Identified Governance Gaps (Amber/Red):</b>", td_bold_style))
+    for gap in reco_results["gaps"]:
+        story.append(Paragraph(f"• {gap}", bullet_style))
+    story.append(Spacer(1, 15))
+
+    # Top 3 Recommendations Section
+    story.append(Paragraph("5. Prioritized Action Plan & Recommendations", heading_style))
+    story.append(Paragraph("Actionable remediation roadmap to accelerate maturity and unlock business value:", body_style))
+    story.append(Spacer(1, 6))
+
+    for i, reco in enumerate(reco_results["recommendations"], 1):
+        reco_text = (
+            f"<b>Recommendation {i}: {reco['recommendation']}</b><br/>"
+            f"<i>Rationale:</i> {reco['rationale']}<br/>"
+            f"<i>Business Impact:</i> {reco['expected_business_impact']}<br/>"
+            f"<i>Maturity Improvement:</i> {reco['expected_maturity_improvement']}"
+        )
+        reco_table = Table([[Paragraph(reco_text, body_style)]], colWidths=[504])
+        reco_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F7FAFC")),
+            ('PADDING', (0,0), (-1,-1), 8),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ('LINELEFT', (0,0), (0,-1), 3, colors.HexColor("#3182CE")), # Blue accent left line
+        ]))
+        story.append(reco_table)
+        story.append(Spacer(1, 6))
         
     # 6. Appendix: ROI Methodology & Assumptions
     from reportlab.platypus import PageBreak
@@ -433,6 +531,24 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("2. <b>ROT Decommissioning</b>: Identified as size > 0, queries < 5/mo, and last accessed > 180 days. Savings = GB Size * $0.24/yr. Grounded in AWS/Azure storage tiers.", bullet_style))
     story.append(Paragraph("3. <b>DQ Incident Avoidance</b>: (Unmonitored baseline [4.0] - Current incidents) * $15k cost. Active DQ profiling drops current errors to 2.0 (for DQ >= 80%) or 0.0 (for DQ >= 95%). Grounded in Gartner data quality impact surveys.", bullet_style))
     story.append(Paragraph("4. <b>Risk Avoidance</b>: (Baseline breach prob. [5.0%] - Current prob.) * $150k breach penalty. Controls (ownership and classification) reduce probability to 1.0% (0.2% with active DQ checks). Grounded in IBM Security breach statistics and DAMA DMBOK principles.", bullet_style))
+    story.append(Paragraph("5. <b>Compute Optimization</b>: Snowflake credit waste avoided on bad/unoptimized queries, calculated based on the active warehouse sizes, average credit rates ($3.00/credit), and active DQ monitoring rules.", bullet_style))
+    story.append(Paragraph("6. <b>Net Program Value</b>: Net Value = Total Realized Savings - Annual Operating Cost.", bullet_style))
+    story.append(Paragraph("7. <b>Return on Investment (ROI) %</b>: ROI % = (Net Realized Program Value / Annual Operating Cost) * 100.", bullet_style))
+    story.append(Paragraph("8. <b>Unrealized Opportunity Value</b>: Sum of remaining discovery opportunity + DQ opportunity + Risk mitigation + ROT storage decommissioning savings.", bullet_style))
+    story.append(Spacer(1, 10))
+    
+    # Governance Maturity Scoring Formulas
+    story.append(Paragraph("<b>Discipline Maturity & Indicator Assessment Formulas</b>", ParagraphStyle('SubheadingAppendix3', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
+    story.append(Paragraph("• <b>Documentation Coverage %</b>: (Assets with description >= 50 characters / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
+    story.append(Paragraph("• <b>Ownership Assignment %</b>: (Assets with >= 1 owner / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
+    story.append(Paragraph("• <b>Glossary Linkage %</b>: (Assets with >= 1 glossary term / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
+    story.append(Paragraph("• <b>Classification Coverage %</b>: (Assets with >= 1 classification / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
+    story.append(Paragraph("• <b>DQ Rule Coverage %</b>: (Assets with >= 1 DQ rules run / Total Assets) * 100. Thresholds: [25, 50, 70, 85]%.", bullet_style))
+    story.append(Paragraph("• <b>DQ Pass Rate %</b>: (Total rules passed / Total rules run) * 100. Thresholds: [70, 80, 90, 95]%.", bullet_style))
+    story.append(Paragraph("• <b>Maturity Scoring Step-mapping</b>: Raw percentages map to 1-5 levels based on the thresholds: Score = 1.0 (if &lt; thresholds[0]), 2.0 (if &lt; thresholds[1]), 3.0 (if &lt; thresholds[2]), 4.0 (if &lt; thresholds[3]), 5.0 (if &gt;= thresholds[3]).", bullet_style))
+    story.append(Paragraph("• <b>Metadata Management Maturity</b>: Weighted average of its indicators: Documentation (30%), Ownership (30%), Glossary Linkage (20%), and Classification (20%).", bullet_style))
+    story.append(Paragraph("• <b>Data Quality Maturity</b>: Weighted average of its indicators: Rule Coverage (40%) and Pass Rate (60%).", bullet_style))
+    story.append(Paragraph("• <b>Overall Maturity Index</b>: Weighted rollup of Metadata Management (50%) and Data Quality (50%).", bullet_style))
     
     # Build Document PDF
     doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)
