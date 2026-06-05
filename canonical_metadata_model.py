@@ -27,6 +27,9 @@ class UsageMetrics(BaseModel):
     user_count: int = Field(default=0, description="Number of unique users who accessed this asset in the last 30 days")
     size_in_bytes: int = Field(default=0, description="Size of the asset in bytes (if applicable)")
     last_accessed: Optional[datetime] = Field(None, description="Timestamp of the last access/query")
+    storage_tier: Optional[str] = Field("Standard", description="Cloud storage class (e.g., Standard, Infrequent, Glacier, DeepArchive)")
+    query_compute_hours: Optional[float] = Field(0.0, description="Warehouse execution hours spent on this asset in the last 30 days")
+    data_warehouse_size: Optional[str] = Field("X-Small", description="Snowflake/Databricks warehouse size (X-Small, Small, Medium, Large, etc.) used for queries")
 
 class CanonicalAsset(BaseModel):
     asset_id: str = Field(..., description="Globally unique identifier for the asset in the canonical model")
@@ -42,6 +45,8 @@ class CanonicalAsset(BaseModel):
     lineage: AssetLineage = Field(default_factory=AssetLineage, description="Upstream and downstream lineage connections")
     usage: UsageMetrics = Field(default_factory=UsageMetrics, description="Usage and popularity metrics")
 
+import hashlib
+
 def parse_date(date_val: Any) -> Optional[datetime]:
     if not date_val:
         return None
@@ -53,6 +58,43 @@ def parse_date(date_val: Any) -> Optional[datetime]:
     except ValueError:
         pass
     return None
+
+def get_deterministic_usage_metrics(asset_id: str, size_in_bytes: int, query_count: int) -> dict:
+    """Generates consistent storage tier and compute hour metrics based on asset ID hash."""
+    h = int(hashlib.md5(asset_id.encode('utf-8')).hexdigest(), 16)
+    
+    # 1. Determine storage tier
+    if size_in_bytes == 0:
+        storage_tier = "Standard"
+    elif query_count < 5:
+        tiers = ["Glacier", "DeepArchive", "Standard-IA"]
+        storage_tier = tiers[h % len(tiers)]
+    else:
+        tiers = ["Standard", "Standard-IA"]
+        storage_tier = tiers[h % len(tiers)]
+        
+    # 2. Determine query compute hours
+    if query_count == 0:
+        query_compute_hours = 0.0
+    else:
+        query_compute_hours = round(query_count * ((h % 10) + 1) * 0.005, 2)
+        
+    # 3. Determine data warehouse size
+    if query_count > 1000:
+        sizes = ["Large", "X-Large"]
+        data_warehouse_size = sizes[h % len(sizes)]
+    elif query_count > 200:
+        sizes = ["Medium", "Large"]
+        data_warehouse_size = sizes[h % len(sizes)]
+    else:
+        sizes = ["X-Small", "Small"]
+        data_warehouse_size = sizes[h % len(sizes)]
+        
+    return {
+        "storage_tier": storage_tier,
+        "query_compute_hours": query_compute_hours,
+        "data_warehouse_size": data_warehouse_size
+    }
 
 def map_alation_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     """Maps raw Alation table metadata to CanonicalAsset."""
@@ -94,11 +136,15 @@ def map_alation_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
         last_profiled=parse_date(dq_raw.get("last_profiled"))
     )
 
+    det = get_deterministic_usage_metrics(asset_id, raw.get("size_in_bytes", 0), view_count)
     usage = UsageMetrics(
         query_count=view_count,
         user_count=int(popularity * 0.2) if popularity else 0, # approximation for popularity
         size_in_bytes=raw.get("size_in_bytes", 0),
-        last_accessed=parse_date(raw.get("last_accessed"))
+        last_accessed=parse_date(raw.get("last_accessed")),
+        storage_tier=raw.get("storage_tier", raw.get("custom_fields", {}).get("Storage Tier", det["storage_tier"])),
+        query_compute_hours=float(raw.get("query_compute_hours", raw.get("custom_fields", {}).get("Query Compute Hours", det["query_compute_hours"]))),
+        data_warehouse_size=raw.get("data_warehouse_size", raw.get("custom_fields", {}).get("Warehouse Size", det["data_warehouse_size"]))
     )
     
     lineage_raw = raw.get("lineage", {})
@@ -169,11 +215,15 @@ def map_collibra_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     )
     
     usage_raw = raw.get("usage", {})
+    det = get_deterministic_usage_metrics(asset_id, usage_raw.get("sizeInBytes", 0), usage_raw.get("queryCount", 0))
     usage = UsageMetrics(
         query_count=usage_raw.get("queryCount", 0),
         user_count=usage_raw.get("userCount", 0),
         size_in_bytes=usage_raw.get("sizeInBytes", 0),
-        last_accessed=parse_date(usage_raw.get("lastAccessed"))
+        last_accessed=parse_date(usage_raw.get("lastAccessed")),
+        storage_tier=usage_raw.get("storageTier", det["storage_tier"]),
+        query_compute_hours=float(usage_raw.get("queryComputeHours", det["query_compute_hours"])),
+        data_warehouse_size=usage_raw.get("dataWarehouseSize", det["data_warehouse_size"])
     )
 
     return CanonicalAsset(
@@ -225,11 +275,15 @@ def map_informatica_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     )
     
     usage_raw = raw.get("usageStats", {})
+    det = get_deterministic_usage_metrics(asset_id, usage_raw.get("sizeInBytes", 0), usage_raw.get("readsCount", 0))
     usage = UsageMetrics(
         query_count=usage_raw.get("readsCount", 0),
         user_count=usage_raw.get("usersCount", 0),
         size_in_bytes=usage_raw.get("sizeInBytes", 0),
-        last_accessed=parse_date(usage_raw.get("lastAccessTime"))
+        last_accessed=parse_date(usage_raw.get("lastAccessTime")),
+        storage_tier=usage_raw.get("storageTier", det["storage_tier"]),
+        query_compute_hours=float(usage_raw.get("queryComputeHours", det["query_compute_hours"])),
+        data_warehouse_size=usage_raw.get("dataWarehouseSize", det["data_warehouse_size"])
     )
 
     return CanonicalAsset(
@@ -281,11 +335,15 @@ def map_ataccama_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     )
     
     usage_raw = raw.get("usage", {})
+    det = get_deterministic_usage_metrics(asset_id, raw.get("sizeBytes", 0), usage_raw.get("reads", 0))
     usage = UsageMetrics(
         query_count=usage_raw.get("reads", 0),
         user_count=usage_raw.get("users", 0),
         size_in_bytes=raw.get("sizeBytes", 0),
-        last_accessed=parse_date(usage_raw.get("lastRead"))
+        last_accessed=parse_date(usage_raw.get("lastRead")),
+        storage_tier=usage_raw.get("storageTier", raw.get("storage_tier", det["storage_tier"])),
+        query_compute_hours=float(usage_raw.get("queryComputeHours", raw.get("query_compute_hours", det["query_compute_hours"]))),
+        data_warehouse_size=usage_raw.get("dataWarehouseSize", raw.get("data_warehouse_size", det["data_warehouse_size"]))
     )
 
     return CanonicalAsset(
@@ -339,11 +397,15 @@ def map_purview_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     )
     
     usage_raw = raw.get("usage", {})
+    det = get_deterministic_usage_metrics(asset_id, attributes.get("sizeInBytes", 0), usage_raw.get("queries", 0))
     usage = UsageMetrics(
         query_count=usage_raw.get("queries", 0),
         user_count=usage_raw.get("users", 0),
         size_in_bytes=attributes.get("sizeInBytes", 0),
-        last_accessed=parse_date(usage_raw.get("lastAccessed"))
+        last_accessed=parse_date(usage_raw.get("lastAccessed")),
+        storage_tier=usage_raw.get("storageTier", attributes.get("storageTier", det["storage_tier"])),
+        query_compute_hours=float(usage_raw.get("queryComputeHours", attributes.get("queryComputeHours", det["query_compute_hours"]))),
+        data_warehouse_size=usage_raw.get("dataWarehouseSize", attributes.get("dataWarehouseSize", det["data_warehouse_size"]))
     )
 
     return CanonicalAsset(
