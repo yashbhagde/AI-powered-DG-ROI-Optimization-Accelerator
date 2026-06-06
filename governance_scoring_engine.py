@@ -130,70 +130,66 @@ class GovernanceScoringEngine:
             except Exception as e:
                 print(f"[Gemini API] Error initializing client: {e}. Falling back to rule-based heuristics.")
 
-    async def calculate_documentation_score_async(self, asset: CanonicalAsset) -> float:
-        """
-        Calculates documentation score between 0 and 100 asynchronously.
-        Uses Gemini API if available to semantically score documentation completeness.
-        """
-        if not asset.description or not asset.description.strip():
-            score = 0.0
-        elif self.use_gemini:
-            try:
-                await self.rate_limiter.check_and_throttle(estimated_tokens=350)
-                from google.genai import types
-                prompt = f"""
-                You are a Data Governance metadata evaluator. Analyze the metadata of the following data asset and rate its documentation completeness, semantic utility, and technical clarity on a scale of 0 to 100.
+    def score_asset_heuristics(self, asset: CanonicalAsset) -> Dict[str, Any]:
+        """Calculates documentation and security risk scores using rule-based heuristics."""
+        # 1. Documentation Score Heuristic
+        doc_score = 40.0 + (10.0 if asset.description and len(asset.description.strip()) > 50 else 0.0)
+        if asset.owners:
+            doc_score += 30.0
+        if asset.glossary_terms:
+            doc_score += 20.0
+        doc_score = min(doc_score, 100.0)
 
-                Asset Name: {asset.name}
-                Asset Type: {asset.asset_type}
-                Description: {asset.description}
-                Owners: {[o.name for o in asset.owners]}
-                Glossary Terms: {asset.glossary_terms}
-                Classifications: {asset.classifications}
+        # 2. Security Risk Score Heuristic
+        is_sensitive = False
+        sensitive_keywords = ["ssn", "payroll", "salary", "bank", "credit", "phone", "email", "address", "tax", "pii", "phi"]
+        for c in asset.classifications:
+            if any(term in c.lower() for term in ["pii", "phi", "confidential", "restricted", "sensitive"]):
+                is_sensitive = True
+                break
+        name_desc = ((asset.name or "") + " " + (asset.description or "")).lower()
+        if any(keyword in name_desc for keyword in sensitive_keywords):
+            is_sensitive = True
 
-                Scoring Guidelines (0-100):
-                - 80-100: Excellent documentation. The description clearly explains business purpose, context, owners are documented, and key glossary terms/classifications are aligned.
-                - 50-79: Partially documented. Vague or short description, or missing owners/glossary linkages.
-                - 0-49: Poorly documented. Empty description, obvious placeholder, or lacks any context and ownership metadata.
-
-                Return ONLY a JSON object with keys:
-                - "score": integer between 0 and 100
-                - "reason": a short explanation of the score
-
-                JSON:
-                """
-                response = await self.client.aio.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.0
-                    )
-                )
-                data = json.loads(response.text)
-                score = float(data.get("score", 0.0))
-                score = max(0.0, min(100.0, score))
-                print(f"[Gemini API] Evaluated documentation for '{asset.name}': {score}/100 (Reason: {data.get('reason')})")
-            except Exception as e:
-                print(f"[Gemini API Exception] Falling back to rule-based heuristics for '{asset.name}': {e}")
-                # Fallback heuristic
-                score = 40.0 + (10.0 if len(asset.description.strip()) > 50 else 0.0)
-                if asset.owners:
-                    score += 30.0
-                if asset.glossary_terms:
-                    score += 20.0
+        risk = 0.0
+        if is_sensitive:
+            risk += 20.0  # Base risk
+            if not asset.owners:
+                risk += 40.0
+            if not asset.classifications:
+                risk += 20.0
+            if asset.data_quality.rules_run == 0:
+                risk += 20.0
+            elif asset.data_quality.pass_rate < 0.8:
+                risk += 15.0
         else:
-            # Fallback heuristic
-            score = 40.0 + (10.0 if len(asset.description.strip()) > 50 else 0.0)
-            if asset.owners:
-                score += 30.0
-            if asset.glossary_terms:
-                score += 20.0
+            if not asset.owners:
+                risk += 15.0
+            if asset.data_quality.rules_run == 0:
+                risk += 10.0
+        risk_score = min(risk, 100.0)
 
-        return score
+        dq_score = self.calculate_data_quality_score(asset)
+        lineage_score = self.calculate_lineage_score(asset)
+        ghi = self.calculate_governance_health_index(doc_score, dq_score, lineage_score, risk_score)
+
+        return {
+            "asset_id": asset.asset_id,
+            "name": asset.name,
+            "asset_type": asset.asset_type,
+            "source_platform": asset.source_platform,
+            "documentation_score": doc_score,
+            "data_quality_score": dq_score,
+            "lineage_score": lineage_score,
+            "security_risk_score": risk_score,
+            "governance_health_index": ghi
+        }
+
+    async def calculate_documentation_score_async(self, asset: CanonicalAsset) -> float:
+        res = await self.score_asset_async(asset)
+        return res["documentation_score"]
 
     def calculate_documentation_score(self, asset: CanonicalAsset) -> float:
-        # Fallback wrapper for synchronous usage if called directly
         loop = asyncio.new_event_loop()
         try:
             return loop.run_until_complete(self.calculate_documentation_score_async(asset))
@@ -214,98 +210,10 @@ class GovernanceScoringEngine:
         return score
 
     async def calculate_security_risk_score_async(self, asset: CanonicalAsset) -> float:
-        """
-        Calculates a security/privacy/policy risk score between 0 and 100 (where 100 is highest risk) asynchronously.
-        Uses Gemini API if available to perform context-aware classification and risk scoring.
-        """
-        if self.use_gemini:
-            try:
-                await self.rate_limiter.check_and_throttle(estimated_tokens=350)
-                from google.genai import types
-                prompt = f"""
-                You are a Data Compliance and Risk Officer. Analyze the metadata of the following data asset and rate its security, privacy, and compliance risk on a scale of 0 to 100 (where 100 is highest risk). Also identify if it contains sensitive data (PII, PHI, PCI, or Confidential information).
-
-                Asset Name: {asset.name}
-                Asset Type: {asset.asset_type}
-                Description: {asset.description}
-                Current Classifications: {asset.classifications}
-                Has Owners: {len(asset.owners) > 0} (Owners: {[o.name for o in asset.owners]})
-                Data Quality Pass Rate: {asset.data_quality.pass_rate if asset.data_quality.rules_run > 0 else "N/A (No rules run)"}
-                Lineage: {len(asset.lineage.upstream_assets)} upstream / {len(asset.lineage.downstream_assets)} downstream assets
-
-                Scoring Guidelines (0-100):
-                - 70-100 (High Risk): Contains sensitive data (PII, PHI, financial records) but lacks ownership, proper classifications, or data quality rules.
-                - 30-69 (Medium Risk): Contains sensitive data but is well-governed (has owner and high DQ pass rate), OR is non-sensitive but completely unowned and unmonitored.
-                - 0-29 (Low Risk): Non-sensitive, well-documented, owned, and actively monitored asset.
-
-                Return ONLY a JSON object with keys:
-                - "is_sensitive": boolean
-                - "sensitive_type": string or null (e.g. "PII", "PHI", "PCI", "Confidential")
-                - "risk_score": integer between 0 and 100
-                - "reason": a short explanation of the score and sensitivity assessment
-
-                JSON:
-                """
-                response = await self.client.aio.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.0
-                    )
-                )
-                data = json.loads(response.text)
-                is_sensitive = bool(data.get("is_sensitive", False))
-                # Add classification dynamically if it is sensitive
-                if is_sensitive and data.get("sensitive_type"):
-                    sens_type = data.get("sensitive_type")
-                    if sens_type not in asset.classifications:
-                        asset.classifications.append(sens_type)
-                
-                risk = float(data.get("risk_score", 0.0))
-                risk = max(0.0, min(100.0, risk))
-                print(f"[Gemini API] Evaluated risk for '{asset.name}': {risk}/100 (Reason: {data.get('reason')})")
-                return risk
-            except Exception as e:
-                print(f"[Gemini API Exception] Risk check fallback for '{asset.name}': {e}")
-                
-        # Heuristic fallback if Gemini is not used or API call fails
-        is_sensitive = False
-        sensitive_keywords = ["ssn", "payroll", "salary", "bank", "credit", "phone", "email", "address", "tax", "pii", "phi"]
-        for c in asset.classifications:
-            if any(term in c.lower() for term in ["pii", "phi", "confidential", "restricted", "sensitive"]):
-                is_sensitive = True
-                break
-        name_desc = (asset.name + " " + asset.description).lower()
-        if any(keyword in name_desc for keyword in sensitive_keywords):
-            is_sensitive = True
-            
-        risk = 0.0
-        if is_sensitive:
-            risk += 20.0  # Base risk for holding sensitive data
-            
-            if not asset.owners:
-                risk += 40.0
-                
-            # Check if it has explicit tags
-            if not asset.classifications:
-                risk += 20.0
-                
-            if asset.data_quality.rules_run == 0:
-                risk += 20.0
-            elif asset.data_quality.pass_rate < 0.8:
-                risk += 15.0
-        else:
-            # Non-sensitive asset risk
-            if not asset.owners:
-                risk += 15.0
-            if asset.data_quality.rules_run == 0:
-                risk += 10.0
-                
-        return min(risk, 100.0)
+        res = await self.score_asset_async(asset)
+        return res["security_risk_score"]
 
     def calculate_security_risk_score(self, asset: CanonicalAsset) -> float:
-        # Fallback wrapper for synchronous usage if called directly
         loop = asyncio.new_event_loop()
         try:
             return loop.run_until_complete(self.calculate_security_risk_score_async(asset))
@@ -320,41 +228,134 @@ class GovernanceScoringEngine:
                inverted_risk * self.risk_weight)
         return ghi
 
+    async def score_assets_batch_async(self, assets: List[CanonicalAsset]) -> List[Dict[str, Any]]:
+        """Scores a batch of canonical assets concurrently using Gemini API."""
+        if not self.use_gemini:
+            return [self.score_asset_heuristics(asset) for asset in assets]
+
+        try:
+            batch_data = []
+            for asset in assets:
+                batch_data.append({
+                    "asset_id": asset.asset_id,
+                    "name": asset.name,
+                    "asset_type": asset.asset_type,
+                    "description": asset.description or "",
+                    "owners": [o.name for o in asset.owners],
+                    "glossary_terms": asset.glossary_terms,
+                    "classifications": asset.classifications,
+                    "rules_run": asset.data_quality.rules_run if asset.data_quality else 0,
+                    "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0,
+                    "upstream_count": len(asset.lineage.upstream_assets) if asset.lineage else 0,
+                    "downstream_count": len(asset.lineage.downstream_assets) if asset.lineage else 0
+                })
+
+            prompt = f"""
+            You are a Data Governance compliance officer and metadata auditor.
+            Evaluate the following batch of data assets and return a score and assessment for each asset.
+            
+            For each asset, you must calculate:
+            1. "documentation_score" (0-100):
+               - 80-100: Excellent. Clear context, explain purpose, owners are documented, and key glossary terms/classifications are aligned.
+               - 50-79: Partially documented. Vague/short description or missing ownership.
+               - 0-49: Poorly documented. Empty, placeholder, or lacks any context.
+            2. "is_sensitive" (boolean):
+               - true if the asset contains sensitive/restricted/internal corporate, privacy, financial, PII, PHI, or PCI data.
+            3. "sensitive_type" (string or null):
+               - Type of sensitivity (e.g. "PII", "PHI", "PCI", "Confidential", or null if not sensitive).
+            4. "security_risk_score" (0-100):
+               - 70-100 (High Risk): Contains sensitive data but lacks ownership, tags, or validation rules.
+               - 30-69 (Medium Risk): Contains sensitive data but is well-governed, OR is non-sensitive but completely unowned and unmonitored.
+               - 0-29 (Low Risk): Non-sensitive, well-documented, owned, and actively monitored.
+               
+            Assets Batch:
+            {json.dumps(batch_data, indent=2)}
+            
+            Return ONLY a JSON object with key "results" containing a list of objects, one for each asset in the same order. Each object must have:
+            - "asset_id": string
+            - "documentation_score": integer
+            - "is_sensitive": boolean
+            - "sensitive_type": string or null
+            - "security_risk_score": integer
+            - "doc_reason": short reason string
+            - "risk_reason": short reason string
+            """
+
+            # Dynamic rate limiter check based on batch size
+            await self.rate_limiter.check_and_throttle(estimated_tokens=500 + len(assets) * 100)
+            from google.genai import types
+
+            response = await self.client.aio.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.0
+                )
+            )
+
+            data = json.loads(response.text)
+            results = data.get("results", [])
+            results_map = {r["asset_id"]: r for r in results if "asset_id" in r}
+
+            scored_assets = []
+            for asset in assets:
+                r = results_map.get(asset.asset_id)
+                if r:
+                    doc_score = max(0.0, min(100.0, float(r.get("documentation_score", 50.0))))
+                    risk_score = max(0.0, min(100.0, float(r.get("security_risk_score", 50.0))))
+                    is_sensitive = bool(r.get("is_sensitive", False))
+                    sensitive_type = r.get("sensitive_type")
+
+                    if is_sensitive and sensitive_type:
+                        if sensitive_type not in asset.classifications:
+                            asset.classifications.append(sensitive_type)
+
+                    dq_score = self.calculate_data_quality_score(asset)
+                    lineage_score = self.calculate_lineage_score(asset)
+                    ghi = self.calculate_governance_health_index(doc_score, dq_score, lineage_score, risk_score)
+
+                    print(f"[Gemini Batch API] Evaluated '{asset.name}': Doc={doc_score}/100, Risk={risk_score}/100 (Reason: {r.get('doc_reason')})")
+
+                    scored_assets.append({
+                        "asset_id": asset.asset_id,
+                        "name": asset.name,
+                        "asset_type": asset.asset_type,
+                        "source_platform": asset.source_platform,
+                        "documentation_score": doc_score,
+                        "data_quality_score": dq_score,
+                        "lineage_score": lineage_score,
+                        "security_risk_score": risk_score,
+                        "governance_health_index": ghi
+                    })
+                else:
+                    scored_assets.append(self.score_asset_heuristics(asset))
+            return scored_assets
+
+        except Exception as e:
+            print(f"[Gemini Batch API Exception] Falling back to heuristics for batch: {e}")
+            return [self.score_asset_heuristics(asset) for asset in assets]
+
     async def score_asset_async(self, asset: CanonicalAsset) -> Dict[str, Any]:
-        """Scores a single canonical asset asynchronously."""
-        # Execute API requests concurrently for the same asset
-        doc_score, risk_score = await asyncio.gather(
-            self.calculate_documentation_score_async(asset),
-            self.calculate_security_risk_score_async(asset)
-        )
-        dq_score = self.calculate_data_quality_score(asset)
-        lineage_score = self.calculate_lineage_score(asset)
-        ghi = self.calculate_governance_health_index(doc_score, dq_score, lineage_score, risk_score)
-        
-        return {
-            "asset_id": asset.asset_id,
-            "name": asset.name,
-            "asset_type": asset.asset_type,
-            "source_platform": asset.source_platform,
-            "documentation_score": doc_score,
-            "data_quality_score": dq_score,
-            "lineage_score": lineage_score,
-            "security_risk_score": risk_score,
-            "governance_health_index": ghi
-        }
+        """Scores a single canonical asset asynchronously by wrapping it in a batch of 1."""
+        results = await self.score_assets_batch_async([asset])
+        return results[0]
 
     def score_asset(self, asset: CanonicalAsset) -> Dict[str, Any]:
-        # Fallback wrapper for synchronous single scoring
         loop = asyncio.new_event_loop()
         try:
             return loop.run_until_complete(self.score_asset_async(asset))
         finally:
             loop.close()
 
-    async def _score_all_assets_async(self, assets: List[CanonicalAsset]) -> List[Dict[str, Any]]:
-        # Run all scoring tasks concurrently
-        tasks = [self.score_asset_async(asset) for asset in assets]
-        return await asyncio.gather(*tasks)
+    async def _score_all_assets_async(self, assets: List[CanonicalAsset], batch_size: int = 15) -> List[Dict[str, Any]]:
+        """Splits assets into batches and scores them sequentially."""
+        all_results = []
+        for i in range(0, len(assets), batch_size):
+            batch = assets[i:i + batch_size]
+            batch_results = await self.score_assets_batch_async(batch)
+            all_results.extend(batch_results)
+        return all_results
 
     def score_all_assets(self, assets: List[CanonicalAsset]) -> pd.DataFrame:
         """Scores a list of assets concurrently using asyncio and returns a pandas DataFrame."""
