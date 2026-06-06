@@ -99,6 +99,10 @@ class GovernanceScoringEngine:
         
         # Initialize Gemini Client if API key is provided
         self.api_key = os.getenv("GEMINI_API_KEY")
+        if self.api_key:
+            print(f"Loaded Gemini key prefix: {self.api_key[:12]}")
+        else:
+            print("No Gemini key loaded")
         self.use_gemini = False
         
         # 60% Throttling Limits
