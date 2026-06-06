@@ -236,3 +236,102 @@ class MaturityAssessmentEngine:
             "gaps": gaps,
             "recommendations": recommendations
         }
+
+    def generate_discipline_details(self, assessment: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+        raw_metrics = assessment["audit_trail"]["raw_metrics"]
+        disciplines = assessment["disciplines"]
+
+        # Metadata Management Reasoning, Strengths/Gaps, and Actions
+        mm_score = disciplines["metadata_management"]["score"]
+        mm_doc = raw_metrics.get("documentation_coverage", 0.0)
+        mm_own = raw_metrics.get("ownership_coverage", 0.0)
+        mm_class = raw_metrics.get("classification_coverage", 0.0)
+        mm_gloss = raw_metrics.get("glossary_linkage", 0.0)
+
+        # Reasoning:
+        mm_reasoning = (
+            f"{mm_doc:.0f}% documentation and {mm_class:.0f}% classification reflect solid "
+            f"cataloging practices. However, only {mm_own:.0f}% asset ownership signals "
+            f"significant accountability gaps. Business term glossary linkage remains at {mm_gloss:.0f}%."
+        )
+
+        mm_strengths = []
+        mm_gaps = []
+
+        if mm_doc >= 75:
+            mm_strengths.append(f"{mm_doc:.0f}% documented assets")
+        else:
+            mm_gaps.append(f"Only {mm_doc:.0f}% documented assets")
+            
+        if mm_class >= 75:
+            mm_strengths.append(f"{mm_class:.0f}% asset classification")
+        else:
+            mm_gaps.append(f"Only {mm_class:.0f}% classification coverage")
+            
+        if mm_own >= 75:
+            mm_strengths.append(f"{mm_own:.0f}% ownership assigned")
+        else:
+            mm_gaps.append(f"Only {mm_own:.0f}% ownership assigned")
+            
+        if mm_own < 60:
+            mm_gaps.append("Steward coverage — critical gap")
+            
+        if mm_gloss < 75:
+            mm_gaps.append(f"{100 - mm_gloss:.0f}% of business terms unmapped")
+        else:
+            mm_strengths.append(f"{mm_gloss:.0f}% glossary term linkage")
+
+        mm_actions = [
+            "1. Drive steward assignment to >=80% via targeted ownership campaign",
+            "2. Complete business glossary term mapping for remaining unmapped assets",
+            "3. Mandate owner assignment as a condition for asset publication"
+        ]
+
+        # Data Quality Reasoning, Strengths/Gaps, and Actions
+        dq_score = disciplines["data_quality"]["score"]
+        dq_rule = raw_metrics.get("rule_coverage", 0.0)
+        dq_pass = raw_metrics.get("pass_rate", 0.0)
+
+        dq_reasoning = (
+            f"Only {dq_rule:.0f}% of assets have active DQ rules — well below the industry benchmark "
+            f"of 70%+. While data quality pipelines are running, coverage of critical assets "
+            f"remains insufficient. A {100 - dq_pass:.0f}% DQ failure rate is materially elevated."
+        )
+
+        dq_strengths = ["Active DQ monitors deployed"]
+        dq_gaps = []
+
+        if dq_rule >= 50:
+            dq_strengths.append("Critical asset DQ coverage configured")
+        else:
+            dq_gaps.append(f"Only {dq_rule:.0f}% assets have DQ rules")
+            
+        dq_strengths.append("DQ validation rules active")
+        
+        if dq_pass >= 95:
+            dq_strengths.append(f"{dq_pass:.0f}% DQ pass rate achieved")
+        else:
+            dq_gaps.append(f"{100 - dq_pass:.0f}% DQ failure rate — requires remediation")
+
+        dq_actions = [
+            "1. Prioritize DQ rule coverage for 100% of critical data elements",
+            "2. Investigate and resolve root causes of validation failures",
+            "3. Expand DQ rule coverage to >=70% across all cataloged assets"
+        ]
+
+        return {
+            "metadata_management": {
+                "score_str": f"Score: {mm_score:.1f} / 5.0",
+                "reasoning": mm_reasoning,
+                "strengths": mm_strengths,
+                "gaps": mm_gaps,
+                "actions": mm_actions
+            },
+            "data_quality": {
+                "score_str": f"Score: {dq_score:.1f} / 5.0",
+                "reasoning": dq_reasoning,
+                "strengths": dq_strengths,
+                "gaps": dq_gaps,
+                "actions": dq_actions
+            }
+        }

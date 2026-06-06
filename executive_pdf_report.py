@@ -6,7 +6,7 @@ from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from canonical_metadata_model import map_raw_to_canonical
@@ -73,6 +73,7 @@ def build_pdf_report(platform, input_file, output_file):
     maturity_engine = MaturityAssessmentEngine()
     maturity_results = maturity_engine.assess_maturity(canonical_assets)
     reco_results = maturity_engine.generate_recommendations_and_gaps(maturity_results)
+    discipline_details = maturity_engine.generate_discipline_details(maturity_results)
     
     # Aggregated calculations
     total_assets = len(canonical_assets)
@@ -301,7 +302,40 @@ def build_pdf_report(platform, input_file, output_file):
     
     t_consolidated = Table(consolidated_dashboard_data, colWidths=[220, 60, 120, 104])
     t_consolidated.setStyle(TableStyle(table_styles))
-    story.append(t_consolidated)
+    
+    # Legend box for Status and Colors
+    legend_style = ParagraphStyle(
+        'LegendStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#4A5568")
+    )
+    legend_data = [
+        [
+            Paragraph("<b>Pillar Status Legend:</b>", legend_style),
+            Paragraph("<font color='#48BB78'>■</font> <b>Optimized</b> (Score &ge; 4.0)", legend_style),
+            Paragraph("<font color='#D69E2E'>■</font> <b>Amber</b> (Score 2.5 - 3.9)", legend_style),
+            Paragraph("<font color='#F56565'>■</font> <b>Action Needed</b> (Score &lt; 2.5)", legend_style)
+        ],
+        [
+            Paragraph("<b>Indicator Status Legend:</b>", legend_style),
+            Paragraph("<font color='#48BB78'>■</font> <b>Green</b> (Target Met)", legend_style),
+            Paragraph("<font color='#D69E2E'>■</font> <b>Amber</b> (Warning)", legend_style),
+            Paragraph("<font color='#F56565'>■</font> <b>Red</b> (Critical Gap)", legend_style)
+        ]
+    ]
+    t_legend = Table(legend_data, colWidths=[120, 128, 128, 128])
+    t_legend.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F7FAFC")),
+        ('PADDING', (0,0), (-1,-1), 5),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+    ]))
+    
+    story.append(KeepTogether([t_consolidated, Spacer(1, 8), t_legend]))
     story.append(Spacer(1, 15))
     
     # 4. Program Financial Performance Section
@@ -362,104 +396,137 @@ def build_pdf_report(platform, input_file, output_file):
         ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
         ('BACKGROUND', (0,6), (-1,7), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
     ]))
-    story.append(t_financial)
+    story.append(KeepTogether(t_financial))
     story.append(Spacer(1, 15))
     
-    # 5. Remediation Opportunities Section
-    story.append(Paragraph("3. Executive Action Plan & Remediation Pipeline", heading_style))
-    story.append(Paragraph("The engine has identified key prioritized actions to reduce costs and secure sensitive corporate data:", body_style))
-    story.append(Spacer(1, 6))
-    
-    remediation_table_data = [
-        [
-            Paragraph("Category", th_style), 
-            Paragraph("Asset Name", th_style), 
-            Paragraph("Risk / Telemetry Details", th_style), 
-            Paragraph("Recommended Action", th_style), 
-            Paragraph("Value Impact", th_style)
-        ]
-    ]
-    
-    # 1. ROT Assets (Storage Cost Optimization)
-    rot_assets = roi_df[roi_df["is_rot"] == True].sort_values("opportunity_storage_savings", ascending=False).head(3)
-    for _, row in rot_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        size_gb = (canon_asset.usage.size_in_bytes / (1024**3)) if canon_asset else 0.0
-        last_acc_days = ""
-        if canon_asset and canon_asset.usage.last_accessed:
-            delta = datetime.now() - canon_asset.usage.last_accessed.replace(tzinfo=None)
-            last_acc_days = f" ({delta.days}d stale)"
-        
-        remediation_table_data.append([
-            Paragraph("Storage / ROT", td_style),
-            Paragraph(f"<b>{row['name']}</b>", td_style),
-            Paragraph(f"Size: {size_gb:.1f} GB{last_acc_days}", td_style),
-            Paragraph("Decommission or archive storage", td_style),
-            Paragraph(f"Saves ${row['opportunity_storage_savings']:,.2f}/yr", td_bold_style)
-        ])
-        
-    # 2. Compliance Exposure (Sensitive unowned PII)
-    risky_assets = scored_df[scored_df["security_risk_score"] > 40].sort_values("security_risk_score", ascending=False).head(3)
-    for _, row in risky_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        queries = canon_asset.usage.query_count if canon_asset else 0
-        remediation_table_data.append([
-            Paragraph("Compliance / PII", td_style),
-            Paragraph(f"<b>{row['name']}</b>", td_style),
-            Paragraph(f"Risk: {row['security_risk_score']:.1f}/100<br/>Queries: {queries}/mo", td_style),
-            Paragraph("Assign Steward & classification tags", td_style),
-            Paragraph(f"Mitigates ${row['security_risk_score']*1500:,.2f} risk", td_bold_style)
-        ])
-        
-    # 3. Business Decision Quality (Low DQ)
-    untrusted_assets = scored_df[(scored_df["governance_health_index"] < 60) & (scored_df["data_quality_score"] < 70)].sort_values("governance_health_index").head(3)
-    for _, row in untrusted_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        queries = canon_asset.usage.query_count if canon_asset else 0
-        dq_pct = row["data_quality_score"]
-        remediation_table_data.append([
-            Paragraph("Trust / Low DQ", td_style),
-            Paragraph(f"<b>{row['name']}</b>", td_style),
-            Paragraph(f"DQ Pass Rate: {dq_pct:.1f}%<br/>Queries: {queries}/mo", td_style),
-            Paragraph("Implement validation rules in pipeline", td_style),
-            Paragraph("Avoids debug costs", td_bold_style)
-        ])
-        
-    if len(remediation_table_data) == 1:
-        remediation_table_data.append([
-            Paragraph("None", td_style),
-            Paragraph("No actions required", td_style),
-            Paragraph("-", td_style),
-            Paragraph("No actions required", td_style),
-            Paragraph("-", td_style)
-        ])
-        
-    t_remediation = Table(remediation_table_data, colWidths=[90, 110, 120, 110, 74])
-    t_remediation.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('PADDING', (0,0), (-1,-1), 5),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F7FAFC")]),
-    ]))
-    story.append(t_remediation)
-    story.append(Spacer(1, 15))
+    # Define styles for the Domain Detail Section
+    subheading_style = ParagraphStyle(
+        'SubheadingCustom',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=11,
+        leading=14,
+        textColor=colors.HexColor("#1A365D"),
+    )
+    score_style = ParagraphStyle(
+        'ScoreCustom',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=11,
+        leading=14,
+        alignment=2 # Right aligned
+    )
+    col_header_style = ParagraphStyle(
+        'ColHeader',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#718096"),
+        spaceAfter=4
+    )
+    col_body_style = ParagraphStyle(
+        'ColBody',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8.5,
+        leading=12,
+        textColor=colors.HexColor("#2D3748")
+    )
 
-    # Strengths and Gaps Section
-    story.append(Paragraph("4. Maturity Assessment Strengths & Gaps", heading_style))
-    story.append(Paragraph("<b>Key Governance Strengths (Green):</b>", td_bold_style))
-    for strength in reco_results["strengths"]:
-        story.append(Paragraph(f"• {strength}", bullet_style))
-    story.append(Spacer(1, 5))
+    def create_pill_box(text, bg_color_hex):
+        p_style = ParagraphStyle(
+            'PillText',
+            parent=styles['Normal'],
+            fontName='Helvetica',
+            fontSize=8,
+            leading=11,
+            textColor=colors.HexColor("#2D3748") # Dark gray/black text
+        )
+        p = Paragraph(text, p_style)
+        t = Table([[p]], colWidths=[155])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(bg_color_hex)),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 6),
+            ('RIGHTPADDING', (0,0), (-1,-1), 6),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor(bg_color_hex)),
+        ]))
+        return t
+
+    # 5. Domain Detail Section
+    story.append(Paragraph("3. Discipline-Level Domain Detail", heading_style))
+    story.append(Spacer(1, 4))
     
-    story.append(Paragraph("<b>Identified Governance Gaps (Amber/Red):</b>", td_bold_style))
-    for gap in reco_results["gaps"]:
-        story.append(Paragraph(f"• {gap}", bullet_style))
-    story.append(Spacer(1, 15))
+    for idx, (disp_key, disp_info) in enumerate(discipline_details.items(), 1):
+        disp_name = "Metadata Management" if disp_key == "metadata_management" else "Data Quality"
+        score_val = maturity_results["disciplines"][disp_key]["score"]
+        
+        # Decide score color
+        if score_val >= 4.0:
+            score_color = "#48BB78" # Green
+        elif score_val >= 2.5:
+            score_color = "#D69E2E" # Amber
+        else:
+            score_color = "#C53030" # Red
+            
+        header_table_data = [
+            [
+                Paragraph(f"{idx} · {disp_name}", subheading_style),
+                Paragraph(f"<font color='{score_color}'>Score: {score_val:.1f} / 5</font>", score_style)
+            ]
+        ]
+        t_header = Table(header_table_data, colWidths=[300, 204])
+        t_header.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ]))
+        
+        # 3-column detail table
+        sg_flowables = []
+        for s in disp_info["strengths"]:
+            sg_flowables.append(create_pill_box(f"• {s}", "#E6F4EA")) # Light green
+            sg_flowables.append(Spacer(1, 4))
+        for g in disp_info["gaps"]:
+            sg_flowables.append(create_pill_box(f"• {g}", "#FCE8E6")) # Light red
+            sg_flowables.append(Spacer(1, 4))
+        if sg_flowables:
+            sg_flowables.pop()
+
+        actions_text = "<br/><br/>".join(disp_info["actions"])
+        
+        detail_data = [
+            [
+                Paragraph("REASONING", col_header_style),
+                Paragraph("STRENGTHS / GAPS", col_header_style),
+                Paragraph("TOP 3 ACTIONS", col_header_style)
+            ],
+            [
+                Paragraph(disp_info["reasoning"], col_body_style),
+                sg_flowables,
+                Paragraph(actions_text, col_body_style)
+            ]
+        ]
+        
+        t_detail = Table(detail_data, colWidths=[170, 170, 164])
+        t_detail.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 8),
+            ('TOPPADDING', (0,0), (-1,-1), 2),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ]))
+        
+        # Keep each domain group together
+        story.append(KeepTogether([t_header, Spacer(1, 4), t_detail, Spacer(1, 10)]))
 
     # Top 3 Recommendations Section
-    story.append(Paragraph("5. Prioritized Action Plan & Recommendations", heading_style))
+    story.append(Paragraph("4. Prioritized Action Plan & Recommendations", heading_style))
     story.append(Paragraph("Actionable remediation roadmap to accelerate maturity and unlock business value:", body_style))
     story.append(Spacer(1, 6))
 
@@ -511,7 +578,7 @@ def build_pdf_report(platform, input_file, output_file):
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F7FAFC")]),
     ]))
-    story.append(t_params)
+    story.append(KeepTogether(t_params))
     story.append(Spacer(1, 10))
     
     # Formulas Explanation

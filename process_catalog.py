@@ -134,67 +134,7 @@ def main():
     print(f"Unrealized Opportunity Value:                ${total_opportunity:,.2f}")
     print("================================================================================")
 
-    # 5. Executive Action Plan & Remediation Pipeline Table
-    from datetime import datetime
-    print("\n--- EXECUTIVE ACTION PLAN & REMEDIATION PIPELINE ---")
-    remediation_cols = ["Category", "Asset Name", "Risk / Telemetry Details", "Recommended Action", "Value Impact"]
-    remediation_rows = []
-    
-    # 1. ROT Assets (Storage Cost Optimization)
-    rot_assets = roi_df[roi_df["is_rot"] == True].sort_values("opportunity_storage_savings", ascending=False).head(3)
-    for _, row in rot_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        size_gb = (canon_asset.usage.size_in_bytes / (1024**3)) if canon_asset else 0.0
-        last_acc_days = ""
-        if canon_asset and canon_asset.usage.last_accessed:
-            delta = datetime.now() - canon_asset.usage.last_accessed.replace(tzinfo=None)
-            last_acc_days = f" ({delta.days}d stale)"
-        
-        remediation_rows.append([
-            "Storage / ROT",
-            row["name"],
-            f"Size: {size_gb:.1f} GB{last_acc_days}",
-            "Decommission or archive storage",
-            f"Saves ${row['opportunity_storage_savings']:,.2f}/yr"
-        ])
-        
-    # 2. Compliance Exposure (Sensitive unowned PII)
-    risky_assets = scored_df[scored_df["security_risk_score"] > 40].sort_values("security_risk_score", ascending=False).head(3)
-    for _, row in risky_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        queries = canon_asset.usage.query_count if canon_asset else 0
-        remediation_rows.append([
-            "Compliance / PII",
-            row["name"],
-            f"Risk: {row['security_risk_score']:.1f}/100, Queries: {queries}/mo",
-            "Assign Steward & classification tags",
-            f"Mitigates ${row['security_risk_score']*1500:,.2f} risk"
-        ])
-        
-    # 3. Business Decision Quality (Low DQ)
-    untrusted_assets = scored_df[(scored_df["governance_health_index"] < 60) & (scored_df["data_quality_score"] < 70)].sort_values("governance_health_index").head(3)
-    for _, row in untrusted_assets.iterrows():
-        canon_asset = next((x for x in canonical_assets if x.asset_id == row["asset_id"]), None)
-        queries = canon_asset.usage.query_count if canon_asset else 0
-        dq_pct = row["data_quality_score"]
-        remediation_rows.append([
-            "Trust / Low DQ",
-            row["name"],
-            f"DQ Pass Rate: {dq_pct:.1f}%, Queries: {queries}/mo",
-            "Implement validation rules in pipeline",
-            "Avoids debug costs"
-        ])
-        
-    if not remediation_rows:
-        remediation_rows.append(["None", "No actions required", "-", "No actions required", "-"])
-        
-    remediation_df = pd.DataFrame(remediation_rows, columns=remediation_cols)
-    try:
-        print(tabulate(remediation_df, headers='keys', tablefmt='psql', showindex=False))
-    except ImportError:
-        print(remediation_df)
-
-    # 6. Save Outputs
+    # 5. Save Outputs
     if args.output_dir:
         os.makedirs(args.output_dir, exist_ok=True)
         scores_csv = os.path.join(args.output_dir, f"{args.platform}_governance_scores.csv")
