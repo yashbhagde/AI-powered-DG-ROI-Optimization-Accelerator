@@ -220,3 +220,11 @@ __marimo__/
 reports/*.pdf
 .rate_limit_cache.json
 .secrets.baseline
+# Generated reports
+reports/*.pdf
+
+# macOS
+.DS_Store
+
+# Local outputs
+demo_output.txt
