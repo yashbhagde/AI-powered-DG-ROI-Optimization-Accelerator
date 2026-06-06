@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Generated reports
+reports/*.pdf
+
+# macOS
+.DS_Store
+
+# Local outputs
+demo_output.txt
