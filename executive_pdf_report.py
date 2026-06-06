@@ -164,6 +164,12 @@ def build_pdf_report(platform, input_file, output_file):
         textColor=colors.HexColor("#2D3748")
     )
     
+    td_indented_style = ParagraphStyle(
+        'TableCellIndented',
+        parent=td_style,
+        leftIndent=12
+    )
+    
     td_bold_style = ParagraphStyle(
         'TableCellBold',
         parent=styles['Normal'],
@@ -212,7 +218,7 @@ def build_pdf_report(platform, input_file, output_file):
     
     # 3. Governance Maturity Scores Section
     story.append(Paragraph("1. Discipline-Level Data Governance Maturity Dashboard", heading_style))
-    story.append(Paragraph("Scores are computed across critical governance disciplines mapped directly from catalog metadata using transparent, auditable rules:", body_style))
+    story.append(Paragraph("Scores are computed across critical governance disciplines mapped directly from catalog metadata using transparent, auditable rules. Health indicators are nested under their respective disciplines:", body_style))
     story.append(Spacer(1, 6))
     
     def get_maturity_status(score):
@@ -223,41 +229,6 @@ def build_pdf_report(platform, input_file, output_file):
         else:
             return "Action Needed", "#F56565"  # Red
             
-    maturity_dashboard_data = [
-        [Paragraph("Governance Discipline", th_style), Paragraph("Maturity Score", th_style), Paragraph("Status", th_style)],
-        [
-            Paragraph("Metadata Management", td_style),
-            Paragraph(f"{metadata_maturity:.2f} / 5.0", td_bold_style),
-            Paragraph(f"<font color='{get_maturity_status(metadata_maturity)[1]}'><b>{get_maturity_status(metadata_maturity)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("Data Quality", td_style),
-            Paragraph(f"{dq_maturity:.2f} / 5.0", td_bold_style),
-            Paragraph(f"<font color='{get_maturity_status(dq_maturity)[1]}'><b>{get_maturity_status(dq_maturity)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("<b>Overall Maturity Index</b>", td_bold_style),
-            Paragraph(f"<b>{overall_maturity:.2f} / 5.0</b>", td_bold_style),
-            Paragraph(f"<font color='{get_maturity_status(overall_maturity)[1]}'><b>{get_maturity_status(overall_maturity)[0]}</b></font>", td_bold_style)
-        ]
-    ]
-    
-    t_maturity = Table(maturity_dashboard_data, colWidths=[220, 140, 144])
-    t_maturity.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")), # Dark navy header
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('PADDING', (0,0), (-1,-1), 5),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-        ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
-        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#EDF2F7")), # Gray row for composite index
-    ]))
-    story.append(t_maturity)
-    story.append(Spacer(1, 15))
-
-    # 3.1 Governance Health Indicators Section
-    story.append(Paragraph("Governance Health Indicators Breakdown", ParagraphStyle('SubheadingHealth', parent=heading_style, fontSize=10, spaceBefore=4, spaceAfter=4)))
-    
-    raw_metrics = maturity_results["audit_trail"]["raw_metrics"]
     def get_indicator_status(val, thresholds):
         if val >= thresholds[3]:
             return "Green", "#48BB78"
@@ -266,53 +237,71 @@ def build_pdf_report(platform, input_file, output_file):
         else:
             return "Red", "#F56565"
 
-    meta_thresholds = [40, 60, 75, 90]
-    dq_rule_thresholds = [25, 50, 70, 85]
-    dq_pass_thresholds = [70, 80, 90, 95]
-
-    indicators_data = [
-        [Paragraph("Health Indicator", th_style), Paragraph("Raw Metric %", th_style), Paragraph("Status", th_style)],
+    consolidated_dashboard_data = [
         [
-            Paragraph("Documentation Coverage", td_style),
-            Paragraph(f"{raw_metrics['documentation_coverage']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['documentation_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['documentation_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("Ownership Assignment", td_style),
-            Paragraph(f"{raw_metrics['ownership_coverage']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['ownership_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['ownership_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("Glossary Linkage", td_style),
-            Paragraph(f"{raw_metrics['glossary_linkage']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['glossary_linkage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['glossary_linkage'], meta_thresholds)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("Classification Coverage", td_style),
-            Paragraph(f"{raw_metrics['classification_coverage']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['classification_coverage'], meta_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['classification_coverage'], meta_thresholds)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("DQ Rule Coverage", td_style),
-            Paragraph(f"{raw_metrics['rule_coverage']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['rule_coverage'], dq_rule_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['rule_coverage'], dq_rule_thresholds)[0]}</b></font>", td_bold_style)
-        ],
-        [
-            Paragraph("DQ Pass Rate", td_style),
-            Paragraph(f"{raw_metrics['pass_rate']:.1f}%", td_style),
-            Paragraph(f"<font color='{get_indicator_status(raw_metrics['pass_rate'], dq_pass_thresholds)[1]}'><b>{get_indicator_status(raw_metrics['pass_rate'], dq_pass_thresholds)[0]}</b></font>", td_bold_style)
+            Paragraph("Governance Discipline / Health Indicator", th_style), 
+            Paragraph("Weight", th_style), 
+            Paragraph("Raw Value / Score", th_style), 
+            Paragraph("Status", th_style)
         ]
     ]
-
-    t_indicators = Table(indicators_data, colWidths=[220, 140, 144])
-    t_indicators.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
+    
+    table_styles = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")), # Dark navy header
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('PADDING', (0,0), (-1,-1), 4),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor("#F7FAFC")]),
-    ]))
-    story.append(t_indicators)
+        ('PADDING', (0,0), (-1,-1), 5),
+    ]
+
+    row_idx = 1
+    for disp_key, disp_data in maturity_results["disciplines"].items():
+        disp_name = disp_data["name"]
+        disp_score = disp_data["score"]
+        disp_weight = disp_data["weight"]
+        disp_status, disp_color = get_maturity_status(disp_score)
+        
+        # Add discipline row
+        consolidated_dashboard_data.append([
+            Paragraph(f"<b>{disp_name}</b>", td_bold_style),
+            Paragraph(f"<b>{disp_weight * 100:.0f}%</b>", td_bold_style),
+            Paragraph(f"<b>{disp_score:.2f} / 5.0</b>", td_bold_style),
+            Paragraph(f"<font color='{disp_color}'><b>{disp_status}</b></font>", td_bold_style)
+        ])
+        table_styles.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor("#EBF8FF")))
+        row_idx += 1
+        
+        # Add indicators under this discipline
+        for ind_key, ind_data in disp_data["indicators"].items():
+            ind_name = ind_data["name"]
+            raw_val = ind_data["raw_percentage"]
+            ind_score = ind_data["score"]
+            ind_weight = ind_data["weight"]
+            thresholds = ind_data["thresholds"]
+            
+            ind_status, ind_color = get_indicator_status(raw_val, thresholds)
+            
+            consolidated_dashboard_data.append([
+                Paragraph(f"↳ {ind_name}", td_indented_style),
+                Paragraph(f"{ind_weight * 100:.0f}%", td_style),
+                Paragraph(f"{raw_val:.1f}% (Score: {ind_score:.1f})", td_style),
+                Paragraph(f"<font color='{ind_color}'><b>{ind_status}</b></font>", td_bold_style)
+            ])
+            row_idx += 1
+            
+    # Add Overall Maturity row
+    overall_status, overall_color = get_maturity_status(overall_maturity)
+    consolidated_dashboard_data.append([
+        Paragraph("<b>Overall Maturity Index</b>", td_bold_style),
+        Paragraph("<b>100%</b>", td_bold_style),
+        Paragraph(f"<b>{overall_maturity:.2f} / 5.0</b>", td_bold_style),
+        Paragraph(f"<font color='{overall_color}'><b>{overall_status}</b></font>", td_bold_style)
+    ])
+    table_styles.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor("#EDF2F7")))
+    
+    t_consolidated = Table(consolidated_dashboard_data, colWidths=[220, 60, 120, 104])
+    t_consolidated.setStyle(TableStyle(table_styles))
+    story.append(t_consolidated)
     story.append(Spacer(1, 15))
     
     # 4. Program Financial Performance Section

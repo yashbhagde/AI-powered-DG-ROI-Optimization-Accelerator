@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+reports/*.pdf
+.rate_limit_cache.json
+.secrets.baseline
