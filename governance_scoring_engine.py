@@ -6,6 +6,7 @@ import time
 import asyncio
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import hashlib
 from canonical_metadata_model import CanonicalAsset
 
 # Load environment variables
@@ -105,6 +106,10 @@ class GovernanceScoringEngine:
             print("No Gemini key loaded")
         self.use_gemini = False
         
+        # Client-side caching initialization
+        self.cache_file = ".governance_score_cache.json"
+        self.cache = self._load_cache()
+        
         # 60% Throttling Limits
         self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
         
@@ -129,6 +134,37 @@ class GovernanceScoringEngine:
                 print("[Gemini API] google-genai is not installed. Falling back to rule-based heuristics.")
             except Exception as e:
                 print(f"[Gemini API] Error initializing client: {e}. Falling back to rule-based heuristics.")
+
+    def _load_cache(self) -> Dict[str, Any]:
+        if os.path.exists(self.cache_file):
+            try:
+                with open(self.cache_file, "r") as f:
+                    return json.load(f)
+            except:
+                return {}
+        return {}
+
+    def _save_cache(self):
+        try:
+            with open(self.cache_file, "w") as f:
+                json.dump(self.cache, f, indent=2)
+        except:
+            pass
+
+    def _calculate_asset_hash(self, asset: CanonicalAsset) -> str:
+        """Calculates a MD5 hash of the asset's metadata parameters to detect changes."""
+        params = {
+            "name": asset.name or "",
+            "asset_type": asset.asset_type or "",
+            "description": asset.description or "",
+            "owners": sorted([o.name for o in asset.owners or []]),
+            "glossary_terms": sorted(asset.glossary_terms or []),
+            "classifications": sorted(asset.classifications or []),
+            "rules_run": asset.data_quality.rules_run if asset.data_quality else 0,
+            "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0
+        }
+        serialized = json.dumps(params, sort_keys=True)
+        return hashlib.md5(serialized.encode('utf-8')).hexdigest()
 
     def score_asset_heuristics(self, asset: CanonicalAsset) -> Dict[str, Any]:
         """Calculates documentation and security risk scores using rule-based heuristics."""
@@ -358,13 +394,44 @@ class GovernanceScoringEngine:
         return all_results
 
     def score_all_assets(self, assets: List[CanonicalAsset]) -> pd.DataFrame:
-        """Scores a list of assets concurrently using asyncio and returns a pandas DataFrame."""
-        loop = asyncio.new_event_loop()
-        try:
-            asyncio.set_event_loop(loop)
-            scored_data = loop.run_until_complete(self._score_all_assets_async(assets))
-        finally:
-            loop.close()
+        """Scores a list of assets, leveraging local cache for unchanged assets."""
+        uncached_assets = []
+        scored_data = []
+        asset_hashes = {}
+
+        # 1. Check cache for each asset
+        for asset in assets:
+            h = self._calculate_asset_hash(asset)
+            asset_hashes[asset.asset_id] = h
+            
+            if h in self.cache:
+                # Retrieve from cache
+                cached_res = self.cache[h].copy()
+                cached_res["name"] = asset.name
+                scored_data.append(cached_res)
+            else:
+                uncached_assets.append(asset)
+
+        # 2. Evaluate uncached assets
+        if uncached_assets:
+            print(f"[Client Cache] Cache miss: Evaluated {len(uncached_assets)} / {len(assets)} assets using engine.")
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                new_scored_data = loop.run_until_complete(self._score_all_assets_async(uncached_assets))
+            finally:
+                loop.close()
+
+            # Save newly scored assets to cache
+            for res in new_scored_data:
+                scored_data.append(res)
+                h = asset_hashes.get(res["asset_id"])
+                if h:
+                    self.cache[h] = res
+            self._save_cache()
+        else:
+            print(f"[Client Cache] Cache hit: All {len(assets)} assets loaded from local cache.")
+
         return pd.DataFrame(scored_data)
 
     def generate_platform_report(self, scored_df: pd.DataFrame) -> pd.DataFrame:

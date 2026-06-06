@@ -228,3 +228,5 @@ reports/*.pdf
 
 # Local outputs
 demo_output.txt
+.governance_score_cache.json
+
