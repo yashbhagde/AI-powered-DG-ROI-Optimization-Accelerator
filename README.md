@@ -21,8 +21,8 @@ graph TD
     F -->|Vendor-Agnostic CanonicalAsset| H[ROI Engine]
     
     G -->|Lookup Metadata Hash| Cache[(Local Score Cache)]
-    G -->|Only Uncached Assets| Gemini[Gemini API]
-    Gemini -->|Save Output| Cache
+    G -->|Only Uncached Assets| LLM[LLM API]
+    LLM -->|Save Output| Cache
     
     G -->|Maturity Scores| I[Unified Dashboard Report]
     H -->|Financial Savings| I
@@ -52,7 +52,7 @@ graph TD
 - [RealisticGovernanceMetadata.py](RealisticGovernanceMetadata.py): Scaled multi-vendor generator and CLI performance demo runner.
 - [generate_all_mock_data.py](generate_all_mock_data.py): Batch utility to programmatically scale and output mock catalog JSONs to vendor subdirectories.
 - [requirements.txt](requirements.txt): Environment dependencies (including `reportlab` for PDF generation).
-- `.governance_score_cache.json`: Local cache storing metadata hashes and calculated scoring outputs to bypass redundant Gemini API calls.
+- `.governance_score_cache.json`: Local cache storing metadata hashes and calculated scoring outputs to bypass redundant LLM API calls.
 - `.rate_limit_cache.json`: Local rate limit cache to track client requests and prevent API exhaustion.
 
 ---
