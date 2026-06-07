@@ -218,7 +218,7 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 15))
     
     # 3. Governance Maturity Scores Section
-    story.append(Paragraph("1. Discipline-Level Data Governance Maturity Dashboard", heading_style))
+    story.append(Paragraph("I. Discipline-Level Data Governance Maturity Dashboard", heading_style))
     story.append(Paragraph("Scores are computed across critical governance disciplines mapped directly from catalog metadata using transparent, auditable rules. Health indicators are nested under their respective disciplines:", body_style))
     story.append(Spacer(1, 6))
     
@@ -339,7 +339,7 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 15))
     
     # 4. Program Financial Performance Section
-    story.append(Paragraph("2. Program Financial Performance & ROI Analysis", heading_style))
+    story.append(Paragraph("II. Program Financial Performance & ROI Analysis", heading_style))
     story.append(Paragraph("The value realized through metadata-driven automation and risk mitigation compared to software licensing and overhead operating costs:", body_style))
     story.append(Spacer(1, 4))
     
@@ -456,7 +456,7 @@ def build_pdf_report(platform, input_file, output_file):
         return t
 
     # 5. Domain Detail Section
-    story.append(Paragraph("3. Discipline-Level Domain Detail", heading_style))
+    story.append(Paragraph("III. Discipline-Level Domain Detail", heading_style))
     story.append(Spacer(1, 4))
     
     for idx, (disp_key, disp_info) in enumerate(discipline_details.items(), 1):
@@ -551,7 +551,7 @@ def build_pdf_report(platform, input_file, output_file):
         ]))
 
     # Top 3 Recommendations Section
-    story.append(Paragraph("4. Prioritized Action Plan & Recommendations", heading_style))
+    story.append(Paragraph("IV. Prioritized Action Plan & Recommendations", heading_style))
     story.append(Paragraph("Actionable remediation roadmap to accelerate maturity and unlock business value:", body_style))
     story.append(Spacer(1, 6))
 

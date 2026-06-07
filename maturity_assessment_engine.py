@@ -46,7 +46,12 @@ class MaturityAssessmentEngine:
                 "glossary_linkage": 0.0,
                 "classification_coverage": 0.0,
                 "rule_coverage": 0.0,
-                "pass_rate": 0.0
+                "pass_rate": 0.0,
+                "sensitive_data_governance": 0.0,
+                "stewardship_assignment": 0.0,
+                "lineage_coverage": 0.0,
+                "rot_identification": 0.0,
+                "storage_tier_optimization": 0.0
             }
 
         # 1. Documentation Coverage
@@ -75,13 +80,61 @@ class MaturityAssessmentEngine:
         
         pass_rate_pct = (total_rules_passed / total_rules_run * 100.0) if total_rules_run > 0 else 0.0
 
+        # 7. Sensitive Data Governance
+        sensitive_assets = [a for a in assets if any(c.lower() in ["pii", "phi", "pci", "confidential"] for c in a.classifications)]
+        if not sensitive_assets:
+            sensitive_data_gov_pct = 100.0
+        else:
+            governed_sensitive = sum(1 for a in sensitive_assets if a.owners and a.classifications)
+            sensitive_data_gov_pct = (governed_sensitive / len(sensitive_assets)) * 100.0
+
+        # 8. Stewardship Assignment
+        steward_count = sum(1 for a in assets if any("steward" in o.role.lower() for o in a.owners))
+        stewardship_assignment_pct = (steward_count / total_assets) * 100.0
+
+        # 9. Lineage Coverage
+        lineage_count = sum(1 for a in assets if a.lineage and (a.lineage.upstream_assets or a.lineage.downstream_assets))
+        lineage_coverage_pct = (lineage_count / total_assets) * 100.0
+
+        # 10. ROT Identification (Active Asset Cataloging)
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        rot_count = 0
+        for a in assets:
+            size = a.usage.size_in_bytes if a.usage else 0
+            queries = a.usage.query_count if a.usage else 0
+            last_acc = a.usage.last_accessed if a.usage else None
+            if size > 0 and queries < 5:
+                if last_acc:
+                    if last_acc.tzinfo is None:
+                        last_acc = last_acc.replace(tzinfo=timezone.utc)
+                    days_inactive = (now - last_acc).days
+                    if days_inactive > 180:
+                        rot_count += 1
+                else:
+                    rot_count += 1
+        rot_identification_pct = 100.0 - ((rot_count / total_assets) * 100.0)
+
+        # 11. Storage Tier Optimization
+        low_query_assets = [a for a in assets if a.usage and a.usage.query_count < 10 and a.usage.size_in_bytes > 0]
+        if not low_query_assets:
+            storage_tier_optimization_pct = 100.0
+        else:
+            optimized_storage = sum(1 for a in low_query_assets if a.usage.storage_tier in ["Standard-IA", "Glacier", "DeepArchive"])
+            storage_tier_optimization_pct = (optimized_storage / len(low_query_assets)) * 100.0
+
         return {
             "documentation_coverage": doc_pct,
             "ownership_coverage": owner_pct,
             "glossary_linkage": glossary_pct,
             "classification_coverage": class_pct,
             "rule_coverage": rule_pct,
-            "pass_rate": pass_rate_pct
+            "pass_rate": pass_rate_pct,
+            "sensitive_data_governance": sensitive_data_gov_pct,
+            "stewardship_assignment": stewardship_assignment_pct,
+            "lineage_coverage": lineage_coverage_pct,
+            "rot_identification": rot_identification_pct,
+            "storage_tier_optimization": storage_tier_optimization_pct
         }
 
     def map_percentage_to_score(self, pct: float, thresholds: List[float]) -> float:
@@ -241,14 +294,13 @@ class MaturityAssessmentEngine:
         raw_metrics = assessment["audit_trail"]["raw_metrics"]
         disciplines = assessment["disciplines"]
 
-        # Metadata Management Reasoning, Strengths/Gaps, and Actions
+        # 1. Metadata Management Reasoning, Strengths/Gaps, and Actions
         mm_score = disciplines["metadata_management"]["score"]
         mm_doc = raw_metrics.get("documentation_coverage", 0.0)
         mm_own = raw_metrics.get("ownership_coverage", 0.0)
         mm_class = raw_metrics.get("classification_coverage", 0.0)
         mm_gloss = raw_metrics.get("glossary_linkage", 0.0)
 
-        # Reasoning:
         mm_reasoning = (
             f"{mm_doc:.0f}% documentation and {mm_class:.0f}% classification reflect solid "
             f"cataloging practices. However, only {mm_own:.0f}% asset ownership signals "
@@ -287,7 +339,7 @@ class MaturityAssessmentEngine:
             "3. Mandate owner assignment as a condition for asset publication"
         ]
 
-        # Data Quality Reasoning, Strengths/Gaps, and Actions
+        # 2. Data Quality Reasoning, Strengths/Gaps, and Actions
         dq_score = disciplines["data_quality"]["score"]
         dq_rule = raw_metrics.get("rule_coverage", 0.0)
         dq_pass = raw_metrics.get("pass_rate", 0.0)
@@ -319,6 +371,104 @@ class MaturityAssessmentEngine:
             "3. Expand DQ rule coverage to >=70% across all cataloged assets"
         ]
 
+        # 3. Data Security & Privacy (Compliance)
+        dsp_score = disciplines["data_security_privacy"]["score"]
+        dsp_class = raw_metrics.get("classification_coverage", 0.0)
+        dsp_gov = raw_metrics.get("sensitive_data_governance", 0.0)
+        
+        dsp_reasoning = (
+            f"Security classification stands at {dsp_class:.0f}% coverage. Governed sensitive datasets "
+            f"with correct ownership and security categorization achieved {dsp_gov:.0f}% compliance."
+        )
+        
+        dsp_strengths = []
+        dsp_gaps = []
+        if dsp_class >= 75:
+            dsp_strengths.append(f"{dsp_class:.0f}% classification coverage")
+        else:
+            dsp_gaps.append(f"Only {dsp_class:.0f}% classification coverage")
+        if dsp_gov >= 80:
+            dsp_strengths.append("Sensitive data stewardship active")
+        else:
+            dsp_gaps.append(f"PII data stewardship gap: {100 - dsp_gov:.0f}% unassigned")
+            
+        dsp_actions = [
+            "1. Run automated cognitive scans to tag hidden PII/sensitive fields",
+            "2. Restrict public classification for fields containing SSN or tax details",
+            "3. Enforce data owner validation sign-off on sensitive datasets"
+        ]
+
+        # 4. Stewardship & Governance Administration
+        sg_score = disciplines["stewardship_governance"]["score"]
+        sg_assign = raw_metrics.get("stewardship_assignment", 0.0)
+        
+        sg_reasoning = (
+            f"Stewardship assignment has reached {sg_assign:.0f}% coverage, showing "
+            f"the active stewardship administrative reach over enterprise assets."
+        )
+        
+        sg_strengths = []
+        sg_gaps = []
+        if sg_assign >= 75:
+            sg_strengths.append(f"{sg_assign:.0f}% active steward coverage")
+        else:
+            sg_gaps.append(f"Stewardship gap: {100 - sg_assign:.0f}% unassigned assets")
+            
+        sg_actions = [
+            "1. Define clear stewardship roles and responsibilities matrix",
+            "2. Recruit domain-level business stewards for core catalog schemas",
+            "3. Implement alerts for assets missing designated stewards"
+        ]
+
+        # 5. Data Architecture & Lineage
+        dal_score = disciplines["data_architecture_lineage"]["score"]
+        dal_lineage = raw_metrics.get("lineage_coverage", 0.0)
+        
+        dal_reasoning = (
+            f"Lineage configuration sits at {dal_lineage:.0f}%, which allows impact "
+            f"audits and lineage tracking of transactional workflows."
+        )
+        
+        dal_strengths = []
+        dal_gaps = []
+        if dal_lineage >= 60:
+            dal_strengths.append("Lineage traces active across analytics workflows")
+        else:
+            dal_gaps.append(f"Only {dal_lineage:.0f}% lineage connectivity mapped")
+            
+        dal_actions = [
+            "1. Harvest upstream/downstream lineage automatically from ETL logs",
+            "2. Target 100% lineage mapping for critical transactional tables",
+            "3. Connect isolated catalog assets to parent data schemas"
+        ]
+
+        # 6. Data Lifecycle & Storage Management (ROT)
+        dls_score = disciplines["data_lifecycle_storage"]["score"]
+        dls_rot = raw_metrics.get("rot_identification", 0.0)
+        dls_tier = raw_metrics.get("storage_tier_optimization", 0.0)
+        
+        dls_reasoning = (
+            f"Active asset cataloging stands at {dls_rot:.0f}% (reflecting minimal ROT waste). "
+            f"Storage tier optimization has reached {dls_tier:.0f}% for low-query datasets."
+        )
+        
+        dls_strengths = []
+        dls_gaps = []
+        if dls_rot >= 85:
+            dls_strengths.append("ROT storage candidates minimized and clean")
+        else:
+            dls_gaps.append(f"Elevated ROT waste: {100 - dls_rot:.0f}% inactive candidate tables")
+        if dls_tier >= 75:
+            dls_strengths.append("Cost-optimized storage tiering active")
+        else:
+            dls_gaps.append(f"Unoptimized storage tiers: {100 - dls_tier:.0f}% cold data on hot tier")
+            
+        dls_actions = [
+            "1. Enforce automated lifecycle policies to tier cold storage assets",
+            "2. Establish formal ROT archive and decommissioning processes",
+            "3. Decommission sandbox database exports older than 180 days"
+        ]
+
         return {
             "metadata_management": {
                 "score_str": f"Score: {mm_score:.1f} / 5.0",
@@ -333,5 +483,33 @@ class MaturityAssessmentEngine:
                 "strengths": dq_strengths,
                 "gaps": dq_gaps,
                 "actions": dq_actions
+            },
+            "data_security_privacy": {
+                "score_str": f"Score: {dsp_score:.1f} / 5.0",
+                "reasoning": dsp_reasoning,
+                "strengths": dsp_strengths,
+                "gaps": dsp_gaps,
+                "actions": dsp_actions
+            },
+            "stewardship_governance": {
+                "score_str": f"Score: {sg_score:.1f} / 5.0",
+                "reasoning": sg_reasoning,
+                "strengths": sg_strengths,
+                "gaps": sg_gaps,
+                "actions": sg_actions
+            },
+            "data_architecture_lineage": {
+                "score_str": f"Score: {dal_score:.1f} / 5.0",
+                "reasoning": dal_reasoning,
+                "strengths": dal_strengths,
+                "gaps": dal_gaps,
+                "actions": dal_actions
+            },
+            "data_lifecycle_storage": {
+                "score_str": f"Score: {dls_score:.1f} / 5.0",
+                "reasoning": dls_reasoning,
+                "strengths": dls_strengths,
+                "gaps": dls_gaps,
+                "actions": dls_actions
             }
         }

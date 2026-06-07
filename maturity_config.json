@@ -2,7 +2,7 @@
   "disciplines": {
     "metadata_management": {
       "name": "Metadata Management",
-      "weight": 0.5,
+      "weight": 0.20,
       "indicators": {
         "documentation_coverage": {
           "name": "Documentation Coverage",
@@ -28,7 +28,7 @@
     },
     "data_quality": {
       "name": "Data Quality",
-      "weight": 0.5,
+      "weight": 0.20,
       "indicators": {
         "rule_coverage": {
           "name": "DQ Rule Coverage",
@@ -39,6 +39,60 @@
           "name": "DQ Pass Rate",
           "weight": 0.60,
           "thresholds": [70, 80, 90, 95]
+        }
+      }
+    },
+    "data_security_privacy": {
+      "name": "Data Security & Privacy (Compliance)",
+      "weight": 0.15,
+      "indicators": {
+        "classification_coverage": {
+          "name": "Classification Coverage",
+          "weight": 0.50,
+          "thresholds": [40, 60, 75, 90]
+        },
+        "sensitive_data_governance": {
+          "name": "Sensitive Data Governance",
+          "weight": 0.50,
+          "thresholds": [40, 60, 75, 90]
+        }
+      }
+    },
+    "stewardship_governance": {
+      "name": "Stewardship & Governance Administration",
+      "weight": 0.15,
+      "indicators": {
+        "stewardship_assignment": {
+          "name": "Steward Assignment",
+          "weight": 1.00,
+          "thresholds": [40, 60, 75, 90]
+        }
+      }
+    },
+    "data_architecture_lineage": {
+      "name": "Data Architecture & Lineage",
+      "weight": 0.15,
+      "indicators": {
+        "lineage_coverage": {
+          "name": "Lineage Coverage",
+          "weight": 1.00,
+          "thresholds": [40, 60, 75, 90]
+        }
+      }
+    },
+    "data_lifecycle_storage": {
+      "name": "Data Lifecycle & Storage Management (ROT)",
+      "weight": 0.15,
+      "indicators": {
+        "rot_identification": {
+          "name": "Active Asset Cataloging",
+          "weight": 0.50,
+          "thresholds": [50, 70, 85, 95]
+        },
+        "storage_tier_optimization": {
+          "name": "Storage Tier Optimization",
+          "weight": 0.50,
+          "thresholds": [40, 60, 75, 90]
         }
       }
     }
