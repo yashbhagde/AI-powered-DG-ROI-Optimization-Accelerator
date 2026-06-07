@@ -64,17 +64,21 @@ graph TD
 ## Mathematical Models & Research Grounding
 
 ### 1. Governance Maturity Scores
-* **Documentation Completeness Score (0-100)**:
-  $$\text{Documentation Score} = \text{Has Description}(40) + \text{Description } > 50 \text{ chars}(10) + \text{Has Owner}(30) + \text{Has Glossary Terms}(20)$$
-* **Data Quality Score (0-100)**:
-  $$\text{Data Quality Score} = \text{DQ Pass Rate} \times 100 \quad (\text{0 if no rules run - unmonitored})$$
-* **Lineage Transparency Score (0-100)**:
-  $$\text{Lineage Score} = \text{Has Upstream}(50) + \text{Has Downstream}(50)$$
-* **Security & Policy Risk Score (0-100)**:
-  Evaluates exposure of sensitive data (PII/Confidential words or tags). Sensitive assets receive a base risk of 20, adding +40 for missing owners, +20 for missing tags, and +20 for unmonitored data quality.
-* **Governance Health Index (GHI)**:
-  $$\text{GHI} = (\text{Doc} \times 0.3) + (\text{DQ} \times 0.4) + (\text{Lineage} \times 0.2) + ((100 - \text{Risk}) \times 0.1)$$
-  *Grounded in the DAMA DMBOK Framework principles for administrative and technical metadata controls.*
+* **Metadata Management (Weight: 20%)**:
+  Weighted average of Documentation Coverage (30%), Ownership Coverage (30%), Glossary Linkage (20%), and Classification Coverage (20%).
+* **Data Quality (Weight: 20%)**:
+  Weighted average of DQ Rule Coverage (40%) and DQ Pass Rate (60%).
+* **Data Security & Privacy (Compliance) (Weight: 15%)**:
+  Weighted average of Classification Coverage (50%) and Sensitive Data Governance (50%). Sensitive Data Governance measures the percentage of sensitive assets (PII/Confidential) that have owners and classification tags assigned.
+* **Stewardship & Governance Administration (Weight: 15%)**:
+  Steward Assignment (100%), measuring the percentage of assets with active stewards.
+* **Data Architecture & Lineage (Weight: 15%)**:
+  Lineage Coverage (100%), measuring the percentage of assets with mapped upstream or downstream lineages.
+* **Data Lifecycle & Storage Management (ROT) (Weight: 15%)**:
+  Weighted average of Active Asset Cataloging (50%) and Storage Tier Optimization (50%). Active Asset Cataloging measures the percentage of assets that are not redundant, obsolete, or trivial (non-ROT).
+* **Overall Maturity Index Rollup**:
+  $$\text{Maturity Score} = (\text{Metadata Mgmt} \times 0.20) + (\text{Data Quality} \times 0.20) + (\text{Security \& Privacy} \times 0.15) + (\text{Stewardship} \times 0.15) + (\text{Lineage} \times 0.15) + (\text{Data Lifecycle} \times 0.15)$$
+  *Grounded in the DAMA DMBOK Framework principles for administrative, technical, and operational metadata controls.*
 
 ### 2. Financial ROI Calculations
 * **Data Discovery Efficiency Savings (USD)**:
