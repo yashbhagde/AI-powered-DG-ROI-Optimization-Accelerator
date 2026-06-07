@@ -15,11 +15,7 @@ The **AI Governance ROI Optimization Accelerator** is a vendor-agnostic framewor
 
 ```mermaid
 graph TD
-    A[Alation] -->|Raw JSON| F[Canonical Mapper]
-    B[Collibra] -->|Raw JSON| F
-    C[Informatica IDMC] -->|Raw JSON| F
-    D[Ataccama] -->|Raw JSON| F
-    E[Microsoft Purview] -->|Raw JSON| F
+    A["Any Data Catalog Tool <br>(Alation, Collibra, Purview, Custom, etc.)"] -->|Raw JSON Payload| F[Canonical Mapper]
     
     F -->|Vendor-Agnostic CanonicalAsset| G[Scoring Engine]
     F -->|Vendor-Agnostic CanonicalAsset| H[ROI Engine]
@@ -37,7 +33,7 @@ graph TD
     I -->|PDF Exporter| M[Timestamped Executive PDF Report]
 ```
 
-1. **Ingest / Raw Data**: Vendor-specific raw JSON payloads reflecting different environments (databases, schemas, reports, files) generated programmatically.
+1. **Ingest / Raw Data**: Raw JSON payloads reflecting different cataloged assets (databases, schemas, files) exported from any data catalog tool.
 2. **Canonical Mapping**: Conversion of raw data into a unified schema represented by `CanonicalAsset` models in [canonical_metadata_model.py](canonical_metadata_model.py).
 3. **Analytical Engines**:
    - **Scoring Engine** evaluates documentation quality, data quality, lineage coverage, and data security risks.
