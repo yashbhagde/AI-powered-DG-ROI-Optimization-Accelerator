@@ -98,13 +98,78 @@ class GovernanceScoringEngine:
         # Verify weights sum to 1.0 (approximately)
         assert abs(doc_weight + dq_weight + lineage_weight + risk_weight - 1.0) < 1e-5, "Weights must sum to 1.0"
         
-        # Initialize Gemini Client if API key is provided
-        self.api_key = os.getenv("GEMINI_API_KEY")
-        if self.api_key:
-            print(f"Loaded Gemini key prefix: {self.api_key[:12]}")
+        # Initialize LLM Client via LiteLLM with auto-routing based on API keys
+        self.gemini_key = os.getenv("GEMINI_API_KEY")
+        self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+        self.openai_key = os.getenv("OPENAI_API_KEY")
+        
+        # Override model name from env variable if provided
+        self.model_name = os.getenv("LLM_MODEL")
+        
+        # If model is not explicitly provided, auto-detect based on active API keys
+        if not self.model_name:
+            if self.gemini_key and self.gemini_key.strip() and self.gemini_key != "YOUR_GEMINI_API_KEY":
+                self.model_name = "gemini/gemini-2.5-flash"
+            elif self.anthropic_key and self.anthropic_key.strip() and self.anthropic_key != "YOUR_ANTHROPIC_API_KEY":
+                self.model_name = "anthropic/claude-3-5-sonnet-20241022"
+            elif self.openai_key and self.openai_key.strip() and self.openai_key != "YOUR_OPENAI_API_KEY":
+                self.model_name = "openai/gpt-4o"
+            else:
+                self.model_name = None
+        
+        self.use_llm = False
+        
+        # Verify provider and key configuration
+        if self.model_name:
+            has_valid_key = False
+            if self.model_name.startswith("gemini/") and self.gemini_key:
+                has_valid_key = True
+            elif self.model_name.startswith("anthropic/") and self.anthropic_key:
+                has_valid_key = True
+            elif self.model_name.startswith("openai/") and self.openai_key:
+                has_valid_key = True
+            elif "/" in self.model_name:
+                provider = self.model_name.split("/")[0].upper()
+                if os.getenv(f"{provider}_API_KEY"):
+                    has_valid_key = True
+            else:
+                # Standard model name without prefix fallback
+                if "gpt" in self.model_name.lower() and self.openai_key:
+                    has_valid_key = True
+                    self.model_name = f"openai/{self.model_name}"
+                elif "claude" in self.model_name.lower() and self.anthropic_key:
+                    has_valid_key = True
+                    self.model_name = f"anthropic/{self.model_name}"
+                elif "gemini" in self.model_name.lower() and self.gemini_key:
+                    has_valid_key = True
+                    self.model_name = f"gemini/{self.model_name}"
+            
+            if has_valid_key:
+                try:
+                    import litellm
+                    litellm.set_verbose = False
+                    
+                    print(f"[LLM Router] Instantiating LiteLLM with model: {self.model_name}")
+                    
+                    # Dry-run validation check (max_tokens=2 to avoid heavy charges)
+                    litellm.completion(
+                        model=self.model_name,
+                        messages=[{"role": "user", "content": "ping"}],
+                        max_tokens=2
+                    )
+                    self.use_llm = True
+                    print(f"[LLM Router] Successfully validated model '{self.model_name}' connection via LiteLLM.")
+                except Exception as val_err:
+                    print(f"[LLM Router Warning] Connection validation failed for '{self.model_name}': {val_err}")
+                    print("[LLM Router Warning] Instantly falling back to rule-based heuristics to prevent slow retry delays.")
+                    self.use_llm = False
+            else:
+                print(f"[LLM Router Warning] No API key found for model '{self.model_name}'. Falling back to heuristics.")
         else:
-            print("No Gemini key loaded")
-        self.use_gemini = False
+            print("[LLM Router] No LLM API key detected. Falling back to rule-based heuristics.")
+            
+        # Alias self.use_gemini to self.use_llm to preserve backward compatibility
+        self.use_gemini = self.use_llm
         
         # Client-side caching initialization
         self.cache_file = ".governance_score_cache.json"
@@ -112,28 +177,6 @@ class GovernanceScoringEngine:
         
         # 60% Throttling Limits
         self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
-        
-        if self.api_key and self.api_key.strip() and self.api_key != "YOUR_GEMINI_API_KEY":
-            try:
-                from google import genai
-                self.client = genai.Client(api_key=self.api_key)
-                self.use_gemini = True
-                
-                # Verify credits and billing status before scheduling concurrent calls
-                try:
-                    self.client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents='Ping',
-                    )
-                    print("[Gemini API] Successfully validated Gemini client for cognitive scoring.")
-                except Exception as val_err:
-                    print(f"[Gemini API Warning] Key validation failed (credit/billing issue): {val_err}")
-                    print("[Gemini API Warning] Instantly falling back to rule-based heuristics to prevent slow retry delays.")
-                    self.use_gemini = False
-            except ImportError:
-                print("[Gemini API] google-genai is not installed. Falling back to rule-based heuristics.")
-            except Exception as e:
-                print(f"[Gemini API] Error initializing client: {e}. Falling back to rule-based heuristics.")
 
     def _load_cache(self) -> Dict[str, Any]:
         if os.path.exists(self.cache_file):
@@ -319,18 +362,17 @@ class GovernanceScoringEngine:
 
             # Dynamic rate limiter check based on batch size
             await self.rate_limiter.check_and_throttle(estimated_tokens=500 + len(assets) * 100)
-            from google.genai import types
+            import litellm
 
-            response = await self.client.aio.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.0
-                )
+            response = await litellm.acompletion(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"},
+                temperature=0.0
             )
 
-            data = json.loads(response.text)
+            response_text = response.choices[0].message.content
+            data = json.loads(response_text)
             results = data.get("results", [])
             results_map = {r["asset_id"]: r for r in results if "asset_id" in r}
 
