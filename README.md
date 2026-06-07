@@ -106,6 +106,23 @@ To minimize LLM token usage and ensure fast, predictable runs, a local client-si
 
 ---
 
+## AI Agent System & Multi-Agent Architecture
+
+At the core of the maturity assessment engine is a concurrent, asynchronous **Multi-Agent System** that acts as an automated advisory board. Each agent is a specialized AI subagent focused on a specific governance discipline:
+
+1. **Compliance Agent (Data Security & Privacy)**: Scans for sensitive fields (PII, PCI, HIPAA), evaluates exposure risk, and recommends automated cognitive masking and classification strategies.
+2. **Stewardship Agent (Stewardship & Governance)**: Evaluates ownership coverage and administrative alignment, recommending targeted campaigns to resolve stewardship gaps.
+3. **Lineage Agent (Data Architecture & Lineage)**: Analyzes upstream and downstream dependencies, recommending automated harvesting from ETL/orchestration logs to bridge lineage gaps.
+4. **DQ Agent (Data Quality)**: Investigates validation failure rates and coverage, proposing high-impact profiling rules for critical data elements.
+5. **Lifecycle Agent (Data Lifecycle & Storage)**: Pinpoints Redundant, Obsolete, and Trivial (ROT) data storage candidates and designs cost-efficient tiering policies.
+6. **Metadata Agent (Metadata Management)**: Evaluates documentation depth and business glossary term linkage, suggesting actions to improve catalog findability.
+
+### Asynchronous Orchestration & Fail-Safe Design
+* **Concurrent Execution**: The subagents execute concurrently in the background using `asyncio.gather` powered by **LiteLLM** to analyze catalog metadata. This architecture generates comprehensive, multi-dimensional narratives in seconds.
+* **Fail-Safe Heuristics**: If no API keys are loaded or network requests fail, the engine silently routes execution to a deterministic local rule-based heuristic engine. This ensures the report compiles successfully under all conditions.
+
+---
+
 ## Multi-LLM Auto-Routing
 
 The scoring engine supports multi-LLM vendor configurations out-of-the-box using LiteLLM. It automatically detects and routes to the appropriate provider and model based on the active API key loaded in environment variables:
