@@ -89,8 +89,8 @@ def build_pdf_report(platform, input_file, output_file):
     net_realized_roi = total_realized_savings - operating_cost
     roi_percentage = (net_realized_roi / operating_cost) * 100.0 if operating_cost > 0 else 0.0
     
-    metadata_maturity = maturity_results["disciplines"]["metadata_management"]["score"]
-    dq_maturity = maturity_results["disciplines"]["data_quality"]["score"]
+    metadata_maturity = maturity_results["disciplines"].get("metadata_management", {}).get("score", 0.0)
+    dq_maturity = maturity_results["disciplines"].get("data_quality", {}).get("score", 0.0)
     overall_maturity = maturity_results["overall_maturity_score"]
     
     # Build Document
@@ -460,8 +460,8 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 4))
     
     for idx, (disp_key, disp_info) in enumerate(discipline_details.items(), 1):
-        disp_name = "Metadata Management" if disp_key == "metadata_management" else "Data Quality"
-        score_val = maturity_results["disciplines"][disp_key]["score"]
+        disp_name = maturity_results["disciplines"].get(disp_key, {}).get("name", disp_key.replace("_", " ").title())
+        score_val = maturity_results["disciplines"].get(disp_key, {}).get("score", 0.0)
         
         # Decide score color
         if score_val >= 4.0:
@@ -487,43 +487,68 @@ def build_pdf_report(platform, input_file, output_file):
             ('RIGHTPADDING', (0,0), (-1,-1), 0),
         ]))
         
-        # 3-column detail table
-        sg_flowables = []
+        # 2-column detail table for strengths & gaps
+        s_flowables = []
         for s in disp_info["strengths"]:
-            sg_flowables.append(create_pill_box(f"• {s}", "#E6F4EA")) # Light green
-            sg_flowables.append(Spacer(1, 4))
+            s_flowables.append(create_pill_box(f"• {s}", "#E6F4EA")) # Light green
+            s_flowables.append(Spacer(1, 4))
+        if s_flowables:
+            s_flowables.pop()
+            
+        g_flowables = []
         for g in disp_info["gaps"]:
-            sg_flowables.append(create_pill_box(f"• {g}", "#FCE8E6")) # Light red
-            sg_flowables.append(Spacer(1, 4))
-        if sg_flowables:
-            sg_flowables.pop()
+            g_flowables.append(create_pill_box(f"• {g}", "#FCE8E6")) # Light red
+            g_flowables.append(Spacer(1, 4))
+        if g_flowables:
+            g_flowables.pop()
 
-        actions_text = "<br/><br/>".join(disp_info["actions"])
+        actions_text = "<br/>".join(disp_info["actions"])
         
-        detail_data = [
+        p_reasoning_header = Paragraph("REASONING & CONTEXT", col_header_style)
+        p_reasoning_body = Paragraph(disp_info["reasoning"], col_body_style)
+        
+        sg_data = [
             [
-                Paragraph("REASONING", col_header_style),
-                Paragraph("STRENGTHS / GAPS", col_header_style),
-                Paragraph("TOP 3 ACTIONS", col_header_style)
+                Paragraph("STRENGTHS", col_header_style),
+                Paragraph("KEY GAPS / RISKS", col_header_style)
             ],
             [
-                Paragraph(disp_info["reasoning"], col_body_style),
-                sg_flowables,
-                Paragraph(actions_text, col_body_style)
+                s_flowables if s_flowables else Paragraph("None identified", col_body_style),
+                g_flowables if g_flowables else Paragraph("None identified", col_body_style)
             ]
         ]
-        
-        t_detail = Table(detail_data, colWidths=[170, 170, 164])
-        t_detail.setStyle(TableStyle([
+        t_sg = Table(sg_data, colWidths=[248, 248])
+        t_sg.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('LEFTPADDING', (0,0), (-1,-1), 0),
             ('RIGHTPADDING', (0,0), (-1,-1), 8),
             ('TOPPADDING', (0,0), (-1,-1), 2),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
         ]))
         
-        # Keep each domain group together
-        story.append(KeepTogether([t_header, Spacer(1, 4), t_detail, Spacer(1, 10)]))
+        p_actions_header = Paragraph("RECOMMENDED REMEDIATION ACTIONS", col_header_style)
+        p_actions_body = Paragraph(actions_text, col_body_style)
+        
+        # Keep header and reasoning together to prevent orphan headers
+        story.append(KeepTogether([
+            t_header,
+            Spacer(1, 4),
+            p_reasoning_header,
+            Spacer(1, 2),
+            p_reasoning_body,
+            Spacer(1, 6)
+        ]))
+        
+        story.append(t_sg)
+        story.append(Spacer(1, 4))
+        
+        # Keep actions header and actions text together
+        story.append(KeepTogether([
+            p_actions_header,
+            Spacer(1, 2),
+            p_actions_body,
+            Spacer(1, 12)
+        ]))
 
     # Top 3 Recommendations Section
     story.append(Paragraph("4. Prioritized Action Plan & Recommendations", heading_style))

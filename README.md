@@ -24,6 +24,10 @@ graph TD
     F -->|Vendor-Agnostic CanonicalAsset| G[Scoring Engine]
     F -->|Vendor-Agnostic CanonicalAsset| H[ROI Engine]
     
+    G -->|Lookup Metadata Hash| Cache[(Local Score Cache)]
+    G -->|Only Uncached Assets| Gemini[Gemini API]
+    Gemini -->|Save Output| Cache
+    
     G -->|Maturity Scores| I[Unified Dashboard Report]
     H -->|Financial Savings| I
     
@@ -34,7 +38,7 @@ graph TD
 ```
 
 1. **Ingest / Raw Data**: Vendor-specific raw JSON payloads reflecting different environments (databases, schemas, reports, files) generated programmatically.
-2. **Canonical Mapping**: Conversion of raw data into a unified schema represented by `CanonicalAsset` models in [canonical_metadata_model.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/canonical_metadata_model.py).
+2. **Canonical Mapping**: Conversion of raw data into a unified schema represented by `CanonicalAsset` models in [canonical_metadata_model.py](canonical_metadata_model.py).
 3. **Analytical Engines**:
    - **Scoring Engine** evaluates documentation quality, data quality, lineage coverage, and data security risks.
    - **ROI Engine** translates these scores, coupled with storage sizes and query logs, into dollar-value metrics.
@@ -44,14 +48,16 @@ graph TD
 
 ## File Layout
 
-- [canonical_metadata_model.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/canonical_metadata_model.py): Defines the unified Pydantic data structures (`CanonicalAsset`, `AssetOwner`, `DataQualitySummary`, etc.) and vendor-specific mappers for parsing raw inputs.
-- [governance_scoring_engine.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/governance_scoring_engine.py): Implements governance maturity equations (Documentation, DQ, Lineage, and Policy Risk) and calculates the composite Governance Health Index (GHI).
-- [roi_calculation_engine.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/roi_calculation_engine.py): Computes financial values for operational efficiency (discovery time saved), storage optimization (decommissioning ROT), data quality improvement, and breach risk reduction.
-- [executive_pdf_report.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/executive_pdf_report.py): Core utility that maps, scores, and calculates ROI metrics for a catalog platform, outputting a typeset, audit-ready PDF summary.
-- [reports/](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/reports/): Directory where generated PDF assessments are parked with dynamic, timestamped filenames.
-- [RealisticGovernanceMetadata.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/RealisticGovernanceMetadata.py): Scaled multi-vendor generator and CLI performance demo runner.
-- [generate_all_mock_data.py](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/generate_all_mock_data.py): Batch utility to programmatically scale and output mock catalog JSONs to vendor subdirectories.
-- [requirements.txt](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/requirements.txt): Environment dependencies (including `reportlab` for PDF generation).
+- [canonical_metadata_model.py](canonical_metadata_model.py): Defines the unified Pydantic data structures (`CanonicalAsset`, `AssetOwner`, `DataQualitySummary`, etc.) and vendor-specific mappers for parsing raw inputs.
+- [governance_scoring_engine.py](governance_scoring_engine.py): Implements governance maturity equations (Documentation, DQ, Lineage, and Policy Risk) and calculates the composite Governance Health Index (GHI).
+- [roi_calculation_engine.py](roi_calculation_engine.py): Computes financial values for operational efficiency (discovery time saved), storage optimization (decommissioning ROT), data quality improvement, and breach risk reduction.
+- [executive_pdf_report.py](executive_pdf_report.py): Core utility that maps, scores, and calculates ROI metrics for a catalog platform, outputting a typeset, audit-ready PDF summary.
+- [reports/](reports/): Directory where generated PDF assessments are parked with dynamic, timestamped filenames.
+- [RealisticGovernanceMetadata.py](RealisticGovernanceMetadata.py): Scaled multi-vendor generator and CLI performance demo runner.
+- [generate_all_mock_data.py](generate_all_mock_data.py): Batch utility to programmatically scale and output mock catalog JSONs to vendor subdirectories.
+- [requirements.txt](requirements.txt): Environment dependencies (including `reportlab` for PDF generation).
+- `.governance_score_cache.json`: Local cache storing metadata hashes and calculated scoring outputs to bypass redundant Gemini API calls.
+- `.rate_limit_cache.json`: Local rate limit cache to track client requests and prevent API exhaustion.
 
 ---
 
@@ -84,6 +90,15 @@ graph TD
 * **Compliance & Breach Risk Savings (USD)**:
   $$\text{Risk Mitigation Savings} = (5\% \text{ baseline probability} - \text{Current probability}) \times \$150,000 \text{ breach cost}$$
   *Grounded in IBM Security's annual Cost of a Data Breach Report ($160/compromised PII record).*
+
+---
+
+## Caching & Performance Optimization
+
+To minimize LLM token usage and ensure fast, predictable runs, a local client-side cache is built into the Scoring Engine:
+- **Metadata Hashing**: Computes unique hashes for each asset based on metadata values (description, owners, glossary, data quality pass rate).
+- **Selective Gemini Analysis**: Only assets with new or modified metadata are analyzed via Gemini APIs. 
+- **Instant Execution**: Cached assets skip the Gemini inference stage entirely, allowing daily report generation to complete in seconds with zero token overhead for unmodified datasets.
 
 ---
 
@@ -120,4 +135,4 @@ To compile a typeset PDF report with embedded formulas and prioritized remediati
 ```bash
 python executive_pdf_report.py --platform alation --input alation/sample_alation_metadata.json
 ```
-* The output report is timestamped and automatically parked in the **[reports/](file:///C:/Users/YashBhagde/Documents/GitHub/AIDGROIACC/reports/)** directory (e.g., `reports/alation_executive_report_20260604_212501.pdf`).
+* The output report is timestamped and automatically parked in the **[reports/](reports/)** directory (e.g., `reports/alation_executive_report_20260604_212501.pdf`).
