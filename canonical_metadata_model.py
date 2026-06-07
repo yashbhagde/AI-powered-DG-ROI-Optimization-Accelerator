@@ -436,5 +436,14 @@ def map_raw_to_canonical(platform: str, raw: Dict[str, Any]) -> CanonicalAsset:
         return map_ataccama_to_canonical(raw)
     elif plat_lower == "purview":
         return map_purview_to_canonical(raw)
+    elif plat_lower in ["canonical", "generic", "standard"]:
+        return CanonicalAsset.model_validate(raw)
     else:
-        raise ValueError(f"Unsupported source platform: '{platform}'")
+        # Fallback: Try to parse directly as a CanonicalAsset if the structure matches
+        try:
+            return CanonicalAsset.model_validate(raw)
+        except Exception:
+            raise ValueError(
+                f"Unsupported source platform: '{platform}'. "
+                f"Please map to the canonical schema or ensure input matches CanonicalAsset structures."
+            )

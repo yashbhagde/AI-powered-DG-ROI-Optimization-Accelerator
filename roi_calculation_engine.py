@@ -248,7 +248,7 @@ class ROICalculationEngine:
 
         # Calculate program cost dynamically for only the active platforms in the ingested data
         active_platforms = roi_df["source_platform"].unique()
-        total_program_cost = sum(self.platform_costs.get(plat, 0.0) for plat in active_platforms)
+        total_program_cost = sum(self.platform_costs.get(plat.lower(), 150000.0) for plat in active_platforms)
         
         net_realized_roi = total_realized - total_program_cost
         roi_percentage = (net_realized_roi / total_program_cost) * 100.0 if total_program_cost > 0 else 0.0
@@ -279,7 +279,7 @@ class ROICalculationEngine:
         ).reset_index()
 
         # Add operating costs and compute platform net ROI
-        platform_agg["operating_cost"] = platform_agg["source_platform"].map(self.platform_costs).fillna(0.0)
+        platform_agg["operating_cost"] = platform_agg["source_platform"].map(lambda x: self.platform_costs.get(x.lower(), 150000.0))
         platform_agg["net_realized_value"] = platform_agg["total_realized_savings"] - platform_agg["operating_cost"]
         platform_agg["realized_roi_pct"] = (platform_agg["net_realized_value"] / platform_agg["operating_cost"]) * 100.0
         
