@@ -97,8 +97,20 @@ graph TD
 
 To minimize LLM token usage and ensure fast, predictable runs, a local client-side cache is built into the Scoring Engine:
 - **Metadata Hashing**: Computes unique hashes for each asset based on metadata values (description, owners, glossary, data quality pass rate).
-- **Selective Gemini Analysis**: Only assets with new or modified metadata are analyzed via Gemini APIs. 
-- **Instant Execution**: Cached assets skip the Gemini inference stage entirely, allowing daily report generation to complete in seconds with zero token overhead for unmodified datasets.
+- **Selective LLM Analysis**: Only assets with new or modified metadata are analyzed via LLM APIs. 
+- **Instant Execution**: Cached assets skip the LLM inference stage entirely, allowing daily report generation to complete in seconds with zero token overhead for unmodified datasets.
+
+---
+
+## Multi-LLM Auto-Routing
+
+The scoring engine supports multi-LLM vendor configurations out-of-the-box using LiteLLM. It automatically detects and routes to the appropriate provider and model based on the active API key loaded in environment variables:
+
+- **Gemini**: Set `GEMINI_API_KEY` (defaults to `gemini/gemini-2.5-flash`).
+- **Claude**: Set `ANTHROPIC_API_KEY` (defaults to `anthropic/claude-3-5-sonnet-20241022`).
+- **OpenAI GPT**: Set `OPENAI_API_KEY` (defaults to `openai/gpt-4o`).
+
+Clients can override the default models by setting the `LLM_MODEL` environment variable (e.g., `LLM_MODEL="openai/gpt-4-turbo"`).
 
 ---
 
