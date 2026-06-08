@@ -78,7 +78,7 @@ graph TD
 
 ### 2. Financial ROI Calculations
 * **Data Discovery Efficiency Savings (USD)**:
-  $$\text{Discovery Savings} = (\text{Annual Queries} \times 0.5\% \text{ search ratio}) \times 3.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \frac{\text{Doc Score}}{100}$$
+  $$\text{Discovery Savings} = (\text{Annual Queries} \times 0.05\% \text{ search ratio}) \times 3.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \frac{\text{Doc Score}}{100}$$
   *Grounded in Forrester's Total Economic Impact (TEI) studies on data catalog search productivity.*
 * **Redundant, Obsolete, and Trivial (ROT) Storage Savings (USD)**:
   Identifies datasets with 0 usage, inactive for $> 6$ months, and with storage footprint $> 0$.

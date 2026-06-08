@@ -8,7 +8,7 @@ class ROICalculationEngine:
         self,
         hourly_analyst_rate: float = 75.0,
         hours_saved_per_search: float = 3.5,
-        search_ratio: float = 0.005,          # 0.5% of query volume triggers a discovery/search context
+        search_ratio: float = 0.0005,          # 0.05% of query volume triggers a discovery/search context
         storage_cost_per_gb_year: float = 0.24, # $0.02/GB/month = $0.24/GB/year
         cost_per_data_breach: float = 150000.0,  # Estimated penalty/cost per unmitigated compliance asset
         breach_probability_ungoverned: float = 0.05,
@@ -79,14 +79,14 @@ class ROICalculationEngine:
         opportunity_storage_savings = potential_storage_savings if is_rot else 0.0
 
         # 3. Data Quality incident avoidance savings
-        # Baseline incidents: if unmonitored, we assume a baseline of 4 incidents/year.
+        # Baseline incidents: if unmonitored, we assume a baseline 5% probability of a major incident/year per asset.
         # If monitored: scale incidents based on DQ pass rate.
-        # DQ Pass >= 95%: 0 incidents/year
-        # DQ Pass 80-95%: 2 incidents/year
-        # DQ Pass < 80%: 8 incidents/year (due to noisy/broken feeds)
+        # DQ Pass >= 95%: 0.0 incidents/year
+        # DQ Pass 80-95%: 0.02 (2% probability) incidents/year
+        # DQ Pass < 80%: 0.10 (10% probability) incidents/year
         
         is_active = asset.usage.query_count > 0
-        baseline_incidents = 4.0 if is_active else 0.0
+        baseline_incidents = 0.05 if is_active else 0.0
         current_incidents = 0.0
         
         if is_active:
@@ -97,9 +97,9 @@ class ROICalculationEngine:
                 if pass_rate >= 0.95:
                     current_incidents = 0.0
                 elif pass_rate >= 0.80:
-                    current_incidents = 2.0
+                    current_incidents = 0.02
                 else:
-                    current_incidents = 8.0
+                    current_incidents = 0.10
 
         # Realized DQ Savings: Incidents avoided compared to the unmonitored baseline (if current is lower)
         realized_dq_incidents_avoided = max(0.0, baseline_incidents - current_incidents)
