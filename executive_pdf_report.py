@@ -179,6 +179,16 @@ def build_pdf_report(platform, input_file, output_file):
         leading=12,
         textColor=colors.HexColor("#1A365D")
     )
+    
+    td_def_style = ParagraphStyle(
+        'TableCellDefinition',
+        parent=styles['Normal'],
+        fontName='Helvetica-Oblique',
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#718096"),
+        leftIndent=20
+    )
 
     bullet_style = ParagraphStyle(
         'BulletCustom',
@@ -272,6 +282,20 @@ def build_pdf_report(platform, input_file, output_file):
         table_styles.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor("#EBF8FF")))
         row_idx += 1
         
+        indicator_descriptions = {
+            "documentation_coverage": "Definition: Measures the percentage of cataloged assets containing detailed business descriptions to ensure data discoverability.",
+            "ownership_coverage": "Definition: Tracks the percentage of data assets with a designated owner to establish clear data accountability.",
+            "glossary_linkage": "Definition: Measures how well data assets are mapped to standardized glossary terms to align technical schemas with business vocabulary.",
+            "classification_coverage": "Definition: Evaluates the tagging and categorization of fields to support search, filtering, and governance categorization.",
+            "rule_coverage": "Definition: Measures the proportion of critical data assets containing active, automated data quality profiling rules.",
+            "pass_rate": "Definition: Represents the percentage of run data quality checks that passed successfully, highlighting overall data reliability.",
+            "sensitive_data_governance": "Definition: Tracks the enforcement of owners and security tags specifically on sensitive assets to prevent unauthorized exposure.",
+            "stewardship_assignment": "Definition: Measures the percentage of cataloged assets with active data stewards assigned to guide daily maintenance.",
+            "lineage_coverage": "Definition: Tracks upstream and downstream dependencies to support data pipeline impact analysis and regulatory audits.",
+            "rot_identification": "Definition: Measures the proportion of cataloged assets that are actively queried (non-ROT), minimizing cloud storage waste.",
+            "storage_tier_optimization": "Definition: Tracks the transition of cold or infrequently accessed data to low-cost archival storage tiers to optimize spend."
+        }
+
         # Add indicators under this discipline
         for ind_key, ind_data in disp_data["indicators"].items():
             ind_name = ind_data["name"]
@@ -289,6 +313,17 @@ def build_pdf_report(platform, input_file, output_file):
                 Paragraph(f"<font color='{ind_color}'><b>{ind_status}</b></font>", td_bold_style)
             ])
             row_idx += 1
+
+            desc = indicator_descriptions.get(ind_key, "")
+            if desc:
+                consolidated_dashboard_data.append([
+                    Paragraph(desc, td_def_style),
+                    "", "", ""
+                ])
+                table_styles.append(('SPAN', (0, row_idx), (-1, row_idx)))
+                table_styles.append(('TOPPADDING', (0, row_idx), (-1, row_idx), 0))
+                table_styles.append(('BOTTOMPADDING', (0, row_idx), (-1, row_idx), 6))
+                row_idx += 1
             
     # Add Overall Maturity row
     overall_status, overall_color = get_maturity_status(overall_maturity)
