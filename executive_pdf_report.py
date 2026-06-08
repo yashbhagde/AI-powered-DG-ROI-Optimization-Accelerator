@@ -283,17 +283,17 @@ def build_pdf_report(platform, input_file, output_file):
         row_idx += 1
         
         indicator_descriptions = {
-            "documentation_coverage": "Definition: Measures the percentage of cataloged assets containing detailed business descriptions to ensure data discoverability.",
-            "ownership_coverage": "Definition: Tracks the percentage of data assets with a designated owner to establish clear data accountability.",
-            "glossary_linkage": "Definition: Measures how well data assets are mapped to standardized glossary terms to align technical schemas with business vocabulary.",
-            "classification_coverage": "Definition: Evaluates the tagging and categorization of fields to support search, filtering, and governance categorization.",
-            "rule_coverage": "Definition: Measures the proportion of critical data assets containing active, automated data quality profiling rules.",
-            "pass_rate": "Definition: Represents the percentage of run data quality checks that passed successfully, highlighting overall data reliability.",
-            "sensitive_data_governance": "Definition: Tracks the enforcement of owners and security tags specifically on sensitive assets to prevent unauthorized exposure.",
-            "stewardship_assignment": "Definition: Measures the percentage of cataloged assets with active data stewards assigned to guide daily maintenance.",
-            "lineage_coverage": "Definition: Tracks upstream and downstream dependencies to support data pipeline impact analysis and regulatory audits.",
-            "rot_identification": "Definition: Measures the proportion of cataloged assets that are actively queried (non-ROT), minimizing cloud storage waste.",
-            "storage_tier_optimization": "Definition: Tracks the transition of cold or infrequently accessed data to low-cost archival storage tiers to optimize spend."
+            "documentation_coverage": "Definition: Percentage of cataloged assets with active business descriptions.",
+            "ownership_coverage": "Definition: Percentage of assets with an assigned business or technical owner.",
+            "glossary_linkage": "Definition: Percentage of assets mapped to standardized glossary terms.",
+            "classification_coverage": "Definition: Percentage of fields with security/governance classification tags.",
+            "rule_coverage": "Definition: Percentage of critical assets with active data quality rules.",
+            "pass_rate": "Definition: Percentage of executed data quality checks that passed successfully.",
+            "sensitive_data_governance": "Definition: Percentage of sensitive assets with active owners and security tags.",
+            "stewardship_assignment": "Definition: Percentage of assets with an assigned data steward.",
+            "lineage_coverage": "Definition: Percentage of assets with mapped lineage relationships.",
+            "rot_identification": "Definition: Percentage of cataloged storage assets that are active (non-ROT).",
+            "storage_tier_optimization": "Definition: Percentage of cold storage assets on cost-optimized tiers."
         }
 
         # Add indicators under this discipline
