@@ -27,6 +27,11 @@ def add_page_decorations(canvas, doc):
     canvas.drawRightString(612 - 54, 36, f"Page {doc.page}")
     canvas.restoreState()
 
+def format_currency(val: float) -> str:
+    if val >= 1_000_000.0:
+        return f"${val / 1_000_000.0:.2f} million"
+    return f"${val:,.2f}"
+
 def build_pdf_report(platform, input_file, output_file):
     # 1. Load and parse raw metadata
     if not os.path.exists(input_file):
@@ -211,10 +216,10 @@ def build_pdf_report(platform, input_file, output_file):
         f"<b>Executive Summary:</b> An automated audit-ready maturity assessment was conducted on "
         f"<b>{total_assets}</b> data assets managed by {platform.title()}. The implementation achieves a "
         f"<b>Maturity Score of {overall_maturity:.2f}/5.0</b> (Documentation Health: {avg_doc:.1f}%, DQ Pass Rate: {maturity_results['audit_trail']['raw_metrics']['pass_rate']:.1f}%). "
-        f"Financially, the program has generated <b>${total_realized_savings:,.2f}</b> in realized business value "
+        f"Financially, the program has generated <b>{format_currency(total_realized_savings)}</b> in realized business value "
         f"against an estimated annual operating cost of "
-        f"<b>${operating_cost:,.2f}</b>, yielding a net realized value of <b>${net_realized_roi:,.2f}</b>. "
-        f"Additionally, the engine has identified <b>${total_opportunity_savings:,.2f}</b> in unrealized, actionable opportunity savings "
+        f"<b>{format_currency(operating_cost)}</b>, yielding a net realized value of <b>{format_currency(net_realized_roi)}</b>. "
+        f"Additionally, the engine has identified <b>{format_currency(total_opportunity_savings)}</b> in unrealized, actionable opportunity savings "
         f"that can be unlocked through targeted remediation efforts."
     )
     
@@ -383,37 +388,37 @@ def build_pdf_report(platform, input_file, output_file):
         [Paragraph("Financial Metric Category", th_style), Paragraph("Amount ($)", th_style), Paragraph("Value Explanation", th_style)],
         [
             Paragraph("Annual Operating Cost", td_style), 
-            Paragraph(f"${operating_cost:,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(operating_cost)}", td_bold_style), 
             Paragraph("Fixed software licensing and support overhead cost.", td_style)
         ],
         [
             Paragraph("Realized Discovery Savings", td_style), 
-            Paragraph(f"${roi_df['realized_discovery_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(roi_df['realized_discovery_savings'].sum())}", td_bold_style), 
             Paragraph("Productivity savings from faster data discovery.", td_style)
         ],
         [
             Paragraph("Realized DQ Incident Avoidance", td_style), 
-            Paragraph(f"${roi_df['realized_dq_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(roi_df['realized_dq_savings'].sum())}", td_bold_style), 
             Paragraph("Savings from avoiding pipeline failures and business downtime.", td_style)
         ],
         [
             Paragraph("Realized Risk Avoidance", td_style), 
-            Paragraph(f"${roi_df['realized_risk_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(roi_df['realized_risk_savings'].sum())}", td_bold_style), 
             Paragraph("Mitigated risk of security breaches and regulatory non-compliance.", td_style)
         ],
         [
             Paragraph("Realized Compute Optimization", td_style), 
-            Paragraph(f"${roi_df['realized_compute_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(roi_df['realized_compute_savings'].sum())}", td_bold_style), 
             Paragraph("Warehouse credit waste avoided via data quality monitoring.", td_style)
         ],
         [
             Paragraph("Realized Root Cause Analysis (RCA) Savings", td_style), 
-            Paragraph(f"${roi_df['realized_rca_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(roi_df['realized_rca_savings'].sum())}", td_bold_style), 
             Paragraph("Developer hours saved tracing pipeline failures using lineage.", td_style)
         ],
         [
             Paragraph("<b>Net Realized Program Value</b>", td_bold_style), 
-            Paragraph(f"<b>${net_realized_roi:,.2f}</b>", td_bold_style), 
+            Paragraph(f"<b>{format_currency(net_realized_roi)}</b>", td_bold_style), 
             Paragraph("<b>Net financial return of the program.</b>", td_bold_style)
         ],
         [
@@ -423,7 +428,7 @@ def build_pdf_report(platform, input_file, output_file):
         ],
         [
             Paragraph("Unrealized Opportunity Value", td_style), 
-            Paragraph(f"${total_opportunity_savings:,.2f}", td_bold_style), 
+            Paragraph(f"{format_currency(total_opportunity_savings)}", td_bold_style), 
             Paragraph("Value pipeline achievable through remediation tasks.", td_style)
         ]
     ]
