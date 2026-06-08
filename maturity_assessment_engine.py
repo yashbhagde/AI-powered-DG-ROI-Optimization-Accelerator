@@ -94,7 +94,8 @@ class MaturityAssessmentEngine:
                 "stewardship_assignment": 0.0,
                 "lineage_coverage": 0.0,
                 "rot_identification": 0.0,
-                "storage_tier_optimization": 0.0
+                "storage_tier_optimization": 0.0,
+                "role_access_control": 0.0
             }
 
         # 1. Documentation Coverage
@@ -166,6 +167,10 @@ class MaturityAssessmentEngine:
             optimized_storage = sum(1 for a in low_query_assets if a.usage.storage_tier in ["Standard-IA", "Glacier", "DeepArchive"])
             storage_tier_optimization_pct = (optimized_storage / len(low_query_assets)) * 100.0
 
+        # 12. Role & Access Control (Access management alignment)
+        role_access_control_count = sum(1 for a in assets if a.classifications and a.owners)
+        role_access_control_pct = (role_access_control_count / total_assets) * 100.0
+
         return {
             "documentation_coverage": doc_pct,
             "ownership_coverage": owner_pct,
@@ -177,7 +182,8 @@ class MaturityAssessmentEngine:
             "stewardship_assignment": stewardship_assignment_pct,
             "lineage_coverage": lineage_coverage_pct,
             "rot_identification": rot_identification_pct,
-            "storage_tier_optimization": storage_tier_optimization_pct
+            "storage_tier_optimization": storage_tier_optimization_pct,
+            "role_access_control": role_access_control_pct
         }
 
     def map_percentage_to_score(self, pct: float, thresholds: List[float]) -> float:

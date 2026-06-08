@@ -290,6 +290,7 @@ def build_pdf_report(platform, input_file, output_file):
             "rule_coverage": "Definition: Percentage of critical assets with active data quality rules.",
             "pass_rate": "Definition: Percentage of executed data quality checks that passed successfully.",
             "sensitive_data_governance": "Definition: Percentage of sensitive assets with active owners and security tags.",
+            "role_access_control": "Definition: Percentage of assets with both owner and classification tags assigned.",
             "stewardship_assignment": "Definition: Percentage of assets with an assigned data steward.",
             "lineage_coverage": "Definition: Percentage of assets with mapped lineage relationships.",
             "rot_identification": "Definition: Percentage of cataloged storage assets that are active (non-ROT).",

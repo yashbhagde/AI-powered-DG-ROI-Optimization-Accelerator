@@ -48,12 +48,17 @@
       "indicators": {
         "classification_coverage": {
           "name": "Classification Coverage",
-          "weight": 0.50,
+          "weight": 0.35,
           "thresholds": [40, 60, 75, 90]
         },
         "sensitive_data_governance": {
           "name": "Sensitive Data Governance",
-          "weight": 0.50,
+          "weight": 0.35,
+          "thresholds": [40, 60, 75, 90]
+        },
+        "role_access_control": {
+          "name": "Role & Access Control",
+          "weight": 0.30,
           "thresholds": [40, 60, 75, 90]
         }
       }
