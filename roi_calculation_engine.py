@@ -8,7 +8,7 @@ class ROICalculationEngine:
         self,
         hourly_analyst_rate: float = 75.0,
         hours_saved_per_search: float = 3.5,
-        search_ratio: float = 0.10,          # 10% of query volume triggers a discovery/search context
+        search_ratio: float = 0.005,          # 0.5% of query volume triggers a discovery/search context
         storage_cost_per_gb_year: float = 0.24, # $0.02/GB/month = $0.24/GB/year
         cost_per_data_breach: float = 150000.0,  # Estimated penalty/cost per unmitigated compliance asset
         breach_probability_ungoverned: float = 0.05,

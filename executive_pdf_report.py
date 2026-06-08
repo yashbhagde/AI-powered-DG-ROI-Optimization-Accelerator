@@ -632,6 +632,7 @@ def build_pdf_report(platform, input_file, output_file):
         [Paragraph("Parameter Constants", th_style), Paragraph("Value", th_style), Paragraph("Research Context / Citation Source", th_style)],
         [Paragraph("Loaded Analyst Rate", td_style), Paragraph(f"${roi_engine.hourly_analyst_rate:.2f}/hr", td_style), Paragraph("U.S. Labor Bureau senior loaded rate averages (1.35x multiplier).", td_style)],
         [Paragraph("Hours Saved per Search", td_style), Paragraph(f"{roi_engine.hours_saved_per_search:.1f} hrs", td_style), Paragraph("Forrester TEI data catalog productivity metrics.", td_style)],
+        [Paragraph("Search/Discovery Ratio", td_style), Paragraph(f"{roi_engine.search_ratio * 100:.1f}%", td_style), Paragraph("Manual human query proportion versus scheduled pipeline queries.", td_style)],
         [Paragraph("Annual Storage Cost / GB", td_style), Paragraph(f"${roi_engine.storage_cost_per_gb_year:.2f}", td_style), Paragraph("Standard hot cloud object tier blended averages (AWS, Azure).", td_style)],
         [Paragraph("Data Quality Error Cost", td_style), Paragraph(f"${roi_engine.cost_per_dq_incident:,.2f}", td_style), Paragraph("Gartner & Monte Carlo operational cost studies.", td_style)],
         [Paragraph("Compliance Breach Penalty", td_style), Paragraph(f"${roi_engine.cost_per_data_breach:,.2f}", td_style), Paragraph("IBM Cost of Data Breach localized/tier-1 infraction fine.", td_style)]
@@ -649,7 +650,7 @@ def build_pdf_report(platform, input_file, output_file):
     
     # Formulas Explanation
     story.append(Paragraph("<b>Equations & Derivations</b>", ParagraphStyle('SubheadingAppendix2', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
-    story.append(Paragraph("1. <b>Productivity Savings</b>: (Annual Queries * 10% search ratio) * 3.5 hrs saved * Analyst loaded rate * (Doc Score / 100). Grounded in Forrester's TEI frameworks.", bullet_style))
+    story.append(Paragraph("1. <b>Productivity Savings</b>: (Annual Queries * 0.5% search ratio) * 3.5 hrs saved * Analyst loaded rate * (Doc Score / 100). Grounded in Forrester's TEI frameworks.", bullet_style))
     story.append(Paragraph("2. <b>ROT Decommissioning</b>: Identified as size > 0, queries < 5/mo, and last accessed > 180 days. Savings = GB Size * $0.24/yr. Grounded in AWS/Azure storage tiers.", bullet_style))
     story.append(Paragraph("3. <b>DQ Incident Avoidance</b>: (Unmonitored baseline [4.0] - Current incidents) * $15k cost. Active DQ profiling drops current errors to 2.0 (for DQ >= 80%) or 0.0 (for DQ >= 95%). Grounded in Gartner data quality impact surveys.", bullet_style))
     story.append(Paragraph("4. <b>Risk Avoidance</b>: (Baseline breach prob. [5.0%] - Current prob.) * $150k breach penalty. Controls (ownership and classification) reduce probability to 1.0% (0.2% with active DQ checks). Grounded in IBM Security breach statistics and DAMA DMBOK principles.", bullet_style))
