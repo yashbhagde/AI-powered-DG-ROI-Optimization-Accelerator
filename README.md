@@ -85,8 +85,11 @@ graph TD
   $$\text{Storage Savings (Opportunity)} = \text{Asset Size (GB)} \times \$0.24/\text{GB}/\text{Year}$$
   *Grounded in standard AWS, Azure, and GCP blended object storage costs ($0.02/GB/month).*
 * **Data Quality Incident Avoidance Savings (USD)**:
-  $$\text{DQ Savings} = (\text{Baseline Incidents [4.0]} - \text{Current Incidents}) \times \$15,000/\text{Incident}$$
+  $$\text{DQ Savings} = (\text{Baseline Prob [5\%]} - \text{Current Prob}) \times \$15,000 \text{ incident cost}$$
   *Grounded in Gartner's Data Quality Market Impact Surveys and developer pipeline debug cost models.*
+* **Lineage-Driven Root Cause Analysis (RCA) Savings (USD)**:
+  $$\text{RCA Savings} = \text{Annual Incidents} \times 6.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \text{Lineage Coverage \%}$$
+  *Developer debugging hours saved tracing pipeline failures using automated lineage diagrams rather than manual SQL tracing.*
 * **Compliance & Breach Risk Savings (USD)**:
   $$\text{Risk Mitigation Savings} = (5\% \text{ baseline probability} - \text{Current probability}) \times \$150,000 \text{ breach cost}$$
   *Grounded in IBM Security's annual Cost of a Data Breach Report ($160/compromised PII record).*
