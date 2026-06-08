@@ -76,23 +76,40 @@ graph TD
   $$\text{Maturity Score} = (\text{Metadata Mgmt} \times 0.20) + (\text{Data Quality} \times 0.20) + (\text{Security \& Privacy} \times 0.15) + (\text{Stewardship} \times 0.15) + (\text{Lineage} \times 0.15) + (\text{Data Lifecycle} \times 0.15)$$
   *Grounded in the DAMA DMBOK Framework principles for administrative, technical, and operational metadata controls.*
 
-### 2. Financial ROI Calculations
+### 2. Financial ROI Calculations & Grounding
+
+The engine maps technical metadata to monetary value using conservative, industry-grounded models:
+
 * **Data Discovery Efficiency Savings (USD)**:
   $$\text{Discovery Savings} = (\text{Annual Queries} \times 0.05\% \text{ search ratio}) \times 3.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \frac{\text{Doc Score}}{100}$$
-  *Grounded in Forrester's Total Economic Impact (TEI) studies on data catalog search productivity.*
+  * *Grounding:* Forrester's *Total Economic Impact (TEI)* studies find data analysts spend up to 30-40% of their time finding/verifying data. The model uses a conservative $0.05\%$ search modifier to count only new discovery tasks, and scales value linearly with documentation completeness.
 * **Redundant, Obsolete, and Trivial (ROT) Storage Savings (USD)**:
-  Identifies datasets with 0 usage, inactive for $> 6$ months, and with storage footprint $> 0$.
-  $$\text{Storage Savings (Opportunity)} = \text{Asset Size (GB)} \times \$0.24/\text{GB}/\text{Year}$$
-  *Grounded in standard AWS, Azure, and GCP blended object storage costs ($0.02/GB/month).*
+  $$\text{Storage Savings} = \text{Asset Size (GB)} \times \text{Storage Rate (\$/GB/Year)}$$
+  * *Grounding:* Blended object storage costs across AWS/Azure/GCP (ranging from $0.276/GB/year for hot standard tiers to $0.01188/GB/year for deep archive). Applies only to assets with zero usage, inactive for $> 6$ months.
 * **Data Quality Incident Avoidance Savings (USD)**:
   $$\text{DQ Savings} = (\text{Baseline Prob [5\%]} - \text{Current Prob}) \times \$15,000 \text{ incident cost}$$
-  *Grounded in Gartner's Data Quality Market Impact Surveys and developer pipeline debug cost models.*
+  * *Grounding:* Gartner's *Data Quality Market Impact Surveys* estimate average enterprise impacts of bad data. The $15,000 baseline represents average developer debug time, compute reload costs, and downstream pipeline business fallout.
 * **Lineage-Driven Root Cause Analysis (RCA) Savings (USD)**:
-  $$\text{RCA Savings} = \text{Annual Incidents} \times 6.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \text{Lineage Coverage \%}$$
-  *Developer debugging hours saved tracing pipeline failures using automated lineage diagrams rather than manual SQL tracing.*
+  $$\text{RCA Savings} = \text{Annual Incidents} \times 6.5 \text{ hrs saved} \times \$75/\text{hr rate} \times \text{Lineage Presence [0 or 1]}$$
+  * *Grounding:* Internal software engineering time tracking benchmarks; automated lineage maps dependencies instantly, saving an average of 6.5 engineering hours per incident compared to manual SQL parsing.
 * **Compliance & Breach Risk Savings (USD)**:
   $$\text{Risk Mitigation Savings} = (5\% \text{ baseline probability} - \text{Current probability}) \times \$150,000 \text{ breach cost}$$
-  *Grounded in IBM Security's annual Cost of a Data Breach Report ($160/compromised PII record).*
+  * *Grounding:* IBM Security's *Cost of a Data Breach Report* ($165 per compromised record). Capped at $150K per sensitive asset (rather than assuming a full-scale corporate breach) to ensure defensibility.
+* **Compute Optimization Savings (USD)**:
+  $$\text{Compute Savings} = \text{Annual Compute Cost} \times 15\% \text{ waste reduction}$$
+  * *Grounding:* Snowflake consumption tariffs ($3.00/credit standard tier) mapped across warehouse sizes. Under-governed warehouses run 15-30% of their jobs on duplicate/bad pipelines (Monte Carlo observability benchmarks); we model a conservative 15% recovery rate on well-monitored pipelines.
+
+#### Default Parameters & Platform Cost Baselines
+
+To ensure calculations are robust and auditable, the model incorporates the following default TCO (Total Cost of Ownership) assumptions for licenses and administration support:
+
+| Platform | Blended Operating Cost (Annual) | Licensing & Support Context |
+| :--- | :--- | :--- |
+| **Ataccama** | $110,000 | Departmental / Starter Enterprise contract + partial FTE admin. |
+| **Alation** | $120,000 | Mid-market to entry enterprise contract tier + support overhead. |
+| **Microsoft Purview** | $150,000 | Consumption-based compute/scanning blended budget. |
+| **Collibra** | $200,000 | Full enterprise core licensing baseline + program staff. |
+| **Informatica IDMC** | $250,000 | Comprehensive suite licensing footprint + dedicated administration. |
 
 ---
 
