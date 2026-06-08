@@ -407,6 +407,11 @@ def build_pdf_report(platform, input_file, output_file):
             Paragraph("Warehouse credit waste avoided via data quality monitoring.", td_style)
         ],
         [
+            Paragraph("Realized Root Cause Analysis (RCA) Savings", td_style), 
+            Paragraph(f"${roi_df['realized_rca_savings'].sum():,.2f}", td_bold_style), 
+            Paragraph("Developer hours saved tracing pipeline failures using lineage.", td_style)
+        ],
+        [
             Paragraph("<b>Net Realized Program Value</b>", td_bold_style), 
             Paragraph(f"<b>${net_realized_roi:,.2f}</b>", td_bold_style), 
             Paragraph("<b>Net financial return of the program.</b>", td_bold_style)
@@ -430,7 +435,7 @@ def build_pdf_report(platform, input_file, output_file):
         ('PADDING', (0,0), (-1,-1), 5),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
         ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
-        ('BACKGROUND', (0,6), (-1,7), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
+        ('BACKGROUND', (0,7), (-1,8), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
     ]))
     story.append(KeepTogether(t_financial))
     story.append(Spacer(1, 15))

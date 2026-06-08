@@ -13,7 +13,8 @@ class ROICalculationEngine:
         cost_per_data_breach: float = 150000.0,  # Estimated penalty/cost per unmitigated compliance asset
         breach_probability_ungoverned: float = 0.05,
         breach_probability_governed: float = 0.002,
-        cost_per_dq_incident: float = 15000.0   # Dev debug hours + business decision impact cost
+        cost_per_dq_incident: float = 15000.0,   # Dev debug hours + business decision impact cost
+        hours_saved_per_rca: float = 6.5
     ):
         self.hourly_analyst_rate = hourly_analyst_rate
         self.hours_saved_per_search = hours_saved_per_search
@@ -23,6 +24,7 @@ class ROICalculationEngine:
         self.breach_probability_ungoverned = breach_probability_ungoverned
         self.breach_probability_governed = breach_probability_governed
         self.cost_per_dq_incident = cost_per_dq_incident
+        self.hours_saved_per_rca = hours_saved_per_rca
 
         # Default estimated annual costs for running each governance platform (Licenses + Headcount)
         self.platform_costs = {
@@ -174,8 +176,20 @@ class ROICalculationEngine:
             realized_compute_savings = 0.0
             opportunity_compute_savings = annual_compute_cost * 0.15
             
-        total_realized_savings = realized_discovery_savings + realized_storage_savings + realized_dq_savings + realized_risk_savings + realized_compute_savings
-        total_opportunity_savings = opportunity_discovery_savings + opportunity_storage_savings + opportunity_dq_savings + opportunity_risk_savings + opportunity_compute_savings
+        # 6. Lineage-Driven Root Cause Analysis (RCA) Savings
+        has_lineage = asset.lineage and (len(asset.lineage.upstream_assets) > 0 or len(asset.lineage.downstream_assets) > 0)
+        potential_rca_incidents = current_incidents if current_incidents > 0 else baseline_incidents
+        max_possible_rca_savings = potential_rca_incidents * self.hours_saved_per_rca * self.hourly_analyst_rate
+        
+        if has_lineage:
+            realized_rca_savings = max_possible_rca_savings
+            opportunity_rca_savings = 0.0
+        else:
+            realized_rca_savings = 0.0
+            opportunity_rca_savings = max_possible_rca_savings
+            
+        total_realized_savings = realized_discovery_savings + realized_storage_savings + realized_dq_savings + realized_risk_savings + realized_compute_savings + realized_rca_savings
+        total_opportunity_savings = opportunity_discovery_savings + opportunity_storage_savings + opportunity_dq_savings + opportunity_risk_savings + opportunity_compute_savings + opportunity_rca_savings
 
         return {
             "asset_id": asset.asset_id,
@@ -193,6 +207,8 @@ class ROICalculationEngine:
             "opportunity_risk_savings": opportunity_risk_savings,
             "realized_compute_savings": realized_compute_savings,
             "opportunity_compute_savings": opportunity_compute_savings,
+            "realized_rca_savings": realized_rca_savings,
+            "opportunity_rca_savings": opportunity_rca_savings,
             "total_realized_savings": total_realized_savings,
             "total_opportunity_savings": total_opportunity_savings
         }
