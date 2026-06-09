@@ -82,20 +82,97 @@ def generate_ataccama_metadata(num_assets=None):
                 "users": 10,
                 "lastRead": (now - timedelta(hours=5)).isoformat() + "Z"
             },
-            "sizeBytes": 1024 * 1024 * 1024 * 97 # 97 GB
+            "sizeBytes": 1024 * 1024 * 1024 * 97
+        },
+        # 4. File Asset
+        {
+            "id": "4004",
+            "title": "raw_employee_onboarding_dump.csv",
+            "type": "File",
+            "description": "Raw unstructured backup dump of employee personal fields, containing tax files and salary bands.",
+            "owner": "hr_stewards@company.com",
+            "terms": ["Employee Salary"],
+            "securityClassification": "Highly Confidential PII",
+            "dataQuality": {
+                "rulesRun": 10,
+                "rulesPassed": 9,
+                "profiledDate": (now - timedelta(days=2)).isoformat() + "Z"
+            },
+            "lineage": {
+                "sources": [],
+                "targets": ["ataccama_4001"]
+            },
+            "usage": {
+                "reads": 15,
+                "users": 2,
+                "lastRead": (now - timedelta(days=1)).isoformat() + "Z"
+            },
+            "sizeBytes": 1024 * 1024 * 250
+        },
+        # 5. Dashboard Asset
+        {
+            "id": "4005",
+            "title": "hr_operational_kpi_dashboard",
+            "type": "Dashboard",
+            "description": "BI dashboard tracking employee onboarding speeds, retention, and departmental compliance scores.",
+            "owner": "hr_stewards@company.com",
+            "terms": ["HR Domain"],
+            "securityClassification": "Confidential",
+            "dataQuality": {
+                "rulesRun": 0,
+                "rulesPassed": 0
+            },
+            "lineage": {
+                "sources": ["ataccama_4001"],
+                "targets": []
+            },
+            "usage": {
+                "reads": 820,
+                "users": 15,
+                "lastRead": (now - timedelta(hours=3)).isoformat() + "Z"
+            },
+            "sizeBytes": 0
+        },
+        # 6. View Asset
+        {
+            "id": "4006",
+            "title": "active_employees_payroll_view",
+            "type": "View",
+            "description": "Database view mapping active employees to their latest verified payroll runs.",
+            "owner": "hr_stewards@company.com",
+            "terms": ["Employee Salary"],
+            "securityClassification": "Confidential",
+            "dataQuality": {
+                "rulesRun": 5,
+                "rulesPassed": 5,
+                "profiledDate": (now - timedelta(days=1)).isoformat() + "Z"
+            },
+            "lineage": {
+                "sources": ["ataccama_4001"],
+                "targets": ["ataccama_4005"]
+            },
+            "usage": {
+                "reads": 450,
+                "users": 5,
+                "lastRead": (now - timedelta(hours=1)).isoformat() + "Z"
+            },
+            "sizeBytes": 1024 * 1024 * 5
         }
     ]
     
     if num_assets and num_assets > len(ataccama_export):
         import random
         target_count = num_assets
-        current_id = 4004
+        current_id = 4007
         
-        types = ["Table", "Database Catalog", "Data Set"]
+        types = ["Table", "Database Catalog", "Data Set", "File", "Dashboard", "View"]
         names_pool = {
             "Table": ["salary_records", "benefit_plans", "training_log", "performance_reviews", "recruiting_pipeline"],
             "Database Catalog": ["talent_acquisition_dw", "benefits_portal_db", "learning_mgmt_sys"],
-            "Data Set": ["annual_diversity_report", "contractor_invoices_csv", "attrition_predictions"]
+            "Data Set": ["annual_diversity_report", "contractor_invoices_csv", "attrition_predictions"],
+            "File": ["employee_export_v1.json", "resume_dump.zip", "contracts_archive.tar.gz"],
+            "Dashboard": ["onboarding_metrics_board", "retention_analytics_report", "compensation_kpi_dashboard"],
+            "View": ["employee_details_v", "payroll_runs_v", "benefits_enrollment_v"]
         }
         classifications = ["Highly Confidential PII", "Confidential", "Internal", "Public"]
         glossary_terms = ["Employee Compensation", "Tax Record", "Personal Address", "Job Grade"]

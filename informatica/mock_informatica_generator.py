@@ -78,8 +78,62 @@ def generate_informatica_metadata(num_assets=None):
             "usageStats": {
                 "readsCount": 500,
                 "usersCount": 5,
-                "sizeInBytes": 1024 * 1024 * 1024 * 1024 * 10, # 10 TB
+                "sizeInBytes": 1024 * 1024 * 1024 * 1024 * 10,
                 "lastAccessTime": (now - timedelta(hours=3)).isoformat() + "Z"
+            }
+        },
+        # 4. Dashboard Asset
+        {
+            "assetId": "3004",
+            "assetName": "financial_reconciliations_dashboard",
+            "assetType": "Dashboard",
+            "description": "BI Dashboard summarizing balance reconciliations, cash flows, and credit card validation summaries.",
+            "owners": [
+                {"name": "Robert Miller", "role": "Business Owner", "email": "robert.miller@company.com"}
+            ],
+            "glossaryAssignments": [
+                {"termId": "t_103", "termName": "Asset"}
+            ],
+            "sensitive": False,
+            "classification": "Confidential",
+            "dqRulesCount": 0,
+            "lineageInfo": {
+                "upstream": ["informatica_3005"],
+                "downstream": []
+            },
+            "usageStats": {
+                "readsCount": 450,
+                "usersCount": 12,
+                "sizeInBytes": 0,
+                "lastAccessTime": (now - timedelta(hours=2)).isoformat() + "Z"
+            }
+        },
+        # 5. View Asset
+        {
+            "assetId": "3005",
+            "assetName": "ledger_balance_summary_view",
+            "assetType": "View",
+            "description": "Staging View aggregating ledger transactions and balance metrics.",
+            "owners": [
+                {"name": "Cloud Data Team", "role": "Technical Owner", "email": "cloud_data@company.com"}
+            ],
+            "glossaryAssignments": [
+                {"termId": "t_101", "termName": "Transaction"}
+            ],
+            "sensitive": False,
+            "classification": "Internal",
+            "dqRulesCount": 5,
+            "dqRulesPassed": 5,
+            "dqLastRun": (now - timedelta(days=1)).isoformat() + "Z",
+            "lineageInfo": {
+                "upstream": ["informatica_3001"],
+                "downstream": ["informatica_3004"]
+            },
+            "usageStats": {
+                "readsCount": 1200,
+                "usersCount": 8,
+                "sizeInBytes": 1024 * 1024 * 18,
+                "lastAccessTime": (now - timedelta(hours=1)).isoformat() + "Z"
             }
         }
     ]
@@ -87,13 +141,15 @@ def generate_informatica_metadata(num_assets=None):
     if num_assets and num_assets > len(informatica_export):
         import random
         target_count = num_assets
-        current_id = 3004
+        current_id = 3006
         
-        types = ["Table", "File", "Database Schema"]
+        types = ["Table", "File", "Database Schema", "Dashboard", "View"]
         names_pool = {
             "Table": ["ledger_fact", "invoicing_dim", "balance_sheet", "reconciliation_log"],
             "File": ["tax_invoice_dump.json", "payroll_extract.csv", "ledger_backup.zip"],
-            "Database Schema": ["GL_ledger_db", "taxation_raw_db", "reconciliations_staging"]
+            "Database Schema": ["GL_ledger_db", "taxation_raw_db", "reconciliations_staging"],
+            "Dashboard": ["profitability_metrics_board", "cash_flow_report", "balance_compliance_dashboard"],
+            "View": ["ledger_summary_v", "tax_returns_v", "reconciliation_match_v"]
         }
         classifications = ["Confidential", "Internal", "Public"]
         glossary_terms = [("t_101", "Transaction"), ("t_102", "Revenue"), ("t_103", "Asset"), ("t_104", "Liability")]

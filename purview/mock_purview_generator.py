@@ -124,20 +124,84 @@ def generate_purview_metadata(num_assets=None):
                     "classifications": [{"typeName": "PII"}]
                 }
             ]
+        },
+        # 4. Schema Asset
+        {
+            "guid": "5004",
+            "name": "finance_stage_schema",
+            "typeName": "azure_sql_schema",
+            "attributes": {
+                "description": "Database schema staging daily transactions and staging audit logs.",
+                "qualifiedName": "mssql://proddb/finance/stage_schema",
+                "sizeInBytes": 1024 * 1024 * 1024 * 4,
+                "createdTime": (now - timedelta(days=200)).isoformat() + "Z"
+            },
+            "contacts": {
+                "Owner": [{"id": "ap_stewards", "info": "accounts_payable@company.com"}]
+            },
+            "classifications": [],
+            "meanings": [],
+            "dataQuality": {
+                "rulesRun": 5,
+                "rulesPassed": 4,
+                "lastProfiled": (now - timedelta(days=2)).isoformat() + "Z"
+            },
+            "lineage": {
+                "inputs": [],
+                "outputs": ["purview_5005"]
+            },
+            "usage": {
+                "queries": 150,
+                "users": 4,
+                "lastAccessed": (now - timedelta(hours=6)).isoformat() + "Z"
+            }
+        },
+        # 5. View Asset
+        {
+            "guid": "5005",
+            "name": "vendor_transactions_view",
+            "typeName": "azure_sql_view",
+            "attributes": {
+                "description": "Virtual view staging vendor billing and transaction logs.",
+                "qualifiedName": "mssql://proddb/finance/vendor_transactions_view",
+                "sizeInBytes": 1024 * 1024 * 15,
+                "createdTime": (now - timedelta(days=100)).isoformat() + "Z"
+            },
+            "contacts": {
+                "Owner": [{"id": "ap_stewards", "info": "accounts_payable@company.com"}]
+            },
+            "classifications": [],
+            "meanings": [],
+            "dataQuality": {
+                "rulesRun": 4,
+                "rulesPassed": 4,
+                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"
+            },
+            "lineage": {
+                "inputs": ["purview_5004"],
+                "outputs": ["purview_5001"]
+            },
+            "usage": {
+                "queries": 320,
+                "users": 6,
+                "lastAccessed": (now - timedelta(hours=3)).isoformat() + "Z"
+            }
         }
     ]
     
     if num_assets and num_assets > len(purview_export):
         import random
         target_count = num_assets
-        current_id = 5004
+        current_id = 5006
         
-        types = ["powerbi_dashboard", "azure_synapse_table", "azure_sql_table", "azure_blob_file"]
+        types = ["powerbi_dashboard", "azure_synapse_table", "azure_sql_table", "azure_blob_file", "azure_sql_schema", "azure_sql_view"]
         names_pool = {
             "powerbi_dashboard": ["sales_insights", "inventory_flow", "hr_retention_kpi", "cloud_spending_dashboard"],
             "azure_synapse_table": ["customer_dim", "orders_fact", "web_clicks_archive", "product_catalog"],
             "azure_sql_table": ["users", "orders", "subscription_plans", "payment_receipts"],
-            "azure_blob_file": ["raw_events_2025.json", "user_export_temp.csv", "backup_v1.bak"]
+            "azure_blob_file": ["raw_events_2025.json", "user_export_temp.csv", "backup_v1.bak"],
+            "azure_sql_schema": ["finance_dw_schema", "sales_staging_schema", "hr_raw_schema"],
+            "azure_sql_view": ["monthly_revenue_v", "active_employees_v", "inventory_depletion_v"]
         }
         classifications = ["PII", "Financial.Restricted", "MICROSOFT.PERSONAL.US_SOCIAL_SECURITY_NUMBER", "CONFIDENTIAL"]
         meanings = ["Customer", "EBITDA", "Revenue", "Transaction", "Invoice"]

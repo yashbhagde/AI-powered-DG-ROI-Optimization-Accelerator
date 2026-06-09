@@ -14,7 +14,7 @@
     "dataQuality": {
       "rulesRun": 30,
       "rulesPassed": 29,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [
@@ -25,7 +25,7 @@
     "usage": {
       "reads": 150,
       "users": 8,
-      "lastRead": "2026-06-03T15:08:07.019618Z"
+      "lastRead": "2026-06-08T02:54:54.686357Z"
     },
     "sizeBytes": 12582912
   },
@@ -40,7 +40,7 @@
     "dataQuality": {
       "rulesRun": 4,
       "rulesPassed": 1,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
@@ -51,7 +51,7 @@
     "usage": {
       "reads": 520,
       "users": 24,
-      "lastRead": "2026-06-04T13:08:07.019618Z"
+      "lastRead": "2026-06-09T00:54:54.686357Z"
     },
     "sizeBytes": 89128960
   },
@@ -68,7 +68,7 @@
     "dataQuality": {
       "rulesRun": 34,
       "rulesPassed": 30,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
@@ -79,20 +79,105 @@
     "usage": {
       "reads": 670,
       "users": 10,
-      "lastRead": "2026-06-04T10:08:07.019618Z"
+      "lastRead": "2026-06-08T21:54:54.686357Z"
     },
     "sizeBytes": 104152956928
   },
   {
     "id": "4004",
-    "title": "attrition_predictions_4004",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing attrition_predictions_4004 for performance tests.",
+    "title": "raw_employee_onboarding_dump.csv",
+    "type": "File",
+    "description": "Raw unstructured backup dump of employee personal fields, containing tax files and salary bands.",
+    "owner": "hr_stewards@company.com",
+    "terms": [
+      "Employee Salary"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 9,
+      "profiledDate": "2026-06-07T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": [
+        "ataccama_4001"
+      ]
+    },
+    "usage": {
+      "reads": 15,
+      "users": 2,
+      "lastRead": "2026-06-08T02:54:54.686357Z"
+    },
+    "sizeBytes": 262144000
+  },
+  {
+    "id": "4005",
+    "title": "hr_operational_kpi_dashboard",
+    "type": "Dashboard",
+    "description": "BI dashboard tracking employee onboarding speeds, retention, and departmental compliance scores.",
+    "owner": "hr_stewards@company.com",
+    "terms": [
+      "HR Domain"
+    ],
+    "securityClassification": "Confidential",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [
+        "ataccama_4001"
+      ],
+      "targets": []
+    },
+    "usage": {
+      "reads": 820,
+      "users": 15,
+      "lastRead": "2026-06-08T23:54:54.686357Z"
+    },
+    "sizeBytes": 0
+  },
+  {
+    "id": "4006",
+    "title": "active_employees_payroll_view",
+    "type": "View",
+    "description": "Database view mapping active employees to their latest verified payroll runs.",
+    "owner": "hr_stewards@company.com",
+    "terms": [
+      "Employee Salary"
+    ],
+    "securityClassification": "Confidential",
+    "dataQuality": {
+      "rulesRun": 5,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [
+        "ataccama_4001"
+      ],
+      "targets": [
+        "ataccama_4005"
+      ]
+    },
+    "usage": {
+      "reads": 450,
+      "users": 5,
+      "lastRead": "2026-06-09T01:54:54.686357Z"
+    },
+    "sizeBytes": 5242880
+  },
+  {
+    "id": "4007",
+    "title": "employee_details_v_4007",
+    "type": "View",
+    "description": "Mock Ataccama asset representing employee_details_v_4007 for performance tests.",
     "owner": "",
     "terms": [
-      "Job Grade"
+      "Tax Record"
     ],
-    "securityClassification": "",
+    "securityClassification": "Highly Confidential PII",
     "dataQuality": {
       "rulesRun": 0,
       "rulesPassed": 0
@@ -102,95 +187,91 @@
       "targets": []
     },
     "usage": {
-      "reads": 788,
-      "users": 33,
-      "lastRead": "2026-06-01T15:08:07.019618Z"
+      "reads": 469,
+      "users": 34,
+      "lastRead": "2026-05-11T02:54:54.686357Z"
     },
-    "sizeBytes": 6965796416
-  },
-  {
-    "id": "4005",
-    "title": "recruiting_pipeline_4005",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing recruiting_pipeline_4005 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 14,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1033,
-      "users": 13,
-      "lastRead": "2026-05-17T15:08:07.019618Z"
-    },
-    "sizeBytes": 8060990722
-  },
-  {
-    "id": "4006",
-    "title": "talent_acquisition_dw_4006",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4006 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 7,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 65,
-      "users": 23,
-      "lastRead": "2026-05-07T15:08:07.019618Z"
-    },
-    "sizeBytes": 8915652979
-  },
-  {
-    "id": "4007",
-    "title": "benefit_plans_4007",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing benefit_plans_4007 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [
-      "Job Grade"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 17,
-      "profiledDate": "2026-05-30T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1015,
-      "users": 20,
-      "lastRead": "2026-05-26T15:08:07.019618Z"
-    },
-    "sizeBytes": 1095680451
+    "sizeBytes": 275097438
   },
   {
     "id": "4008",
-    "title": "benefit_plans_4008",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing benefit_plans_4008 for performance tests.",
-    "owner": "steward.3@company.com",
+    "title": "retention_analytics_report_4008",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing retention_analytics_report_4008 for performance tests.",
+    "owner": "steward.5@company.com",
+    "terms": [],
+    "securityClassification": "Internal",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1017,
+      "users": 6,
+      "lastRead": "2026-06-05T02:54:54.686357Z"
+    },
+    "sizeBytes": 3446792403
+  },
+  {
+    "id": "4009",
+    "title": "payroll_runs_v_4009",
+    "type": "View",
+    "description": "Mock Ataccama asset representing payroll_runs_v_4009 for performance tests.",
+    "owner": "steward.4@company.com",
     "terms": [
-      "Job Grade"
+      "Tax Record"
     ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 933,
+      "users": 20,
+      "lastRead": "2026-06-03T02:54:54.686357Z"
+    },
+    "sizeBytes": 6151437066
+  },
+  {
+    "id": "4010",
+    "title": "compensation_kpi_dashboard_4010",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4010 for performance tests.",
+    "owner": "steward.4@company.com",
+    "terms": [],
+    "securityClassification": "Internal",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 7,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 893,
+      "users": 4,
+      "lastRead": "2026-05-24T02:54:54.686357Z"
+    },
+    "sizeBytes": 7578994213
+  },
+  {
+    "id": "4011",
+    "title": "onboarding_metrics_board_4011",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing onboarding_metrics_board_4011 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [],
     "securityClassification": "Public",
     "dataQuality": {
       "rulesRun": 0,
@@ -201,100 +282,71 @@
       "targets": []
     },
     "usage": {
-      "reads": 1444,
-      "users": 36,
-      "lastRead": "2026-05-30T15:08:07.019618Z"
-    },
-    "sizeBytes": 8089031884
-  },
-  {
-    "id": "4009",
-    "title": "annual_diversity_report_4009",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing annual_diversity_report_4009 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [
-      "Employee Compensation"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 8,
-      "profiledDate": "2026-06-02T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1070,
+      "reads": 251,
       "users": 4,
-      "lastRead": "2026-05-26T15:08:07.019618Z"
+      "lastRead": "2026-05-21T02:54:54.686357Z"
     },
-    "sizeBytes": 9380950523
-  },
-  {
-    "id": "4010",
-    "title": "attrition_predictions_4010",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing attrition_predictions_4010 for performance tests.",
-    "owner": "steward.1@company.com",
-    "terms": [
-      "Employee Compensation"
-    ],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 16,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 5,
-      "users": 0,
-      "lastRead": "2025-08-19T15:08:07.019618Z"
-    },
-    "sizeBytes": 49798534502
-  },
-  {
-    "id": "4011",
-    "title": "benefits_portal_db_4011",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing benefits_portal_db_4011 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 8,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 5,
-      "users": 0,
-      "lastRead": "2025-07-31T15:08:07.019618Z"
-    },
-    "sizeBytes": 589056753
+    "sizeBytes": 126844316
   },
   {
     "id": "4012",
     "title": "learning_mgmt_sys_4012",
     "type": "Database Catalog",
     "description": "Mock Ataccama asset representing learning_mgmt_sys_4012 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 10,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 79,
+      "users": 12,
+      "lastRead": "2026-06-02T02:54:54.686357Z"
+    },
+    "sizeBytes": 10253745213
+  },
+  {
+    "id": "4013",
+    "title": "compensation_kpi_dashboard_4013",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4013 for performance tests.",
+    "owner": "steward.5@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 404,
+      "users": 15,
+      "lastRead": "2026-06-08T02:54:54.686357Z"
+    },
+    "sizeBytes": 1287556281
+  },
+  {
+    "id": "4014",
+    "title": "employee_details_v_4014",
+    "type": "View",
+    "description": "Mock Ataccama asset representing employee_details_v_4014 for performance tests.",
     "owner": "",
     "terms": [
       "Job Grade"
     ],
-    "securityClassification": "Highly Confidential PII",
+    "securityClassification": "",
     "dataQuality": {
       "rulesRun": 0,
       "rulesPassed": 0
@@ -304,167 +356,119 @@
       "targets": []
     },
     "usage": {
-      "reads": 622,
+      "reads": 737,
       "users": 14,
-      "lastRead": "2026-05-15T15:08:07.019618Z"
+      "lastRead": "2026-06-05T02:54:54.686357Z"
     },
-    "sizeBytes": 9007032711
-  },
-  {
-    "id": "4013",
-    "title": "learning_mgmt_sys_4013",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing learning_mgmt_sys_4013 for performance tests.",
-    "owner": "steward.1@company.com",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 10,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 645,
-      "users": 27,
-      "lastRead": "2026-05-30T15:08:07.019618Z"
-    },
-    "sizeBytes": 2887678829
-  },
-  {
-    "id": "4014",
-    "title": "talent_acquisition_dw_4014",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4014 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 15,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 4,
-      "users": 2,
-      "lastRead": "2025-05-01T15:08:07.019618Z"
-    },
-    "sizeBytes": 37121027834
+    "sizeBytes": 5256346993
   },
   {
     "id": "4015",
-    "title": "attrition_predictions_4015",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing attrition_predictions_4015 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [],
-    "securityClassification": "Internal",
+    "title": "recruiting_pipeline_4015",
+    "type": "Table",
+    "description": "Mock Ataccama asset representing recruiting_pipeline_4015 for performance tests.",
+    "owner": "",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "Highly Confidential PII",
     "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
+      "rulesRun": 20,
+      "rulesPassed": 18,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 1286,
-      "users": 19,
-      "lastRead": "2026-05-15T15:08:07.019618Z"
+      "reads": 589,
+      "users": 24,
+      "lastRead": "2026-05-21T02:54:54.686357Z"
     },
-    "sizeBytes": 248185674
+    "sizeBytes": 9417373904
   },
   {
     "id": "4016",
-    "title": "attrition_predictions_4016",
+    "title": "contractor_invoices_csv_4016",
     "type": "Data Set",
-    "description": "Mock Ataccama asset representing attrition_predictions_4016 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 5,
-      "users": 2,
-      "lastRead": "2025-11-13T15:08:07.019618Z"
-    },
-    "sizeBytes": 4016333877
-  },
-  {
-    "id": "4017",
-    "title": "contractor_invoices_csv_4017",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4017 for performance tests.",
-    "owner": "steward.5@company.com",
+    "description": "Mock Ataccama asset representing contractor_invoices_csv_4016 for performance tests.",
+    "owner": "",
     "terms": [
-      "Tax Record"
+      "Job Grade"
     ],
     "securityClassification": "Public",
     "dataQuality": {
       "rulesRun": 10,
-      "rulesPassed": 7,
-      "profiledDate": "2026-05-31T15:08:07.019618Z"
+      "rulesPassed": 9,
+      "profiledDate": "2026-06-05T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 5,
-      "users": 0,
-      "lastRead": "2025-09-22T15:08:07.019618Z"
+      "reads": 3,
+      "users": 1,
+      "lastRead": "2025-09-25T02:54:54.686357Z"
     },
-    "sizeBytes": 43368387225
+    "sizeBytes": 86384660303
+  },
+  {
+    "id": "4017",
+    "title": "employee_export_v1.json_4017",
+    "type": "File",
+    "description": "Mock Ataccama asset representing employee_export_v1.json_4017 for performance tests.",
+    "owner": "steward.4@company.com",
+    "terms": [
+      "Tax Record"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1,
+      "users": 0,
+      "lastRead": "2025-05-05T02:54:54.686357Z"
+    },
+    "sizeBytes": 60926697942
   },
   {
     "id": "4018",
-    "title": "talent_acquisition_dw_4018",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4018 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Highly Confidential PII",
+    "title": "employee_details_v_4018",
+    "type": "View",
+    "description": "Mock Ataccama asset representing employee_details_v_4018 for performance tests.",
+    "owner": "steward.5@company.com",
+    "terms": [],
+    "securityClassification": "Public",
     "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 13,
-      "profiledDate": "2026-05-31T15:08:07.019618Z"
+      "rulesRun": 0,
+      "rulesPassed": 0
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 268,
-      "users": 6,
-      "lastRead": "2026-05-12T15:08:07.019618Z"
+      "reads": 1355,
+      "users": 30,
+      "lastRead": "2026-05-25T02:54:54.686357Z"
     },
-    "sizeBytes": 6451578887
+    "sizeBytes": 8644081054
   },
   {
     "id": "4019",
-    "title": "learning_mgmt_sys_4019",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing learning_mgmt_sys_4019 for performance tests.",
-    "owner": "steward.5@company.com",
-    "terms": [
-      "Employee Compensation"
-    ],
+    "title": "retention_analytics_report_4019",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing retention_analytics_report_4019 for performance tests.",
+    "owner": "",
+    "terms": [],
     "securityClassification": "Internal",
     "dataQuality": {
       "rulesRun": 0,
@@ -475,98 +479,124 @@
       "targets": []
     },
     "usage": {
-      "reads": 905,
-      "users": 29,
-      "lastRead": "2026-05-11T15:08:07.019618Z"
+      "reads": 1488,
+      "users": 21,
+      "lastRead": "2026-05-12T02:54:54.686357Z"
     },
-    "sizeBytes": 9211623097
+    "sizeBytes": 7019138775
   },
   {
     "id": "4020",
-    "title": "talent_acquisition_dw_4020",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4020 for performance tests.",
-    "owner": "",
+    "title": "resume_dump.zip_4020",
+    "type": "File",
+    "description": "Mock Ataccama asset representing resume_dump.zip_4020 for performance tests.",
+    "owner": "steward.5@company.com",
     "terms": [
-      "Personal Address"
+      "Tax Record"
     ],
     "securityClassification": "",
     "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 16,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
+      "rulesRun": 10,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-05T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 849,
-      "users": 22,
-      "lastRead": "2026-05-15T15:08:07.019618Z"
+      "reads": 1471,
+      "users": 6,
+      "lastRead": "2026-05-19T02:54:54.686357Z"
     },
-    "sizeBytes": 4607796074
+    "sizeBytes": 1180520570
   },
   {
     "id": "4021",
-    "title": "attrition_predictions_4021",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing attrition_predictions_4021 for performance tests.",
-    "owner": "steward.5@company.com",
+    "title": "benefit_plans_4021",
+    "type": "Table",
+    "description": "Mock Ataccama asset representing benefit_plans_4021 for performance tests.",
+    "owner": "steward.2@company.com",
     "terms": [
       "Employee Compensation"
     ],
-    "securityClassification": "Highly Confidential PII",
+    "securityClassification": "",
     "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 15,
-      "profiledDate": "2026-06-02T15:08:07.019618Z"
+      "rulesRun": 10,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-05T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 5,
-      "users": 0,
-      "lastRead": "2025-11-03T15:08:07.019618Z"
+      "reads": 935,
+      "users": 7,
+      "lastRead": "2026-05-14T02:54:54.686357Z"
     },
-    "sizeBytes": 35923702578
+    "sizeBytes": 2028807454
   },
   {
     "id": "4022",
-    "title": "benefits_portal_db_4022",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing benefits_portal_db_4022 for performance tests.",
-    "owner": "steward.3@company.com",
+    "title": "retention_analytics_report_4022",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing retention_analytics_report_4022 for performance tests.",
+    "owner": "steward.1@company.com",
     "terms": [
-      "Personal Address"
+      "Job Grade"
     ],
-    "securityClassification": "Confidential",
+    "securityClassification": "",
     "dataQuality": {
       "rulesRun": 10,
-      "rulesPassed": 10,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
+      "rulesPassed": 8,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 1104,
-      "users": 15,
-      "lastRead": "2026-05-25T15:08:07.019618Z"
+      "reads": 1340,
+      "users": 4,
+      "lastRead": "2026-05-20T02:54:54.686357Z"
     },
-    "sizeBytes": 7210948795
+    "sizeBytes": 9928879257
   },
   {
     "id": "4023",
-    "title": "benefits_portal_db_4023",
+    "title": "employee_export_v1.json_4023",
+    "type": "File",
+    "description": "Mock Ataccama asset representing employee_export_v1.json_4023 for performance tests.",
+    "owner": "steward.4@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 20,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 565,
+      "users": 7,
+      "lastRead": "2026-05-17T02:54:54.686357Z"
+    },
+    "sizeBytes": 1248579724
+  },
+  {
+    "id": "4024",
+    "title": "benefits_portal_db_4024",
     "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing benefits_portal_db_4023 for performance tests.",
+    "description": "Mock Ataccama asset representing benefits_portal_db_4024 for performance tests.",
     "owner": "steward.1@company.com",
     "terms": [],
-    "securityClassification": "Internal",
+    "securityClassification": "Public",
     "dataQuality": {
       "rulesRun": 0,
       "rulesPassed": 0
@@ -576,19 +606,21 @@
       "targets": []
     },
     "usage": {
-      "reads": 635,
-      "users": 5,
-      "lastRead": "2026-05-19T15:08:07.019618Z"
+      "reads": 264,
+      "users": 38,
+      "lastRead": "2026-05-14T02:54:54.686357Z"
     },
-    "sizeBytes": 7948245851
+    "sizeBytes": 3848808485
   },
   {
-    "id": "4024",
-    "title": "talent_acquisition_dw_4024",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4024 for performance tests.",
-    "owner": "steward.3@company.com",
-    "terms": [],
+    "id": "4025",
+    "title": "payroll_runs_v_4025",
+    "type": "View",
+    "description": "Mock Ataccama asset representing payroll_runs_v_4025 for performance tests.",
+    "owner": "steward.1@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
     "securityClassification": "",
     "dataQuality": {
       "rulesRun": 0,
@@ -599,40 +631,189 @@
       "targets": []
     },
     "usage": {
-      "reads": 1410,
+      "reads": 609,
       "users": 19,
-      "lastRead": "2026-05-05T15:08:07.019618Z"
+      "lastRead": "2026-06-01T02:54:54.686357Z"
     },
-    "sizeBytes": 4927896387
-  },
-  {
-    "id": "4025",
-    "title": "benefit_plans_4025",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing benefit_plans_4025 for performance tests.",
-    "owner": "steward.5@company.com",
-    "terms": [],
-    "securityClassification": "Internal",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 538,
-      "users": 10,
-      "lastRead": "2026-05-13T15:08:07.019618Z"
-    },
-    "sizeBytes": 5524765886
+    "sizeBytes": 5533005115
   },
   {
     "id": "4026",
     "title": "talent_acquisition_dw_4026",
     "type": "Database Catalog",
     "description": "Mock Ataccama asset representing talent_acquisition_dw_4026 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 16,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 93,
+      "users": 14,
+      "lastRead": "2026-06-09T02:54:54.686357Z"
+    },
+    "sizeBytes": 6506319047
+  },
+  {
+    "id": "4027",
+    "title": "attrition_predictions_4027",
+    "type": "Data Set",
+    "description": "Mock Ataccama asset representing attrition_predictions_4027 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1451,
+      "users": 10,
+      "lastRead": "2026-05-26T02:54:54.686357Z"
+    },
+    "sizeBytes": 2012701107
+  },
+  {
+    "id": "4028",
+    "title": "compensation_kpi_dashboard_4028",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4028 for performance tests.",
+    "owner": "",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 8,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1432,
+      "users": 23,
+      "lastRead": "2026-05-20T02:54:54.686357Z"
+    },
+    "sizeBytes": 4896860724
+  },
+  {
+    "id": "4029",
+    "title": "compensation_kpi_dashboard_4029",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4029 for performance tests.",
+    "owner": "",
+    "terms": [],
+    "securityClassification": "Internal",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 6,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 482,
+      "users": 15,
+      "lastRead": "2026-05-13T02:54:54.686357Z"
+    },
+    "sizeBytes": 7050462604
+  },
+  {
+    "id": "4030",
+    "title": "retention_analytics_report_4030",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing retention_analytics_report_4030 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [
+      "Tax Record"
+    ],
+    "securityClassification": "Confidential",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 7,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1328,
+      "users": 16,
+      "lastRead": "2026-06-07T02:54:54.686357Z"
+    },
+    "sizeBytes": 8006867942
+  },
+  {
+    "id": "4031",
+    "title": "employee_export_v1.json_4031",
+    "type": "File",
+    "description": "Mock Ataccama asset representing employee_export_v1.json_4031 for performance tests.",
+    "owner": "",
+    "terms": [
+      "Personal Address"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 9,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 66,
+      "users": 33,
+      "lastRead": "2026-05-12T02:54:54.686357Z"
+    },
+    "sizeBytes": 4320609790
+  },
+  {
+    "id": "4032",
+    "title": "compensation_kpi_dashboard_4032",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4032 for performance tests.",
+    "owner": "steward.5@company.com",
+    "terms": [],
+    "securityClassification": "Confidential",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1006,
+      "users": 20,
+      "lastRead": "2026-05-11T02:54:54.686357Z"
+    },
+    "sizeBytes": 6490976078
+  },
+  {
+    "id": "4033",
+    "title": "benefit_plans_4033",
+    "type": "Table",
+    "description": "Mock Ataccama asset representing benefit_plans_4033 for performance tests.",
     "owner": "",
     "terms": [
       "Personal Address"
@@ -640,33 +821,8 @@
     "securityClassification": "Confidential",
     "dataQuality": {
       "rulesRun": 20,
-      "rulesPassed": 16,
-      "profiledDate": "2026-05-30T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 0,
-      "users": 0,
-      "lastRead": "2025-11-28T15:08:07.019618Z"
-    },
-    "sizeBytes": 37759606817
-  },
-  {
-    "id": "4027",
-    "title": "contractor_invoices_csv_4027",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4027 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Public",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
+      "rulesPassed": 11,
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
@@ -674,585 +830,430 @@
     },
     "usage": {
       "reads": 1136,
-      "users": 26,
-      "lastRead": "2026-05-14T15:08:07.019618Z"
+      "users": 10,
+      "lastRead": "2026-05-15T02:54:54.686357Z"
     },
-    "sizeBytes": 3907209505
+    "sizeBytes": 3010426059
   },
   {
-    "id": "4028",
-    "title": "contractor_invoices_csv_4028",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4028 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Employee Compensation"
-    ],
+    "id": "4034",
+    "title": "benefits_enrollment_v_4034",
+    "type": "View",
+    "description": "Mock Ataccama asset representing benefits_enrollment_v_4034 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [],
     "securityClassification": "Public",
     "dataQuality": {
       "rulesRun": 10,
-      "rulesPassed": 10,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
+      "rulesPassed": 6,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 1229,
-      "users": 20,
-      "lastRead": "2026-06-03T15:08:07.019618Z"
+      "reads": 1107,
+      "users": 16,
+      "lastRead": "2026-06-06T02:54:54.686357Z"
     },
-    "sizeBytes": 1155836654
+    "sizeBytes": 3177294161
   },
   {
-    "id": "4029",
-    "title": "annual_diversity_report_4029",
+    "id": "4035",
+    "title": "recruiting_pipeline_4035",
+    "type": "Table",
+    "description": "Mock Ataccama asset representing recruiting_pipeline_4035 for performance tests.",
+    "owner": "steward.5@company.com",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 4,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1130,
+      "users": 9,
+      "lastRead": "2026-05-17T02:54:54.686357Z"
+    },
+    "sizeBytes": 4924363034
+  },
+  {
+    "id": "4036",
+    "title": "onboarding_metrics_board_4036",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing onboarding_metrics_board_4036 for performance tests.",
+    "owner": "steward.4@company.com",
+    "terms": [],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 8,
+      "profiledDate": "2026-06-06T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 888,
+      "users": 37,
+      "lastRead": "2026-06-01T02:54:54.686357Z"
+    },
+    "sizeBytes": 1482175348
+  },
+  {
+    "id": "4037",
+    "title": "employee_details_v_4037",
+    "type": "View",
+    "description": "Mock Ataccama asset representing employee_details_v_4037 for performance tests.",
+    "owner": "steward.4@company.com",
+    "terms": [],
+    "securityClassification": "Public",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 18,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1181,
+      "users": 34,
+      "lastRead": "2026-05-11T02:54:54.686357Z"
+    },
+    "sizeBytes": 5120503054
+  },
+  {
+    "id": "4038",
+    "title": "resume_dump.zip_4038",
+    "type": "File",
+    "description": "Mock Ataccama asset representing resume_dump.zip_4038 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [
+      "Personal Address"
+    ],
+    "securityClassification": "Public",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 5,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 485,
+      "users": 26,
+      "lastRead": "2026-05-11T02:54:54.686357Z"
+    },
+    "sizeBytes": 5478877585
+  },
+  {
+    "id": "4039",
+    "title": "contracts_archive.tar.gz_4039",
+    "type": "File",
+    "description": "Mock Ataccama asset representing contracts_archive.tar.gz_4039 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "Internal",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 97,
+      "users": 5,
+      "lastRead": "2026-05-24T02:54:54.686357Z"
+    },
+    "sizeBytes": 7208155045
+  },
+  {
+    "id": "4040",
+    "title": "benefits_enrollment_v_4040",
+    "type": "View",
+    "description": "Mock Ataccama asset representing benefits_enrollment_v_4040 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 619,
+      "users": 24,
+      "lastRead": "2026-05-29T02:54:54.686357Z"
+    },
+    "sizeBytes": 2305748648
+  },
+  {
+    "id": "4041",
+    "title": "employee_export_v1.json_4041",
+    "type": "File",
+    "description": "Mock Ataccama asset representing employee_export_v1.json_4041 for performance tests.",
+    "owner": "",
+    "terms": [
+      "Job Grade"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 8,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 141,
+      "users": 29,
+      "lastRead": "2026-05-25T02:54:54.686357Z"
+    },
+    "sizeBytes": 939617920
+  },
+  {
+    "id": "4042",
+    "title": "compensation_kpi_dashboard_4042",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing compensation_kpi_dashboard_4042 for performance tests.",
+    "owner": "",
+    "terms": [],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1118,
+      "users": 28,
+      "lastRead": "2026-05-13T02:54:54.686357Z"
+    },
+    "sizeBytes": 5679337697
+  },
+  {
+    "id": "4043",
+    "title": "annual_diversity_report_4043",
     "type": "Data Set",
-    "description": "Mock Ataccama asset representing annual_diversity_report_4029 for performance tests.",
+    "description": "Mock Ataccama asset representing annual_diversity_report_4043 for performance tests.",
+    "owner": "",
+    "terms": [
+      "Tax Record"
+    ],
+    "securityClassification": "Public",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 6,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 771,
+      "users": 23,
+      "lastRead": "2026-05-19T02:54:54.686357Z"
+    },
+    "sizeBytes": 795550835
+  },
+  {
+    "id": "4044",
+    "title": "onboarding_metrics_board_4044",
+    "type": "Dashboard",
+    "description": "Mock Ataccama asset representing onboarding_metrics_board_4044 for performance tests.",
+    "owner": "steward.1@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 12,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 154,
+      "users": 18,
+      "lastRead": "2026-05-30T02:54:54.686357Z"
+    },
+    "sizeBytes": 5905015431
+  },
+  {
+    "id": "4045",
+    "title": "payroll_runs_v_4045",
+    "type": "View",
+    "description": "Mock Ataccama asset representing payroll_runs_v_4045 for performance tests.",
+    "owner": "",
+    "terms": [],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 10,
+      "rulesPassed": 9,
+      "profiledDate": "2026-06-03T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 506,
+      "users": 38,
+      "lastRead": "2026-05-15T02:54:54.686357Z"
+    },
+    "sizeBytes": 1570999989
+  },
+  {
+    "id": "4046",
+    "title": "payroll_runs_v_4046",
+    "type": "View",
+    "description": "Mock Ataccama asset representing payroll_runs_v_4046 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "Internal",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 492,
+      "users": 28,
+      "lastRead": "2026-06-04T02:54:54.686357Z"
+    },
+    "sizeBytes": 9767330815
+  },
+  {
+    "id": "4047",
+    "title": "contractor_invoices_csv_4047",
+    "type": "Data Set",
+    "description": "Mock Ataccama asset representing contractor_invoices_csv_4047 for performance tests.",
+    "owner": "steward.3@company.com",
+    "terms": [
+      "Employee Compensation"
+    ],
+    "securityClassification": "",
+    "dataQuality": {
+      "rulesRun": 0,
+      "rulesPassed": 0
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 833,
+      "users": 17,
+      "lastRead": "2026-06-03T02:54:54.686357Z"
+    },
+    "sizeBytes": 6531507666
+  },
+  {
+    "id": "4048",
+    "title": "resume_dump.zip_4048",
+    "type": "File",
+    "description": "Mock Ataccama asset representing resume_dump.zip_4048 for performance tests.",
+    "owner": "",
+    "terms": [
+      "Job Grade"
+    ],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 19,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1444,
+      "users": 9,
+      "lastRead": "2026-05-21T02:54:54.686357Z"
+    },
+    "sizeBytes": 10664974444
+  },
+  {
+    "id": "4049",
+    "title": "benefits_portal_db_4049",
+    "type": "Database Catalog",
+    "description": "Mock Ataccama asset representing benefits_portal_db_4049 for performance tests.",
+    "owner": "steward.2@company.com",
+    "terms": [],
+    "securityClassification": "Highly Confidential PII",
+    "dataQuality": {
+      "rulesRun": 20,
+      "rulesPassed": 18,
+      "profiledDate": "2026-06-04T02:54:54.686357Z"
+    },
+    "lineage": {
+      "sources": [],
+      "targets": []
+    },
+    "usage": {
+      "reads": 1007,
+      "users": 36,
+      "lastRead": "2026-06-07T02:54:54.686357Z"
+    },
+    "sizeBytes": 4964001302
+  },
+  {
+    "id": "4050",
+    "title": "resume_dump.zip_4050",
+    "type": "File",
+    "description": "Mock Ataccama asset representing resume_dump.zip_4050 for performance tests.",
     "owner": "steward.5@company.com",
     "terms": [
       "Personal Address"
     ],
     "securityClassification": "",
     "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 638,
-      "users": 8,
-      "lastRead": "2026-05-29T15:08:07.019618Z"
-    },
-    "sizeBytes": 3272125904
-  },
-  {
-    "id": "4030",
-    "title": "training_log_4030",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing training_log_4030 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 6,
-      "profiledDate": "2026-06-02T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1037,
-      "users": 23,
-      "lastRead": "2026-05-08T15:08:07.019618Z"
-    },
-    "sizeBytes": 8175759140
-  },
-  {
-    "id": "4031",
-    "title": "salary_records_4031",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing salary_records_4031 for performance tests.",
-    "owner": "steward.3@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1207,
-      "users": 24,
-      "lastRead": "2026-05-08T15:08:07.019618Z"
-    },
-    "sizeBytes": 6959300372
-  },
-  {
-    "id": "4032",
-    "title": "talent_acquisition_dw_4032",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4032 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 17,
-      "profiledDate": "2026-05-30T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 716,
-      "users": 18,
-      "lastRead": "2026-05-06T15:08:07.019618Z"
-    },
-    "sizeBytes": 4148545829
-  },
-  {
-    "id": "4033",
-    "title": "annual_diversity_report_4033",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing annual_diversity_report_4033 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Tax Record"
-    ],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 427,
-      "users": 10,
-      "lastRead": "2026-05-21T15:08:07.019618Z"
-    },
-    "sizeBytes": 10275201576
-  },
-  {
-    "id": "4034",
-    "title": "contractor_invoices_csv_4034",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4034 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [],
-    "securityClassification": "Public",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 17,
-      "profiledDate": "2026-05-31T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1272,
-      "users": 29,
-      "lastRead": "2026-05-22T15:08:07.019618Z"
-    },
-    "sizeBytes": 1252697520
-  },
-  {
-    "id": "4035",
-    "title": "contractor_invoices_csv_4035",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4035 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [
-      "Employee Compensation"
-    ],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 9,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 671,
-      "users": 38,
-      "lastRead": "2026-05-31T15:08:07.019618Z"
-    },
-    "sizeBytes": 6074947549
-  },
-  {
-    "id": "4036",
-    "title": "talent_acquisition_dw_4036",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4036 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Employee Compensation"
-    ],
-    "securityClassification": "Internal",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 16,
-      "profiledDate": "2026-06-02T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1041,
-      "users": 15,
-      "lastRead": "2026-05-21T15:08:07.019618Z"
-    },
-    "sizeBytes": 7856086451
-  },
-  {
-    "id": "4037",
-    "title": "benefit_plans_4037",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing benefit_plans_4037 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
       "rulesRun": 20,
       "rulesPassed": 10,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
+      "profiledDate": "2026-06-08T02:54:54.686357Z"
     },
     "lineage": {
       "sources": [],
       "targets": []
     },
     "usage": {
-      "reads": 173,
-      "users": 7,
-      "lastRead": "2026-05-20T15:08:07.019618Z"
+      "reads": 639,
+      "users": 33,
+      "lastRead": "2026-05-27T02:54:54.686357Z"
     },
-    "sizeBytes": 4415518731
-  },
-  {
-    "id": "4038",
-    "title": "recruiting_pipeline_4038",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing recruiting_pipeline_4038 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 6,
-      "profiledDate": "2026-05-30T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1449,
-      "users": 27,
-      "lastRead": "2026-05-09T15:08:07.019618Z"
-    },
-    "sizeBytes": 7980481654
-  },
-  {
-    "id": "4039",
-    "title": "talent_acquisition_dw_4039",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4039 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Job Grade"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 4,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1308,
-      "users": 37,
-      "lastRead": "2026-05-09T15:08:07.019618Z"
-    },
-    "sizeBytes": 2155052259
-  },
-  {
-    "id": "4040",
-    "title": "contractor_invoices_csv_4040",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4040 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 11,
-      "profiledDate": "2026-06-02T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 910,
-      "users": 3,
-      "lastRead": "2026-05-13T15:08:07.019618Z"
-    },
-    "sizeBytes": 3510427714
-  },
-  {
-    "id": "4041",
-    "title": "annual_diversity_report_4041",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing annual_diversity_report_4041 for performance tests.",
-    "owner": "steward.3@company.com",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 18,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 421,
-      "users": 28,
-      "lastRead": "2026-05-12T15:08:07.019618Z"
-    },
-    "sizeBytes": 3340556583
-  },
-  {
-    "id": "4042",
-    "title": "contractor_invoices_csv_4042",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing contractor_invoices_csv_4042 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Personal Address"
-    ],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 12,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 984,
-      "users": 27,
-      "lastRead": "2026-05-09T15:08:07.019618Z"
-    },
-    "sizeBytes": 9404989785
-  },
-  {
-    "id": "4043",
-    "title": "benefits_portal_db_4043",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing benefits_portal_db_4043 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 0,
-      "rulesPassed": 0
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 843,
-      "users": 30,
-      "lastRead": "2026-05-24T15:08:07.019618Z"
-    },
-    "sizeBytes": 9536866766
-  },
-  {
-    "id": "4044",
-    "title": "annual_diversity_report_4044",
-    "type": "Data Set",
-    "description": "Mock Ataccama asset representing annual_diversity_report_4044 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 10,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 340,
-      "users": 30,
-      "lastRead": "2026-05-29T15:08:07.019618Z"
-    },
-    "sizeBytes": 10104513734
-  },
-  {
-    "id": "4045",
-    "title": "training_log_4045",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing training_log_4045 for performance tests.",
-    "owner": "steward.3@company.com",
-    "terms": [],
-    "securityClassification": "Public",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 15,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 0,
-      "users": 2,
-      "lastRead": "2025-05-15T15:08:07.019618Z"
-    },
-    "sizeBytes": 94945909892
-  },
-  {
-    "id": "4046",
-    "title": "benefit_plans_4046",
-    "type": "Table",
-    "description": "Mock Ataccama asset representing benefit_plans_4046 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [],
-    "securityClassification": "Highly Confidential PII",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 18,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 584,
-      "users": 40,
-      "lastRead": "2026-05-13T15:08:07.019618Z"
-    },
-    "sizeBytes": 7876648068
-  },
-  {
-    "id": "4047",
-    "title": "talent_acquisition_dw_4047",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4047 for performance tests.",
-    "owner": "steward.2@company.com",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 19,
-      "profiledDate": "2026-06-03T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 629,
-      "users": 30,
-      "lastRead": "2026-05-06T15:08:07.019618Z"
-    },
-    "sizeBytes": 1827583558
-  },
-  {
-    "id": "4048",
-    "title": "benefits_portal_db_4048",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing benefits_portal_db_4048 for performance tests.",
-    "owner": "",
-    "terms": [
-      "Job Grade"
-    ],
-    "securityClassification": "Confidential",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 10,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 2,
-      "users": 2,
-      "lastRead": "2025-06-24T15:08:07.019618Z"
-    },
-    "sizeBytes": 44207220594
-  },
-  {
-    "id": "4049",
-    "title": "talent_acquisition_dw_4049",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing talent_acquisition_dw_4049 for performance tests.",
-    "owner": "steward.4@company.com",
-    "terms": [
-      "Employee Compensation"
-    ],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 10,
-      "rulesPassed": 9,
-      "profiledDate": "2026-05-29T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 1255,
-      "users": 4,
-      "lastRead": "2026-05-08T15:08:07.019618Z"
-    },
-    "sizeBytes": 2701256656
-  },
-  {
-    "id": "4050",
-    "title": "learning_mgmt_sys_4050",
-    "type": "Database Catalog",
-    "description": "Mock Ataccama asset representing learning_mgmt_sys_4050 for performance tests.",
-    "owner": "",
-    "terms": [],
-    "securityClassification": "",
-    "dataQuality": {
-      "rulesRun": 20,
-      "rulesPassed": 9,
-      "profiledDate": "2026-06-01T15:08:07.019618Z"
-    },
-    "lineage": {
-      "sources": [],
-      "targets": []
-    },
-    "usage": {
-      "reads": 836,
-      "users": 22,
-      "lastRead": "2026-05-12T15:08:07.019618Z"
-    },
-    "sizeBytes": 4517523277
+    "sizeBytes": 7103488319
   }
 ]

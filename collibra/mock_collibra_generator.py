@@ -131,20 +131,69 @@ def generate_collibra_metadata(num_assets=None):
                 "sizeInBytes": 0,
                 "lastAccessed": (now - timedelta(days=5)).isoformat() + "Z"
             }
+        },
+        # 5. File Asset
+        {
+            "id": "2004",
+            "name": "crm_contacts_daily_export.csv",
+            "type": "File",
+            "attributes": [
+                {"type": "Description", "value": "Daily backup file containing customer email and phone exports."},
+                {"type": "Data Classification", "value": "Confidential"}
+            ],
+            "relations": [
+                {"type": "Owned By", "target": "CRM Data Team", "role": "Technical Owner", "email": "crm_devs@company.com"}
+            ],
+            "dataQuality": {
+                "rulesRun": 5,
+                "rulesPassed": 4,
+                "lastProfiled": (now - timedelta(days=2)).isoformat() + "Z"
+            },
+            "usage": {
+                "queryCount": 12,
+                "userCount": 2,
+                "sizeInBytes": 1024 * 1024 * 180,
+                "lastAccessed": (now - timedelta(days=1)).isoformat() + "Z"
+            }
+        },
+        # 6. View Asset
+        {
+            "id": "2005",
+            "name": "active_crm_customers_view",
+            "type": "View",
+            "attributes": [
+                {"type": "Description", "value": "Virtual view joining customer CRM staging data with active accounts status."}
+            ],
+            "relations": [
+                {"type": "Owned By", "target": "CRM Data Team", "role": "Technical Owner", "email": "crm_devs@company.com"}
+            ],
+            "dataQuality": {
+                "rulesRun": 4,
+                "rulesPassed": 4,
+                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"
+            },
+            "usage": {
+                "queryCount": 540,
+                "userCount": 12,
+                "sizeInBytes": 1024 * 1024 * 12,
+                "lastAccessed": (now - timedelta(hours=2)).isoformat() + "Z"
+            }
         }
     ]
     
     if num_assets and num_assets > len(collibra_export):
         import random
         target_count = num_assets
-        current_id = 2004
+        current_id = 2006
         
-        types = ["Database", "Database Table", "Business Term", "Report"]
+        types = ["Database", "Database Table", "Business Term", "Report", "File", "View"]
         names_pool = {
             "Database": ["Analytics_DB", "HR_Prod_DB", "Inventory_DB", "Compliance_DB"],
             "Database Table": ["billing_history", "user_profiles", "session_metrics", "device_logs", "payroll_adjustments", "supplier_list"],
             "Business Term": ["Billing Date", "Account Balance", "Employee Level", "Risk Score", "Vendor Tier"],
-            "Report": ["Monthly Financial Summary", "Operational KPI Dashboard", "Compliance Auditing Log"]
+            "Report": ["Monthly Financial Summary", "Operational KPI Dashboard", "Compliance Auditing Log"],
+            "File": ["export_dump.csv", "backup_data.json", "log_extract.txt"],
+            "View": ["active_users_v", "monthly_sales_v", "inventory_summary_v"]
         }
         classifications = ["Confidential", "Internal", "Public", "Highly Restricted"]
         

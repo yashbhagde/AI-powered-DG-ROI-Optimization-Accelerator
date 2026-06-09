@@ -82,6 +82,18 @@ def build_pdf_report(platform, input_file, output_file):
     
     # Aggregated calculations
     total_assets = len(canonical_assets)
+    
+    # Calculate asset type breakdown for the summary (bulleted list)
+    type_counts = {}
+    for asset in canonical_assets:
+        type_counts[asset.asset_type] = type_counts.get(asset.asset_type, 0) + 1
+    sorted_types = sorted(type_counts.items(), key=lambda x: x[1], reverse=True)
+    bullet_parts = []
+    for t_name, t_count in sorted_types:
+        suffix = "s" if not t_name.endswith("s") else ""
+        bullet_parts.append(f"&nbsp;&nbsp;&bull;&nbsp;<b>{t_count}</b> {t_name}{suffix}")
+    bullet_list_str = "<br/>" + "<br/>".join(bullet_parts) if bullet_parts else ""
+
     avg_doc = scored_df["documentation_score"].mean()
     avg_dq = scored_df["data_quality_score"].mean()
     avg_lineage = scored_df["lineage_score"].mean()
@@ -214,8 +226,9 @@ def build_pdf_report(platform, input_file, output_file):
     # 2. Executive Summary Box
     summary_text = (
         f"<b>Executive Summary:</b> An automated audit-ready maturity assessment was conducted on "
-        f"<b>{total_assets}</b> data assets managed by {platform.title()}. The implementation achieves a "
-        f"<b>Maturity Score of {overall_maturity:.2f}/5.0</b> (Documentation Health: {avg_doc:.1f}%, DQ Pass Rate: {maturity_results['audit_trail']['raw_metrics']['pass_rate']:.1f}%). "
+        f"<b>{total_assets}</b> data assets managed by {platform.title()} with the following inventory breakdown:"
+        f"{bullet_list_str}<br/><br/>"
+        f"The implementation achieves a <b>Maturity Score of {overall_maturity:.2f}/5.0</b> (Documentation Health: {avg_doc:.1f}%, DQ Pass Rate: {maturity_results['audit_trail']['raw_metrics']['pass_rate']:.1f}%). "
         f"Financially, the program has generated <b>{format_currency(total_realized_savings)}</b> in realized business value "
         f"against an estimated annual operating cost of "
         f"<b>{format_currency(operating_cost)}</b>, yielding a net realized value of <b>{format_currency(net_realized_roi)}</b>. "
