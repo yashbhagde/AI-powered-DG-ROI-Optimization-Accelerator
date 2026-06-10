@@ -31,6 +31,7 @@ graph TD
     I -->|CLI Dashboard| K[Remediate Sensitive Exposure]
     I -->|CLI Dashboard| L[Fix High-Impact DQ Rules]
     I -->|PDF Exporter| M[Timestamped Executive PDF Report]
+    I -->|CSV Registry Exporter| N[Granular CSV Remediation Registry]
 ```
 
 1. **Ingest / Raw Data**: Raw JSON payloads reflecting different cataloged assets (databases, schemas, files) exported from any data catalog tool.
@@ -47,8 +48,8 @@ graph TD
 - [canonical_metadata_model.py](canonical_metadata_model.py): Defines the unified Pydantic data structures (`CanonicalAsset`, `AssetOwner`, `DataQualitySummary`, etc.) and vendor-specific mappers for parsing raw inputs.
 - [governance_scoring_engine.py](governance_scoring_engine.py): Implements governance maturity equations (Documentation, DQ, Lineage, and Policy Risk) and calculates the composite Governance Health Index (GHI).
 - [roi_calculation_engine.py](roi_calculation_engine.py): Computes financial values for operational efficiency (discovery time saved), storage optimization (decommissioning ROT), data quality improvement, and breach risk reduction.
-- [executive_pdf_report.py](executive_pdf_report.py): Core utility that maps, scores, and calculates ROI metrics for a catalog platform, outputting a typeset, audit-ready PDF summary.
-- [reports/](reports/): Directory where generated PDF assessments are parked with dynamic, timestamped filenames.
+- [executive_pdf_report.py](executive_pdf_report.py): Core utility that maps, scores, and calculates ROI metrics for a catalog platform, outputting a typeset, audit-ready PDF summary and a granular CSV Remediation Task Registry.
+- [reports/](reports/): Directory where generated PDF assessments and companion CSV registries are parked with dynamic, timestamped filenames.
 - [RealisticGovernanceMetadata.py](RealisticGovernanceMetadata.py): Scaled multi-vendor generator and CLI performance demo runner.
 - [generate_all_mock_data.py](generate_all_mock_data.py): Batch utility to programmatically scale and output mock catalog JSONs to vendor subdirectories.
 - [requirements.txt](requirements.txt): Environment dependencies (including `reportlab` for PDF generation).
@@ -179,9 +180,11 @@ You can also batch-generate scaled individual catalog files inside vendor subdir
 python generate_all_mock_data.py --num-assets 100
 ```
 
-### 2. Compiling Executive PDF Reports
-To compile a typeset PDF report with embedded formulas and prioritized remediation tasks for a specific platform implementation (e.g., Alation):
+### 2. Compiling Executive PDF Reports & CSV task registries
+To compile a typeset PDF report with embedded formulas and generate a companion CSV Remediation Task Registry for a specific platform implementation (e.g., Alation):
 ```bash
 python executive_pdf_report.py --platform alation --input alation/sample_alation_metadata.json
 ```
-* The output report is timestamped and automatically parked in the **[reports/](reports/)** directory (e.g., `reports/alation_executive_report_20260604_212501.pdf`).
+* The outputs are timestamped and automatically parked in the **[reports/](reports/)** directory:
+  * **Executive PDF Report:** e.g., `reports/alation_executive_report_20260604_212501.pdf`
+  * **Remediation Task Registry CSV:** e.g., `reports/alation_executive_report_20260604_212501_remediation_registry.csv` (contains prioritized actions, direct links, and financial metrics for owners, stewards, and DQ engineers).

@@ -32,6 +32,178 @@ def format_currency(val: float) -> str:
         return f"${val / 1_000_000.0:.2f} million"
     return f"${val:,.2f}"
 
+def generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_output_file):
+    import csv
+    
+    # Create lookup dictionaries for scored_df and roi_df by asset_id
+    scored_dict = scored_df.set_index("asset_id").to_dict(orient="index")
+    roi_dict = roi_df.set_index("asset_id").to_dict(orient="index")
+    
+    rows = []
+    
+    for asset in canonical_assets:
+        asset_id = asset.asset_id
+        scores = scored_dict.get(asset_id, {})
+        roi = roi_dict.get(asset_id, {})
+        
+        # Extract metadata metrics
+        doc_score = scores.get("documentation_score", 0.0)
+        dq_score = scores.get("data_quality_score", 0.0)
+        lineage_score = scores.get("lineage_score", 0.0)
+        risk_score = scores.get("security_risk_score", 0.0)
+        
+        is_sensitive = roi.get("is_sensitive", False)
+        is_rot = roi.get("is_rot", False)
+        
+        # Check owners and stewards
+        owner_names = [o.name for o in asset.owners if "owner" in o.role.lower() or o.role == ""]
+        steward_names = [o.name for o in asset.owners if "steward" in o.role.lower()]
+        
+        owner_str = ", ".join(owner_names) if owner_names else "UNASSIGNED"
+        steward_str = ", ".join(steward_names) if steward_names else "UNASSIGNED"
+        
+        # Construct dynamic deep link URL
+        catalog_url = f"https://{platform}.company.com/catalog/asset/{asset.source_id}"
+        
+        # 1. PII exposure without owner
+        if is_sensitive and not owner_names:
+            opportunity_risk_savings = roi.get("opportunity_risk_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "PII_EXPOSURE",
+                "Priority": "CRITICAL",
+                "Financial_Opportunity": f"${opportunity_risk_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": "Contains sensitive classification (PII/Confidential) but has NO owner assigned. Assign a Business Owner immediately.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 2. Missing steward
+        if not steward_names:
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "MISSING_STEWARD",
+                "Priority": "HIGH",
+                "Financial_Opportunity": "N/A",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": "No Data Steward assigned to catalog metadata. Recruit/assign a steward.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 3. Storage ROT
+        if is_rot:
+            opportunity_storage_savings = roi.get("opportunity_storage_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "STORAGE_ROT",
+                "Priority": "LOW",
+                "Financial_Opportunity": f"${opportunity_storage_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": "Asset is inactive (>180 days since last access) with low usage. Initiate decommissioning/archiving check to recover storage.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 4. Zero DQ rules configured on active asset
+        if asset.usage.query_count > 0 and asset.data_quality.rules_run == 0:
+            opportunity_dq_savings = roi.get("opportunity_dq_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "ZERO_DQ_RULES",
+                "Priority": "HIGH",
+                "Financial_Opportunity": f"${opportunity_dq_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": "Asset is queried actively but has NO Data Quality rules run. Configure baseline profiling and validation monitors.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 5. Low DQ Pass Rate (Failing Rules)
+        elif asset.data_quality.rules_run > 0 and asset.data_quality.pass_rate < 0.95:
+            opportunity_dq_savings = roi.get("opportunity_dq_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "FAILING_DQ_RULES",
+                "Priority": "HIGH",
+                "Financial_Opportunity": f"${opportunity_dq_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": f"Data Quality rules are failing (pass rate: {asset.data_quality.pass_rate * 100:.1f}%). Audit source pipeline data.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 6. Missing Lineage
+        if lineage_score == 0.0 and asset.usage.query_count > 10:
+            opportunity_rca_savings = roi.get("opportunity_rca_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "MISSING_LINEAGE",
+                "Priority": "MEDIUM",
+                "Financial_Opportunity": f"${opportunity_rca_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": "Asset has high usage but zero upstream/downstream lineage. Setup automated ETL lineage harvest.",
+                "Catalog_URL": catalog_url
+            })
+            
+        # 7. Poor Documentation
+        if doc_score < 70.0:
+            opportunity_discovery_savings = roi.get("opportunity_discovery_savings", 0.0)
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Source_Platform": platform,
+                "Remediation_Category": "POOR_DOCUMENTATION",
+                "Priority": "MEDIUM",
+                "Financial_Opportunity": f"${opportunity_discovery_savings:,.2f}",
+                "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
+                "Owner": owner_str,
+                "Steward": steward_str,
+                "Action_Required": f"Asset description is empty or too short (documentation score: {doc_score:.0f}%). Author standard business descriptions.",
+                "Catalog_URL": catalog_url
+            })
+        
+    # Write to CSV file
+    fieldnames = [
+        "Asset_ID", "Asset_Name", "Asset_Type", "Source_Platform",
+        "Remediation_Category", "Priority", "Financial_Opportunity",
+        "Usage_Frequency", "Owner", "Steward", "Action_Required", "Catalog_URL"
+    ]
+    
+    with open(csv_output_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+        
+    print(f"Successfully generated Remediation Task Registry CSV at '{csv_output_file}'")
+
 def build_pdf_report(platform, input_file, output_file):
     # 1. Load and parse raw metadata
     if not os.path.exists(input_file):
@@ -694,6 +866,10 @@ def build_pdf_report(platform, input_file, output_file):
     # Build Document PDF
     doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)
     print(f"Successfully generated PDF report at '{output_file}'")
+    
+    # Generate CSV Remediation Task Registry
+    csv_output_file = os.path.splitext(output_file)[0] + "_remediation_registry.csv"
+    generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_output_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Executive Data Governance PDF Report.")
