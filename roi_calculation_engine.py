@@ -35,61 +35,120 @@ class ROICalculationEngine:
             "purview": 150000.0
         }
 
+class AssetCapabilityEvaluator:
+    def __init__(self, asset: CanonicalAsset):
+        self.asset = asset
+
+    @property
+    def has_usage_telemetry(self) -> bool:
+        return (self.asset.usage is not None and 
+                self.asset.usage.query_count is not None and 
+                self.asset.usage.query_count >= 0)
+
+    @property
+    def has_storage_telemetry(self) -> bool:
+        return (self.asset.usage is not None and 
+                self.asset.usage.size_in_bytes is not None and 
+                self.asset.usage.size_in_bytes >= 0)
+
+    @property
+    def has_dq_telemetry(self) -> bool:
+        return (self.asset.data_quality is not None and 
+                self.asset.data_quality.rules_run is not None and 
+                self.asset.data_quality.rules_run >= 0)
+
+    @property
+    def has_lineage_telemetry(self) -> bool:
+        return (self.asset.lineage is not None and 
+                (self.asset.lineage.upstream_assets is not None or 
+                 self.asset.lineage.downstream_assets is not None))
+
+class ROICalculationEngine:
+    def __init__(
+        self,
+        hourly_analyst_rate: float = 75.0,
+        hours_saved_per_search: float = 3.5,
+        search_ratio: float = 0.0005,          # 0.05% of query volume triggers a discovery/search context
+        storage_cost_per_gb_year: float = 0.24, # $0.02/GB/month = $0.24/GB/year
+        cost_per_data_breach: float = 150000.0,  # Estimated penalty/cost per unmitigated compliance asset
+        breach_probability_ungoverned: float = 0.05,
+        breach_probability_governed: float = 0.002,
+        cost_per_dq_incident: float = 15000.0,   # Dev debug hours + business decision impact cost
+        hours_saved_per_rca: float = 6.5
+    ):
+        self.hourly_analyst_rate = hourly_analyst_rate
+        self.hours_saved_per_search = hours_saved_per_search
+        self.search_ratio = search_ratio
+        self.storage_cost_per_gb_year = storage_cost_per_gb_year
+        self.cost_per_data_breach = cost_per_data_breach
+        self.breach_probability_ungoverned = breach_probability_ungoverned
+        self.breach_probability_governed = breach_probability_governed
+        self.cost_per_dq_incident = cost_per_dq_incident
+        self.hours_saved_per_rca = hours_saved_per_rca
+
+        # Default estimated annual costs for running each governance platform (Licenses + Headcount)
+        self.platform_costs = {
+            "alation": 120000.0,
+            "collibra": 200000.0,
+            "informatica_idmc": 250000.0,
+            "ataccama": 110000.0,
+            "purview": 150000.0
+        }
+
     def calculate_asset_roi(self, asset: CanonicalAsset, scores: Dict[str, float]) -> Dict[str, Any]:
-        """Calculates realized and opportunity savings for a single asset."""
-        # 1. Operational Savings (Data Discovery Efficiency)
-        # Annualized query volume = monthly queries * 12
-        annual_queries = asset.usage.query_count * 12
-        potential_discovery_searches = annual_queries * self.search_ratio
+        """Calculates realized and opportunity savings for a single asset with tiered capability checks."""
+        evaluator = AssetCapabilityEvaluator(asset)
         
-        # Realized Operational Savings based on documentation completeness
-        doc_score_pct = scores["documentation_score"] / 100.0
-        max_possible_discovery_savings = potential_discovery_searches * self.hours_saved_per_search * self.hourly_analyst_rate
-        realized_discovery_savings = max_possible_discovery_savings * doc_score_pct
-        opportunity_discovery_savings = max_possible_discovery_savings * (1.0 - doc_score_pct)
+        # 1. Operational Savings (Data Discovery Efficiency)
+        realized_discovery_savings = 0.0
+        opportunity_discovery_savings = 0.0
+        if evaluator.has_usage_telemetry:
+            annual_queries = asset.usage.query_count * 12
+            potential_discovery_searches = annual_queries * self.search_ratio
+            doc_score_pct = scores.get("documentation_score", 0.0) / 100.0
+            max_possible_discovery_savings = potential_discovery_searches * self.hours_saved_per_search * self.hourly_analyst_rate
+            realized_discovery_savings = max_possible_discovery_savings * doc_score_pct
+            opportunity_discovery_savings = max_possible_discovery_savings * (1.0 - doc_score_pct)
 
         # 2. Storage Savings (ROT Decommissioning with Dynamic Cloud Storage Tiers)
-        # Check if asset is Redundant, Obsolete or Trivial (ROT)
-        # Criteria: No usage (query count < 5/month), older than 6 months last accessed, and size > 0
         is_rot = False
-        now = datetime.now(timezone.utc)
-        if asset.usage.size_in_bytes > 0 and asset.usage.query_count < 5:
-            if asset.usage.last_accessed:
-                time_delta = now - asset.usage.last_accessed
-                if time_delta.days > 180:
-                    is_rot = True
-            else:
-                is_rot = True # No access history, assume unused
-
-        # Precise storage cost based on cloud storage tier (Standard, Standard-IA, Glacier, DeepArchive)
-        tier_pricing = {
-            "standard": 0.023 * 12,       # $0.276/GB/year (Standard Hot Tier)
-            "standard-ia": 0.0125 * 12,   # $0.150/GB/year (Infrequent Access)
-            "glacier": 0.004 * 12,        # $0.048/GB/year (Cold Glacier)
-            "deeparchive": 0.00099 * 12,  # $0.01188/GB/year (Glacier Deep Archive)
-        }
-        tier_lower = (asset.usage.storage_tier or "standard").lower().replace(" ", "").replace("_", "")
-        storage_rate = tier_pricing.get(tier_lower, self.storage_cost_per_gb_year)
-
-        size_in_gb = asset.usage.size_in_bytes / (1024 ** 3)
-        potential_storage_savings = size_in_gb * storage_rate
-        
-        # Realized: We only realize storage savings if we ACTUALLY decommission it.
         realized_storage_savings = 0.0
-        opportunity_storage_savings = potential_storage_savings if is_rot else 0.0
+        opportunity_storage_savings = 0.0
+        if evaluator.has_storage_telemetry and evaluator.has_usage_telemetry:
+            now = datetime.now(timezone.utc)
+            if asset.usage.size_in_bytes > 0 and asset.usage.query_count < 5:
+                if asset.usage.last_accessed:
+                    last_acc = asset.usage.last_accessed
+                    if last_acc.tzinfo is None:
+                        last_acc = last_acc.replace(tzinfo=timezone.utc)
+                    time_delta = now - last_acc
+                    if time_delta.days > 180:
+                        is_rot = True
+                else:
+                    is_rot = True
+
+            # Precise storage cost based on cloud storage tier
+            tier_pricing = {
+                "standard": 0.023 * 12,
+                "standard-ia": 0.0125 * 12,
+                "glacier": 0.004 * 12,
+                "deeparchive": 0.00099 * 12,
+            }
+            tier_lower = (asset.usage.storage_tier or "standard").lower().replace(" ", "").replace("_", "")
+            storage_rate = tier_pricing.get(tier_lower, self.storage_cost_per_gb_year)
+
+            size_in_gb = asset.usage.size_in_bytes / (1024 ** 3)
+            potential_storage_savings = size_in_gb * storage_rate
+            opportunity_storage_savings = potential_storage_savings if is_rot else 0.0
 
         # 3. Data Quality incident avoidance savings
-        # Baseline incidents: if unmonitored, we assume a baseline 5% probability of a major incident/year per asset.
-        # If monitored: scale incidents based on DQ pass rate.
-        # DQ Pass >= 95%: 0.0 incidents/year
-        # DQ Pass 80-95%: 0.02 (2% probability) incidents/year
-        # DQ Pass < 80%: 0.10 (10% probability) incidents/year
-        
-        is_active = asset.usage.query_count > 0
+        realized_dq_savings = 0.0
+        opportunity_dq_savings = 0.0
+        is_active = evaluator.has_usage_telemetry and asset.usage.query_count > 0
         baseline_incidents = 0.05 if is_active else 0.0
         current_incidents = 0.0
         
-        if is_active:
+        if is_active and evaluator.has_dq_telemetry:
             if asset.data_quality.rules_run == 0:
                 current_incidents = baseline_incidents
             else:
@@ -101,35 +160,30 @@ class ROICalculationEngine:
                 else:
                     current_incidents = 0.10
 
-        # Realized DQ Savings: Incidents avoided compared to the unmonitored baseline (if current is lower)
-        realized_dq_incidents_avoided = max(0.0, baseline_incidents - current_incidents)
-        realized_dq_savings = realized_dq_incidents_avoided * self.cost_per_dq_incident
-        
-        # Opportunity DQ Savings: Cost of remaining incidents that could be reduced to 0 (by reaching >= 95% pass rate)
-        opportunity_dq_savings = current_incidents * self.cost_per_dq_incident
+            realized_dq_incidents_avoided = max(0.0, baseline_incidents - current_incidents)
+            realized_dq_savings = realized_dq_incidents_avoided * self.cost_per_dq_incident
+            opportunity_dq_savings = current_incidents * self.cost_per_dq_incident
+        elif is_active: # Has usage but missing DQ rule telemetry entirely
+            opportunity_dq_savings = baseline_incidents * self.cost_per_dq_incident
 
         # 4. Compliance Risk Savings
-        # Assess if asset is sensitive
-        sensitive_keywords = ["ssn", "payroll", "salary", "bank", "credit", "phone", "email", "address", "tax", "pii", "phi"]
         is_sensitive = False
-        for c in asset.classifications:
+        realized_risk_savings = 0.0
+        opportunity_risk_savings = 0.0
+        sensitive_keywords = ["ssn", "payroll", "salary", "bank", "credit", "phone", "email", "address", "tax", "pii", "phi"]
+        classifications = asset.classifications or []
+        for c in classifications:
             if any(term in c.lower() for term in ["pii", "phi", "confidential", "restricted", "sensitive"]):
                 is_sensitive = True
                 break
-        name_desc = (asset.name + " " + asset.description).lower()
+        name_desc = ((asset.name or "") + " " + (asset.description or "")).lower()
         if any(keyword in name_desc for keyword in sensitive_keywords):
             is_sensitive = True
 
-        realized_risk_savings = 0.0
-        opportunity_risk_savings = 0.0
-
         if is_sensitive:
-            # Baseline probability of breach/non-compliance on un-governed asset: 5% (0.05)
-            # If asset has owners AND classifications, probability drops by 80% (to 1.0%)
-            # If also has active DQ rules, probability drops by 96% (to 0.2%)
-            has_owner = len(asset.owners) > 0
-            has_classification = len(asset.classifications) > 0
-            has_dq = asset.data_quality.rules_run > 0
+            has_owner = len(asset.owners or []) > 0
+            has_classification = len(classifications) > 0
+            has_dq = evaluator.has_dq_telemetry and asset.data_quality.rules_run > 0
             
             prob_current = self.breach_probability_ungoverned
             if has_owner and has_classification:
@@ -139,54 +193,48 @@ class ROICalculationEngine:
             elif has_owner or has_classification:
                 prob_current = 0.03
                 
-            # Savings realized so far (difference from raw ungoverned risk)
             risk_prob_avoided = self.breach_probability_ungoverned - prob_current
             realized_risk_savings = risk_prob_avoided * self.cost_per_data_breach
-            
-            # Opportunity: remaining risk that could be minimized by going to full governance (probability = 0.002)
             opportunity_risk_savings = max(0.0, (prob_current - self.breach_probability_governed) * self.cost_per_data_breach)
         
         # 5. Precise Compute Cost Integration (Warehouse credit rates & compute hours)
-        wh_credits = {
-            "x-small": 1.0,
-            "small": 2.0,
-            "medium": 4.0,
-            "large": 8.0,
-            "x-large": 16.0
-        }
-        wh_size_lower = (asset.usage.data_warehouse_size or "x-small").lower().replace(" ", "").replace("_", "")
-        credits_rate = wh_credits.get(wh_size_lower, 1.0)
-        credit_cost = 3.00 # Snowflake standard credit cost in USD
-        
-        # Annualized compute cost = monthly query compute hours * hourly rate * 12
-        annual_compute_cost = (asset.usage.query_compute_hours or 0.0) * credits_rate * credit_cost * 12
-        
-        # Wasted compute rate scales inversely with data quality pass rate
-        dq_pass_rate = asset.data_quality.pass_rate if asset.data_quality.rules_run > 0 else 0.85
-        wasted_compute = annual_compute_cost * (1.0 - dq_pass_rate)
-        
-        if asset.data_quality.rules_run > 0 and asset.data_quality.pass_rate >= 0.95:
-            # We successfully avoided compute waste compared to the 15% baseline waste
-            realized_compute_savings = annual_compute_cost * 0.15
-            opportunity_compute_savings = 0.0
-        elif asset.data_quality.rules_run > 0:
-            realized_compute_savings = 0.0
-            opportunity_compute_savings = wasted_compute
-        else:
-            realized_compute_savings = 0.0
-            opportunity_compute_savings = annual_compute_cost * 0.15
+        realized_compute_savings = 0.0
+        opportunity_compute_savings = 0.0
+        if evaluator.has_usage_telemetry and asset.usage.query_compute_hours is not None:
+            wh_credits = {
+                "x-small": 1.0,
+                "small": 2.0,
+                "medium": 4.0,
+                "large": 8.0,
+                "x-large": 16.0
+            }
+            wh_size_lower = (asset.usage.data_warehouse_size or "x-small").lower().replace(" ", "").replace("_", "")
+            credits_rate = wh_credits.get(wh_size_lower, 1.0)
+            credit_cost = 3.00
+            
+            annual_compute_cost = (asset.usage.query_compute_hours or 0.0) * credits_rate * credit_cost * 12
+            dq_pass_rate = asset.data_quality.pass_rate if (evaluator.has_dq_telemetry and asset.data_quality.rules_run > 0) else 0.85
+            wasted_compute = annual_compute_cost * (1.0 - dq_pass_rate)
+            
+            if evaluator.has_dq_telemetry and asset.data_quality.rules_run > 0 and asset.data_quality.pass_rate >= 0.95:
+                realized_compute_savings = annual_compute_cost * 0.15
+            elif evaluator.has_dq_telemetry and asset.data_quality.rules_run > 0:
+                opportunity_compute_savings = wasted_compute
+            else:
+                opportunity_compute_savings = annual_compute_cost * 0.15
             
         # 6. Lineage-Driven Root Cause Analysis (RCA) Savings
-        has_lineage = asset.lineage and (len(asset.lineage.upstream_assets) > 0 or len(asset.lineage.downstream_assets) > 0)
-        potential_rca_incidents = current_incidents if current_incidents > 0 else baseline_incidents
-        max_possible_rca_savings = potential_rca_incidents * self.hours_saved_per_rca * self.hourly_analyst_rate
-        
-        if has_lineage:
-            realized_rca_savings = max_possible_rca_savings
-            opportunity_rca_savings = 0.0
-        else:
-            realized_rca_savings = 0.0
-            opportunity_rca_savings = max_possible_rca_savings
+        realized_rca_savings = 0.0
+        opportunity_rca_savings = 0.0
+        if evaluator.has_lineage_telemetry:
+            has_lineage = asset.lineage and (len(asset.lineage.upstream_assets or []) > 0 or len(asset.lineage.downstream_assets or []) > 0)
+            potential_rca_incidents = current_incidents if current_incidents > 0 else baseline_incidents
+            max_possible_rca_savings = potential_rca_incidents * self.hours_saved_per_rca * self.hourly_analyst_rate
+            
+            if has_lineage:
+                realized_rca_savings = max_possible_rca_savings
+            else:
+                opportunity_rca_savings = max_possible_rca_savings
             
         total_realized_savings = realized_discovery_savings + realized_storage_savings + realized_dq_savings + realized_risk_savings + realized_compute_savings + realized_rca_savings
         total_opportunity_savings = opportunity_discovery_savings + opportunity_storage_savings + opportunity_dq_savings + opportunity_risk_savings + opportunity_compute_savings + opportunity_rca_savings
