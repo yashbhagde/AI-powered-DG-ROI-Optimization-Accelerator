@@ -192,12 +192,12 @@ def map_collibra_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     for rel in raw.get("relations", []):
         rel_type = rel.get("type", "")
         target = rel.get("target", "")
-        role = rel.get("role", "Steward")
+        role = rel.get("role")
         
-        if "owned by" in rel_type.lower() or "steward" in rel_type.lower() or role.endswith("Steward") or role.endswith("Owner"):
+        if "owned by" in rel_type.lower() or "steward" in rel_type.lower() or (role and (role.endswith("Steward") or role.endswith("Owner"))):
             owners.append(AssetOwner(
                 name=target,
-                role=role,
+                role=role or "Steward",
                 email=rel.get("email")
             ))
         elif "glossary" in rel_type.lower() or "governed by term" in rel_type.lower():

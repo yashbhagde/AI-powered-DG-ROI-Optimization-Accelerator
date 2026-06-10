@@ -11,7 +11,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from canonical_metadata_model import map_raw_to_canonical
 from governance_scoring_engine import GovernanceScoringEngine
-from roi_calculation_engine import ROICalculationEngine
+from roi_calculation_engine import ROICalculationEngine, calculate_tcs
 from maturity_assessment_engine import MaturityAssessmentEngine
 
 def add_page_decorations(canvas, doc):
@@ -246,6 +246,9 @@ def build_pdf_report(platform, input_file, output_file):
     roi_engine = ROICalculationEngine()
     roi_df = roi_engine.calculate_catalog_roi(canonical_assets, scored_df)
     
+    # Compute Telemetry Confidence Score
+    tcs_result = calculate_tcs(canonical_assets)
+
     # Run Maturity Assessment Engine
     maturity_engine = MaturityAssessmentEngine()
     maturity_results = maturity_engine.assess_maturity(canonical_assets)
@@ -565,69 +568,193 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Spacer(1, 15))
     
     # 4. Program Financial Performance Section
+    # ── TCS-gated section header ──────────────────────────────────────────────
+    tcs_badge_styles = {
+        "high":   ("#276749", "#C6F6D5", "#9AE6B4"),  # green text, bg, border
+        "medium": ("#744210", "#FEFCBF", "#F6E05E"),  # amber
+        "low":    ("#822727", "#FFF5F5", "#FEB2B2"),  # red
+    }
+    tcs_text_color, tcs_bg_color, tcs_border_color = tcs_badge_styles[tcs_result.tier]
+
+    if tcs_result.tier == "high":
+        fin_section_subtitle = (
+            f"<font color='{tcs_text_color}'><b>&#10003; High-Confidence Audited Metrics</b></font> — "
+            f"<b>Telemetry Confidence Score (TCS): {tcs_result.display_pct}</b> ({tcs_result.complete_assets}/{tcs_result.total_assets} assets have complete telemetry).<br/><br/>"
+            f"The Telemetry Confidence Score (TCS) represents the verified coverage of metadata and telemetry logs harvested from our data infrastructure. It serves as an auditability safeguard, ensuring that all reported financial ROI calculations are backed by concrete logs rather than speculative estimations. "
+            f"All ROI figures below are fully supported by infrastructure telemetry."
+        )
+    elif tcs_result.tier == "medium":
+        fin_section_subtitle = (
+            f"<font color='{tcs_text_color}'><b>&#9888; Conservative Estimates</b></font> — "
+            f"<b>Telemetry Confidence Score (TCS): {tcs_result.display_pct}</b> ({tcs_result.complete_assets}/{tcs_result.total_assets} assets have complete telemetry).<br/><br/>"
+            f"The Telemetry Confidence Score (TCS) represents the verified coverage of metadata and telemetry logs harvested from our data infrastructure. It serves as an auditability safeguard, ensuring that all reported financial ROI calculations are backed by concrete logs rather than speculative estimations. "
+            f"Currently, complete infrastructure telemetry is missing for <b>{tcs_result.missing_display_pct}</b> of assets, meaning ROI figures marked * are conservative projections."
+        )
+    else:
+        fin_section_subtitle = (
+            f"<font color='{tcs_text_color}'><b>&#9888; ROI Calculations Suspended</b></font> — "
+            f"<b>Telemetry Confidence Score (TCS): {tcs_result.display_pct}</b> ({tcs_result.complete_assets}/{tcs_result.total_assets} assets have complete telemetry).<br/><br/>"
+            f"The Telemetry Confidence Score (TCS) represents the verified coverage of metadata and telemetry logs harvested from our data infrastructure. It serves as an auditability safeguard, ensuring that all reported financial ROI calculations are backed by concrete logs rather than speculative estimations. "
+            f"Financial metrics require &ge;50% telemetry completeness to be meaningful and are suspended to prevent misleading decisions."
+        )
+
+    # Append component-specific coverage details
+    size_cov = tcs_result.size_coverage * 100.0
+    query_cov = tcs_result.query_coverage * 100.0
+    owner_cov = tcs_result.owner_coverage * 100.0
+    lineage_cov = tcs_result.lineage_coverage * 100.0
+    steward_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("stewardship_assignment", 0.0)
+    doc_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("documentation_coverage", 0.0)
+    dq_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("rule_coverage", 0.0)
+    glossary_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("glossary_linkage", 0.0)
+    class_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("classification_coverage", 0.0)
+
+    fin_section_subtitle += (
+        f"<br/><br/><b>Telemetry & Metadata Coverage Breakdown:</b><br/>"
+        f"&bull; <b>Size Coverage ({size_cov:.1f}%):</b> Measures assets with populated physical size (drives storage optimization/ROT savings).<br/>"
+        f"&bull; <b>Query Logs ({query_cov:.1f}%):</b> Measures assets with active query history (drives data discovery productivity and compute optimization).<br/>"
+        f"&bull; <b>Owner Assignment ({owner_cov:.1f}%):</b> Measures assets with defined technical/business owners (drives compliance and risk savings).<br/>"
+        f"&bull; <b>Lineage Trace ({lineage_cov:.1f}%):</b> Measures assets with mapped lineage relationships (drives Root Cause Analysis time savings).<br/>"
+        f"&bull; <b>Stewardship Assignment ({steward_cov:.1f}%):</b> Measures assets with actively assigned data stewards (drives daily metadata upkeep).<br/>"
+        f"&bull; <b>Documentation Coverage ({doc_cov:.1f}%):</b> Measures assets with robust description text (drives catalog search and discovery speed).<br/>"
+        f"&bull; <b>DQ Rule Coverage ({dq_cov:.1f}%):</b> Measures assets with active data quality profile runs (drives DQ incident avoidance savings).<br/>"
+        f"&bull; <b>Glossary Linkage ({glossary_cov:.1f}%):</b> Measures assets mapped to business glossary terms (drives semantic search accuracy).<br/>"
+        f"&bull; <b>Classification Coverage ({class_cov:.1f}%):</b> Measures assets carrying active classifications (drives sensitive data compliance)."
+    )
+
     story.append(Paragraph("II. Program Financial Performance & ROI Analysis", heading_style))
-    story.append(Paragraph("The value realized through metadata-driven automation and risk mitigation compared to software licensing and overhead operating costs:", body_style))
-    story.append(Spacer(1, 4))
-    
-    financial_data = [
-        [Paragraph("Financial Metric Category", th_style), Paragraph("Amount ($)", th_style), Paragraph("Value Explanation", th_style)],
-        [
-            Paragraph("Annual Operating Cost", td_style), 
-            Paragraph(f"{format_currency(operating_cost)}", td_bold_style), 
-            Paragraph("Fixed software licensing and support overhead cost.", td_style)
-        ],
-        [
-            Paragraph("Realized Discovery Savings", td_style), 
-            Paragraph(f"{format_currency(roi_df['realized_discovery_savings'].sum())}", td_bold_style), 
-            Paragraph("Productivity savings from faster data discovery.", td_style)
-        ],
-        [
-            Paragraph("Realized DQ Incident Avoidance", td_style), 
-            Paragraph(f"{format_currency(roi_df['realized_dq_savings'].sum())}", td_bold_style), 
-            Paragraph("Savings from avoiding pipeline failures and business downtime.", td_style)
-        ],
-        [
-            Paragraph("Realized Risk Avoidance", td_style), 
-            Paragraph(f"{format_currency(roi_df['realized_risk_savings'].sum())}", td_bold_style), 
-            Paragraph("Mitigated risk of security breaches and regulatory non-compliance.", td_style)
-        ],
-        [
-            Paragraph("Realized Compute Optimization", td_style), 
-            Paragraph(f"{format_currency(roi_df['realized_compute_savings'].sum())}", td_bold_style), 
-            Paragraph("Warehouse credit waste avoided via data quality monitoring.", td_style)
-        ],
-        [
-            Paragraph("Realized Root Cause Analysis (RCA) Savings", td_style), 
-            Paragraph(f"{format_currency(roi_df['realized_rca_savings'].sum())}", td_bold_style), 
-            Paragraph("Developer hours saved tracing pipeline failures using lineage.", td_style)
-        ],
-        [
-            Paragraph("<b>Net Realized Program Value</b>", td_bold_style), 
-            Paragraph(f"<b>{format_currency(net_realized_roi)}</b>", td_bold_style), 
-            Paragraph("<b>Net financial return of the program.</b>", td_bold_style)
-        ],
-        [
-            Paragraph("<b>Return on Investment (ROI)</b>", td_bold_style), 
-            Paragraph(f"<b>{roi_percentage:.2f}%</b>", td_bold_style), 
-            Paragraph("<b>Program efficiency ratio.</b>", td_bold_style)
-        ],
-        [
-            Paragraph("Unrealized Opportunity Value", td_style), 
-            Paragraph(f"{format_currency(total_opportunity_savings)}", td_bold_style), 
-            Paragraph("Value pipeline achievable through remediation tasks.", td_style)
-        ]
-    ]
-    
-    t_financial = Table(financial_data, colWidths=[180, 100, 224])
-    t_financial.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('PADDING', (0,0), (-1,-1), 5),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-        ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
-        ('BACKGROUND', (0,7), (-1,8), colors.HexColor("#EBF8FF")), # Blue row for Net Value and ROI
+
+    tcs_banner_style = ParagraphStyle(
+        'TCSBanner',
+        parent=body_style,
+        textColor=colors.HexColor(tcs_text_color),
+    )
+    tcs_banner_table = Table(
+        [[Paragraph(fin_section_subtitle, tcs_banner_style)]],
+        colWidths=[504]
+    )
+    tcs_banner_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(tcs_bg_color)),
+        ('PADDING', (0,0), (-1,-1), 10),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor(tcs_border_color)),
     ]))
-    story.append(KeepTogether(t_financial))
+    story.append(tcs_banner_table)
+    story.append(Spacer(1, 8))
+
+    # ── Render financial table (suppressed for TCS < 50%) ────────────────────
+    if tcs_result.tier == "low":
+        suspended_text = (
+            "<b>ROI Calculations suspended due to missing infrastructure metadata.</b><br/><br/>"
+            f"Only <b>{tcs_result.display_pct}</b> of cataloged assets provide the four required telemetry signals "
+            f"(Size, Query Logs, Lineage, Owners). Financial ROI projections drawn from incomplete data carry "
+            f"an unacceptable margin of error and are withheld to prevent misleading executive decisions.<br/><br/>"
+            f"<b>Recommended action:</b> Focus on completing metadata ingest. Target indicators to resolve first:<br/>"
+            f"&nbsp;&nbsp;&bull;&nbsp;Assign owners to all unowned assets (see Remediation Registry, category MISSING_STEWARD)<br/>"
+            f"&nbsp;&nbsp;&bull;&nbsp;Register physical size for all storage assets<br/>"
+            f"&nbsp;&nbsp;&bull;&nbsp;Enable query log integration on the catalog connector<br/>"
+            f"&nbsp;&nbsp;&bull;&nbsp;Configure automated lineage harvest for active pipelines<br/><br/>"
+            f"ROI calculations will activate automatically once TCS exceeds 50%."
+        )
+        suspended_table = Table(
+            [[Paragraph(suspended_text, ParagraphStyle('Suspended', parent=body_style, textColor=colors.HexColor("#822727")))]],
+            colWidths=[504]
+        )
+        suspended_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#FFF5F5")),
+            ('PADDING', (0,0), (-1,-1), 14),
+            ('BOX', (0,0), (-1,-1), 1.5, colors.HexColor("#FC8181")),
+            ('LINELEFT', (0,0), (0,-1), 4, colors.HexColor("#E53E3E")),
+        ]))
+        story.append(suspended_table)
+    else:
+        story.append(Paragraph(
+            "The value realized through metadata-driven automation and risk mitigation compared to software licensing and overhead operating costs:",
+            body_style
+        ))
+        story.append(Spacer(1, 4))
+
+        # Asterisk suffix applied to monetary cells when TCS is medium
+        amt_suffix = " *" if tcs_result.tier == "medium" else ""
+
+        financial_data = [
+            [Paragraph("Financial Metric Category", th_style), Paragraph("Amount ($)", th_style), Paragraph("Value Explanation", th_style)],
+            [
+                Paragraph("Annual Operating Cost", td_style),
+                Paragraph(f"{format_currency(operating_cost)}", td_bold_style),
+                Paragraph("Fixed software licensing and support overhead cost.", td_style)
+            ],
+            [
+                Paragraph("Realized Discovery Savings", td_style),
+                Paragraph(f"{format_currency(roi_df['realized_discovery_savings'].sum())}{amt_suffix}", td_bold_style),
+                Paragraph("Productivity savings from faster data discovery.", td_style)
+            ],
+            [
+                Paragraph("Realized DQ Incident Avoidance", td_style),
+                Paragraph(f"{format_currency(roi_df['realized_dq_savings'].sum())}{amt_suffix}", td_bold_style),
+                Paragraph("Savings from avoiding pipeline failures and business downtime.", td_style)
+            ],
+            [
+                Paragraph("Realized Risk Avoidance", td_style),
+                Paragraph(f"{format_currency(roi_df['realized_risk_savings'].sum())}{amt_suffix}", td_bold_style),
+                Paragraph("Mitigated risk of security breaches and regulatory non-compliance.", td_style)
+            ],
+            [
+                Paragraph("Realized Compute Optimization", td_style),
+                Paragraph(f"{format_currency(roi_df['realized_compute_savings'].sum())}{amt_suffix}", td_bold_style),
+                Paragraph("Warehouse credit waste avoided via data quality monitoring.", td_style)
+            ],
+            [
+                Paragraph("Realized Root Cause Analysis (RCA) Savings", td_style),
+                Paragraph(f"{format_currency(roi_df['realized_rca_savings'].sum())}{amt_suffix}", td_bold_style),
+                Paragraph("Developer hours saved tracing pipeline failures using lineage.", td_style)
+            ],
+            [
+                Paragraph("<b>Net Realized Program Value</b>", td_bold_style),
+                Paragraph(f"<b>{format_currency(net_realized_roi)}{amt_suffix}</b>", td_bold_style),
+                Paragraph("<b>Net financial return of the program.</b>", td_bold_style)
+            ],
+            [
+                Paragraph("<b>Return on Investment (ROI)</b>", td_bold_style),
+                Paragraph(f"<b>{roi_percentage:.2f}%{amt_suffix}</b>", td_bold_style),
+                Paragraph("<b>Program efficiency ratio.</b>", td_bold_style)
+            ],
+            [
+                Paragraph("Unrealized Opportunity Value", td_style),
+                Paragraph(f"{format_currency(total_opportunity_savings)}{amt_suffix}", td_bold_style),
+                Paragraph("Value pipeline achievable through remediation tasks.", td_style)
+            ]
+        ]
+
+        t_financial = Table(financial_data, colWidths=[180, 100, 224])
+        t_financial.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('PADDING', (0,0), (-1,-1), 5),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor("#F7FAFC")]),
+            ('BACKGROUND', (0,7), (-1,8), colors.HexColor("#EBF8FF")),
+        ]))
+        story.append(KeepTogether(t_financial))
+
+        if tcs_result.tier == "medium":
+            warning_text = (
+                f"* <b>Conservative estimate:</b> Complete infrastructure telemetry is missing for "
+                f"<b>{tcs_result.missing_display_pct}</b> of assets. "
+                f"Figures above represent a lower-bound projection. Improve telemetry coverage to unlock full ROI visibility."
+            )
+            warning_table = Table(
+                [[Paragraph(warning_text, ParagraphStyle('WarningNote', parent=body_style, textColor=colors.HexColor("#744210")))]],
+                colWidths=[504]
+            )
+            warning_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#FEFCBF")),
+                ('PADDING', (0,0), (-1,-1), 8),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#F6E05E")),
+                ('LINELEFT', (0,0), (0,-1), 3, colors.HexColor("#D69E2E")),
+            ]))
+            story.append(Spacer(1, 6))
+            story.append(warning_table)
+
     story.append(Spacer(1, 15))
     
     # Define styles for the Domain Detail Section
@@ -862,6 +989,11 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("• <b>Metadata Management Maturity</b>: Weighted average of its indicators: Documentation (30%), Ownership (30%), Glossary Linkage (20%), and Classification (20%).", bullet_style))
     story.append(Paragraph("• <b>Data Quality Maturity</b>: Weighted average of its indicators: Rule Coverage (40%) and Pass Rate (60%).", bullet_style))
     story.append(Paragraph("• <b>Overall Maturity Index</b>: Weighted rollup of Metadata Management (50%) and Data Quality (50%).", bullet_style))
+    story.append(Paragraph("• <b>Telemetry Confidence Score (TCS)</b>: Blended average of size, query, owner, and lineage coverages: TCS % = (Size Coverage + Query Coverage + Owner Coverage + Lineage Coverage) / 4.", bullet_style))
+    story.append(Paragraph("• <b>Size Coverage %</b>: (Assets with storage size &gt; 0 bytes / Total Assets) * 100.", bullet_style))
+    story.append(Paragraph("• <b>Query Coverage %</b>: (Assets with query count &gt; 0 / Total Assets) * 100.", bullet_style))
+    story.append(Paragraph("• <b>Owner Coverage %</b>: (Assets with technical or business ownership &ge; 1 / Total Assets) * 100.", bullet_style))
+    story.append(Paragraph("• <b>Lineage Coverage %</b>: (Assets with mapped upstream or downstream lineage relations / Total Assets) * 100.", bullet_style))
     
     # Build Document PDF
     doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)

@@ -1,7 +1,96 @@
 from typing import List, Dict, Any
+from dataclasses import dataclass
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 from canonical_metadata_model import CanonicalAsset
+
+
+@dataclass
+class TelemetryConfidenceResult:
+    total_assets: int
+    complete_assets: int
+    score: float        # 0.0–1.0 (blended average)
+    tier: str           # "high" | "medium" | "low"
+    missing_pct: float  # 0–100 float for display
+    size_coverage: float
+    query_coverage: float
+    lineage_coverage: float
+    owner_coverage: float
+
+    @property
+    def display_pct(self) -> str:
+        return f"{self.score * 100:.1f}%"
+
+    @property
+    def missing_display_pct(self) -> str:
+        return f"{self.missing_pct:.1f}%"
+
+
+def calculate_tcs(assets: List[CanonicalAsset]) -> TelemetryConfidenceResult:
+    """
+    Telemetry Confidence Score: blended average of telemetry component coverages across assets.
+    An asset has complete telemetry when it has size, query logs, lineage, and at least one owner.
+    """
+    if not assets:
+        return TelemetryConfidenceResult(0, 0, 0.0, "low", 100.0, 0.0, 0.0, 0.0, 0.0)
+
+    complete = 0
+    size_ok = 0
+    queries_ok = 0
+    lineage_ok = 0
+    owners_ok = 0
+
+    for asset in assets:
+        has_size = asset.usage is not None and asset.usage.size_in_bytes > 0
+        has_queries = asset.usage is not None and asset.usage.query_count > 0
+        has_lineage = (
+            asset.lineage is not None
+            and (
+                len(asset.lineage.upstream_assets) > 0
+                or len(asset.lineage.downstream_assets) > 0
+            )
+        )
+        has_owners = len(asset.owners) > 0
+
+        if has_size:
+            size_ok += 1
+        if has_queries:
+            queries_ok += 1
+        if has_lineage:
+            lineage_ok += 1
+        if has_owners:
+            owners_ok += 1
+
+        if has_size and has_queries and has_lineage and has_owners:
+            complete += 1
+
+    total = len(assets)
+    size_cov = size_ok / total
+    queries_cov = queries_ok / total
+    lineage_cov = lineage_ok / total
+    owners_cov = owners_ok / total
+
+    score = (size_cov + queries_cov + lineage_cov + owners_cov) / 4.0
+    missing_pct = (1.0 - score) * 100.0
+
+    if score >= 0.90:
+        tier = "high"
+    elif score >= 0.50:
+        tier = "medium"
+    else:
+        tier = "low"
+
+    return TelemetryConfidenceResult(
+        total_assets=total,
+        complete_assets=complete,
+        score=score,
+        tier=tier,
+        missing_pct=missing_pct,
+        size_coverage=size_cov,
+        query_coverage=queries_cov,
+        lineage_coverage=lineage_cov,
+        owner_coverage=owners_cov
+    )
 
 class ROICalculationEngine:
     def __init__(
