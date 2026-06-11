@@ -144,6 +144,9 @@ class GovernanceScoringEngine:
                     has_valid_key = True
                     self.model_name = f"gemini/{self.model_name}"
             
+            # Initialize default 60% Throttling Limits
+            self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
+            
             if has_valid_key:
                 try:
                     import litellm
@@ -152,13 +155,66 @@ class GovernanceScoringEngine:
                     print(f"[LLM Router] Instantiating LiteLLM with model: {self.model_name}")
                     
                     # Dry-run validation check (max_tokens=2 to avoid heavy charges)
-                    litellm.completion(
+                    res = litellm.completion(
                         model=self.model_name,
                         messages=[{"role": "user", "content": "ping"}],
                         max_tokens=2
                     )
                     self.use_llm = True
                     print(f"[LLM Router] Successfully validated model '{self.model_name}' connection via LiteLLM.")
+                    
+                    # Dynamic rate limit discovery
+                    try:
+                        headers = {}
+                        if hasattr(res, "_hidden_params") and isinstance(res._hidden_params, dict):
+                            orig_resp = res._hidden_params.get("original_response")
+                            if orig_resp and hasattr(orig_resp, "headers"):
+                                headers = orig_resp.headers
+                            elif "additional_headers" in res._hidden_params:
+                                headers = res._hidden_params["additional_headers"]
+                        
+                        provider = self.model_name.split("/")[0] if "/" in self.model_name else "openai"
+                        
+                        # Default baseline limits (100%)
+                        defaults = {
+                            "anthropic": {"rpm": 1000, "tpm": 1000000},
+                            "openai": {"rpm": 10000, "tpm": 2000000},
+                            "gemini": {"rpm": 2000, "tpm": 4000000}
+                        }
+                        
+                        rpm = defaults.get(provider, {}).get("rpm", 1000)
+                        tpm = defaults.get(provider, {}).get("tpm", 1000000)
+                        
+                        # Override with headers if found
+                        header_found = False
+                        if provider == "anthropic" and headers:
+                            for hk, hv in headers.items():
+                                if hk.lower() == "anthropic-ratelimit-requests-limit":
+                                    rpm = int(hv)
+                                    header_found = True
+                                elif hk.lower() == "anthropic-ratelimit-tokens-limit":
+                                    tpm = int(hv)
+                                    header_found = True
+                        elif provider == "openai" and headers:
+                            for hk, hv in headers.items():
+                                if hk.lower() == "x-ratelimit-limit-requests":
+                                    rpm = int(hv)
+                                    header_found = True
+                                elif hk.lower() == "x-ratelimit-limit-tokens":
+                                    tpm = int(hv)
+                                    header_found = True
+                                    
+                        # Apply 60% factor
+                        self.rate_limiter.rpm_limit = int(rpm * 0.6)
+                        self.rate_limiter.tpm_limit = int(tpm * 0.6)
+                        self.rate_limiter.rpd_limit = int(self.rate_limiter.rpm_limit * 10)
+                        
+                        if header_found:
+                            print(f"[RateLimiter] Dynamic Discovery SUCCESS: Detected {provider.upper()} rate limit headers. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}")
+                        else:
+                            print(f"[RateLimiter] Dynamic Discovery: No rate limit headers present in response. Using provider defaults. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}")
+                    except Exception as parse_err:
+                        print(f"[RateLimiter Warning] Rate limit discovery error: {parse_err}. Using default fallback limits.")
                 except Exception as val_err:
                     print(f"[LLM Router Warning] Connection validation failed for '{self.model_name}': {val_err}")
                     print("[LLM Router Warning] Instantly falling back to rule-based heuristics to prevent slow retry delays.")
@@ -167,6 +223,7 @@ class GovernanceScoringEngine:
                 print(f"[LLM Router Warning] No API key found for model '{self.model_name}'. Falling back to heuristics.")
         else:
             print("[LLM Router] No LLM API key detected. Falling back to rule-based heuristics.")
+            self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
             
         # Alias self.use_gemini to self.use_llm to preserve backward compatibility
         self.use_gemini = self.use_llm
@@ -174,9 +231,6 @@ class GovernanceScoringEngine:
         # Client-side caching initialization
         self.cache_file = ".governance_score_cache.json"
         self.cache = self._load_cache()
-        
-        # 60% Throttling Limits
-        self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
 
     def _load_cache(self) -> Dict[str, Any]:
         if os.path.exists(self.cache_file):
