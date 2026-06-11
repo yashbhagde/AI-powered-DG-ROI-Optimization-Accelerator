@@ -920,61 +920,7 @@ def build_pdf_report(platform, input_file, output_file):
         story.append(t_sg)
         story.append(Spacer(1, 4))
         
-        # Proactively inject high-usage assets with zero DQ rules under the Data Quality discipline section
-        if disp_key == "data_quality":
-            unmonitored = []
-            for asset in canonical_assets:
-                if asset.usage and asset.usage.query_count > 0 and (not asset.data_quality or asset.data_quality.rules_run == 0):
-                    unmonitored.append(asset)
-            if unmonitored:
-                unmonitored.sort(key=lambda x: x.usage.query_count, reverse=True)
-                top_unmonitored = unmonitored[:5]
-                
-                p_unmonitored_title = Paragraph("HIGH-USAGE UNMONITORED ASSETS (HIDDEN RELIABILITY RISK)", col_header_style)
-                
-                header_row = [
-                    Paragraph("<b>Asset Name</b>", col_header_style),
-                    Paragraph("<b>Type</b>", col_header_style),
-                    Paragraph("<b>Queries/mo</b>", col_header_style),
-                    Paragraph("<b>Steward</b>", col_header_style),
-                    Paragraph("<b>Classification</b>", col_header_style)
-                ]
-                
-                table_rows = [header_row]
-                for asset in top_unmonitored:
-                    stewards = [o.name for o in asset.owners if "steward" in o.role.lower()]
-                    steward_str = stewards[0] if stewards else "No Steward"
-                    classification_str = asset.classifications[0] if asset.classifications else "N/A"
-                    
-                    table_rows.append([
-                        Paragraph(asset.name, col_body_style),
-                        Paragraph(asset.asset_type, col_body_style),
-                        Paragraph(f"{asset.usage.query_count:,}", col_body_style),
-                        Paragraph(steward_str, col_body_style),
-                        Paragraph(classification_str, col_body_style)
-                    ])
-                
-                t_unmonitored = Table(table_rows, colWidths=[160, 70, 70, 110, 86])
-                t_unmonitored.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#F7FAFC")),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-                    ('TOPPADDING', (0, 0), (-1, -1), 4),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('LINEBELOW', (0, 0), (-1, 0), 1, colors.HexColor("#E2E8F0")),
-                    ('LINEBELOW', (0, 1), (-1, -1), 0.5, colors.HexColor("#EDF2F7")),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor("#FFF5F5")), # Subtle red tint for alert
-                    ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor("#FEB2B2")),
-                    ('LINELEFT', (0, 0), (0, -1), 3, colors.HexColor("#E53E3E")), # Solid red bar on left to match alert
-                ]))
-                
-                story.append(KeepTogether([
-                    p_unmonitored_title,
-                    Spacer(1, 2),
-                    t_unmonitored,
-                    Spacer(1, 6)
-                ]))
-        
+
         # Keep actions header and actions text together
         story.append(KeepTogether([
             p_actions_header,
