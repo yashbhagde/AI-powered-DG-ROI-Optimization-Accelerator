@@ -212,11 +212,41 @@ class GovernanceScoringEngine:
     def score_asset_heuristics(self, asset: CanonicalAsset) -> Dict[str, Any]:
         """Calculates documentation and security risk scores using rule-based heuristics."""
         # 1. Documentation Score Heuristic
-        doc_score = 40.0 + (10.0 if asset.description and len(asset.description.strip()) > 50 else 0.0)
+        doc_score = 0.0
+        desc = asset.description.strip() if asset.description else ""
+        if desc:
+            placeholders = {"tbd", "todo", "test", "placeholder", "dummy", "n/a", "none", "will add"}
+            is_placeholder = any(p in desc.lower() for p in placeholders)
+            
+            name_normalized = asset.name.lower().replace("_", "").replace(" ", "")
+            desc_normalized = desc.lower().replace("_", "").replace(" ", "")
+            is_just_name = name_normalized == desc_normalized
+            
+            words = [w for w in desc.lower().split() if len(w) > 1]
+            has_enough_words = len(words) >= 3
+            
+            is_quality = not is_placeholder and not is_just_name and has_enough_words
+            
+            if is_quality:
+                doc_score += 30.0
+                doc_score += 10.0
+                if len(desc) > 50:
+                    doc_score += 10.0
+            else:
+                doc_score += 15.0
+                if len(desc) > 50:
+                    doc_score += 5.0
+                    
         if asset.owners:
-            doc_score += 30.0
-        if asset.glossary_terms:
             doc_score += 20.0
+            if len(asset.owners) > 1:
+                doc_score += 10.0
+                
+        if asset.glossary_terms:
+            doc_score += 10.0
+            if len(asset.glossary_terms) > 4:
+                doc_score += 10.0
+                
         doc_score = min(doc_score, 100.0)
 
         # 2. Security Risk Score Heuristic
@@ -278,7 +308,29 @@ class GovernanceScoringEngine:
     def calculate_data_quality_score(self, asset: CanonicalAsset) -> float:
         if asset.data_quality.rules_run == 0:
             return 0.0
-        return asset.data_quality.pass_rate * 100.0
+            
+        base_score = asset.data_quality.pass_rate * 100.0
+        
+        last_profiled = asset.data_quality.last_profiled
+        if last_profiled is None:
+            return base_score * 0.5
+            
+        from datetime import datetime
+        if last_profiled.tzinfo:
+            now = datetime.now(last_profiled.tzinfo)
+        else:
+            now = datetime.now()
+            
+        days_old = (now - last_profiled).days
+        
+        if days_old <= 7:
+            penalty = 0.0
+        elif days_old <= 30:
+            penalty = 0.10
+        else:
+            penalty = 0.50
+            
+        return base_score * (1.0 - penalty)
 
     def calculate_lineage_score(self, asset: CanonicalAsset) -> float:
         score = 0.0
@@ -419,12 +471,35 @@ class GovernanceScoringEngine:
         results = await self.score_assets_batch_async([asset])
         return results[0]
 
+    def get_asset_criticality_tier(self, asset: CanonicalAsset) -> int:
+        """Determines the criticality tier of an asset (1 = Critical, 2 = Core, 3 = Local)."""
+        if asset.usage.query_count >= 100 or asset.usage.user_count >= 10:
+            return 1
+        elif asset.usage.query_count >= 10 or asset.usage.user_count >= 3:
+            return 2
+        else:
+            return 3
+
+    def get_health_status(self, ghi: float, tier: int) -> str:
+        """Determines if the GHI is sufficient for the asset's criticality tier."""
+        if tier == 1:
+            return "Healthy" if ghi >= 80.0 else "Action Needed"
+        elif tier == 2:
+            return "Healthy" if ghi >= 60.0 else "Action Needed"
+        else:
+            return "Healthy" if ghi >= 40.0 else "Action Needed"
+
     def score_asset(self, asset: CanonicalAsset) -> Dict[str, Any]:
         loop = asyncio.new_event_loop()
         try:
-            return loop.run_until_complete(self.score_asset_async(asset))
+            res = loop.run_until_complete(self.score_asset_async(asset))
         finally:
             loop.close()
+            
+        tier = self.get_asset_criticality_tier(asset)
+        res["criticality_tier"] = tier
+        res["health_status"] = self.get_health_status(res["governance_health_index"], tier)
+        return res
 
     async def _score_all_assets_async(self, assets: List[CanonicalAsset], batch_size: int = 15) -> List[Dict[str, Any]]:
         """Splits assets into batches and scores them sequentially."""
@@ -473,6 +548,15 @@ class GovernanceScoringEngine:
             self._save_cache()
         else:
             print(f"[Client Cache] Cache hit: All {len(assets)} assets loaded from local cache.")
+
+        # Post-process all results to inject criticality tier and health status
+        assets_map = {a.asset_id: a for a in assets}
+        for res in scored_data:
+            asset = assets_map.get(res["asset_id"])
+            if asset:
+                tier = self.get_asset_criticality_tier(asset)
+                res["criticality_tier"] = tier
+                res["health_status"] = self.get_health_status(res["governance_health_index"], tier)
 
         return pd.DataFrame(scored_data)
 
