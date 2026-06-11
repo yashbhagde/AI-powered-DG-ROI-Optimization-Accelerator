@@ -111,10 +111,13 @@ def map_alation_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
         
     custom_fields = raw.get("custom_fields", {})
     classifications = []
-    if custom_fields.get("PII") == "Yes" or custom_fields.get("Classification") == "Confidential":
+    if custom_fields.get("PII") == "Yes":
         classifications.append("PII")
-    elif custom_fields.get("PII") == "No" and custom_fields.get("Classification"):
-        classifications.append(custom_fields.get("Classification"))
+    classification_val = custom_fields.get("Classification")
+    if classification_val:
+        classifications.append(classification_val)
+        if classification_val == "Confidential" and "PII" not in classifications:
+            classifications.append("PII")
         
     glossary_terms = []
     if "Glossary Term" in custom_fields:
