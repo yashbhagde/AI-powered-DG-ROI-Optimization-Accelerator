@@ -79,7 +79,7 @@ def generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_
                 "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
                 "Owner": owner_str,
                 "Steward": steward_str,
-                "Action_Required": "Contains sensitive classification (PII/Confidential) but has NO owner assigned. Assign a Business Owner immediately.",
+                "Action_Required": "Contains sensitive classification (Personally Identifiable Information (PII)/Confidential) but has NO owner assigned. Assign a Business Owner immediately.",
                 "Catalog_URL": catalog_url
             })
             
@@ -99,7 +99,7 @@ def generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_
                 "Usage_Frequency": f"{asset.usage.query_count} queries/mo",
                 "Owner": owner_str,
                 "Steward": steward_str,
-                "Action_Required": "CRITICAL RISK: Contains sensitive PII classification but is also flagged as 'Public'. Correct the classification to 'Confidential' or 'Restricted' immediately.",
+                "Action_Required": "CRITICAL RISK: Contains sensitive Personally Identifiable Information (PII) classification but is also flagged as 'Public'. Correct the classification to 'Confidential' or 'Restricted' immediately.",
                 "Catalog_URL": catalog_url
             })
             
@@ -631,15 +631,15 @@ def build_pdf_report(platform, input_file, output_file):
 
     fin_section_subtitle += (
         f"<br/><br/><b>Telemetry & Metadata Coverage Breakdown:</b><br/>"
-        f"&bull; <b>Size Coverage ({size_cov:.1f}%):</b> Measures assets with populated physical size (drives storage optimization/ROT savings).<br/>"
-        f"&bull; <b>Query Logs ({query_cov:.1f}%):</b> Measures assets with active query history (drives data discovery productivity and compute optimization).<br/>"
+        f"&bull; <b>Size Coverage ({size_cov:.1f}%):</b> Measures assets with populated physical size (drives storage optimization and Redundant, Obsolete, and Trivial (ROT) savings).<br/>"
+        f"&bull; <b>Query Logs ({query_cov:.1f}%):</b> Measures assets with active query history (drives data discovery productivity and Total Cost of Ownership (TCO) compute optimization).<br/>"
         f"&bull; <b>Owner Assignment ({owner_cov:.1f}%):</b> Measures assets with defined technical/business owners (drives compliance and risk savings).<br/>"
         f"&bull; <b>Lineage Trace ({lineage_cov:.1f}%):</b> Measures assets with mapped lineage relationships (drives Root Cause Analysis time savings).<br/>"
         f"&bull; <b>Stewardship Assignment ({steward_cov:.1f}%):</b> Measures assets with actively assigned data stewards (drives daily metadata upkeep).<br/>"
         f"&bull; <b>Documentation Coverage ({doc_cov:.1f}%):</b> Measures assets with robust description text (drives catalog search and discovery speed).<br/>"
-        f"&bull; <b>DQ Rule Coverage ({dq_cov:.1f}%):</b> Measures assets with active data quality profile runs (drives DQ incident avoidance savings).<br/>"
+        f"&bull; <b>Data Quality (DQ) Rule Coverage ({dq_cov:.1f}%):</b> Measures assets with active data quality profile runs (drives DQ incident avoidance savings).<br/>"
         f"&bull; <b>Glossary Linkage ({glossary_cov:.1f}%):</b> Measures assets mapped to business glossary terms (drives semantic search accuracy).<br/>"
-        f"&bull; <b>Classification Coverage ({class_cov:.1f}%):</b> Measures assets carrying active classifications (drives sensitive data compliance)."
+        f"&bull; <b>Classification Coverage ({class_cov:.1f}%):</b> Measures assets carrying active Personally Identifiable Information (PII) classifications (drives sensitive data compliance)."
     )
 
     story.append(Paragraph("II. Program Financial Performance & ROI Analysis", heading_style))
@@ -709,7 +709,7 @@ def build_pdf_report(platform, input_file, output_file):
                 Paragraph("Productivity savings from faster data discovery.", td_style)
             ],
             [
-                Paragraph("Realized DQ Incident Avoidance", td_style),
+                Paragraph("Realized Data Quality (DQ) Incident Avoidance", td_style),
                 Paragraph(f"{format_currency(roi_df['realized_dq_savings'].sum())}{amt_suffix}", td_bold_style),
                 Paragraph("Savings from avoiding pipeline failures and business downtime.", td_style)
             ],
@@ -968,7 +968,7 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("<b>Model Baseline Constants & Citation Sources</b>", ParagraphStyle('SubheadingAppendix', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
     params_data = [
         [Paragraph("Parameter Constants", th_style), Paragraph("Value", th_style), Paragraph("Research Context / Citation Source", th_style)],
-        [Paragraph(f"TCO ({platform.upper()})", td_style), Paragraph(f"{format_currency(operating_cost)}/yr", td_style), Paragraph(f"Estimated annual operating cost (licensing + administration headcount support).", td_style)],
+        [Paragraph(f"Total Cost of Ownership (TCO) - {platform.upper()}", td_style), Paragraph(f"{format_currency(operating_cost)}/yr", td_style), Paragraph(f"Estimated annual operating cost (licensing + administration headcount support).", td_style)],
         [Paragraph("Loaded Analyst Rate", td_style), Paragraph(f"${roi_engine.hourly_analyst_rate:.2f}/hr", td_style), Paragraph("U.S. Labor Bureau senior loaded rate averages (1.35x multiplier).", td_style)],
         [Paragraph("Hours Saved per Search", td_style), Paragraph(f"{roi_engine.hours_saved_per_search:.1f} hrs", td_style), Paragraph("Forrester TEI data catalog productivity metrics.", td_style)],
         [Paragraph("Search/Discovery Ratio", td_style), Paragraph(f"{roi_engine.search_ratio * 100:.1f}%", td_style), Paragraph("Manual human query proportion versus scheduled pipeline queries.", td_style)],
@@ -990,13 +990,13 @@ def build_pdf_report(platform, input_file, output_file):
     # Formulas Explanation
     story.append(Paragraph("<b>Equations & Derivations</b>", ParagraphStyle('SubheadingAppendix2', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
     story.append(Paragraph("1. <b>Productivity Savings</b>: (Annual Queries * 0.05% search ratio) * 3.5 hrs saved * Analyst loaded rate * (Doc Score / 100). Grounded in Forrester's TEI frameworks.", bullet_style))
-    story.append(Paragraph("2. <b>ROT Decommissioning</b>: Identified as size > 0, queries < 5/mo, and last accessed > 180 days. Savings = GB Size * $0.24/yr. Grounded in AWS/Azure storage tiers.", bullet_style))
-    story.append(Paragraph("3. <b>DQ Incident Avoidance</b>: (Unmonitored baseline [5.0% probability] - Current probability) * $15k cost. Active DQ profiling drops current probability to 2.0% (for DQ >= 80%) or 0.0% (for DQ >= 95%). Grounded in Gartner data quality impact surveys.", bullet_style))
-    story.append(Paragraph("4. <b>Risk Avoidance</b>: (Baseline breach prob. [5.0%] - Current prob.) * $150k breach penalty. Controls (ownership and classification) reduce probability to 1.0% (0.2% with active DQ checks). Grounded in IBM Security breach statistics and DAMA DMBOK principles.", bullet_style))
-    story.append(Paragraph("5. <b>Compute Optimization</b>: Snowflake credit waste avoided on bad/unoptimized queries, calculated based on the active warehouse sizes, average credit rates ($3.00/credit), and active DQ monitoring rules.", bullet_style))
+    story.append(Paragraph("2. <b>Redundant, Obsolete, and Trivial (ROT) Decommissioning</b>: Identified as size > 0, queries < 5/mo, and last accessed > 180 days. Savings = GB Size * $0.24/yr. Grounded in AWS/Azure storage tiers.", bullet_style))
+    story.append(Paragraph("3. <b>Data Quality (DQ) Incident Avoidance</b>: (Unmonitored baseline [5.0% probability] - Current probability) * $15k cost. Active Data Quality (DQ) profiling drops current probability to 2.0% (for DQ >= 80%) or 0.0% (for DQ >= 95%). Grounded in Gartner data quality impact surveys.", bullet_style))
+    story.append(Paragraph("4. <b>Risk Avoidance</b>: (Baseline breach prob. [5.0%] - Current prob.) * $150k breach penalty. Controls (ownership and classification) reduce probability to 1.0% (0.2% with active Data Quality (DQ) checks). Grounded in IBM Security breach statistics and DAMA DMBOK principles.", bullet_style))
+    story.append(Paragraph("5. <b>Compute Optimization</b>: Snowflake credit waste avoided on bad/unoptimized queries, calculated based on the active warehouse sizes, average credit rates ($3.00/credit), and active Data Quality (DQ) monitoring rules.", bullet_style))
     story.append(Paragraph("6. <b>Net Program Value</b>: Net Value = Total Realized Savings - Annual Operating Cost.", bullet_style))
     story.append(Paragraph("7. <b>Return on Investment (ROI) %</b>: ROI % = (Net Realized Program Value / Annual Operating Cost) * 100.", bullet_style))
-    story.append(Paragraph("8. <b>Unrealized Opportunity Value</b>: Sum of remaining discovery opportunity + DQ opportunity + Risk mitigation + ROT storage decommissioning savings.", bullet_style))
+    story.append(Paragraph("8. <b>Unrealized Opportunity Value</b>: Sum of remaining discovery opportunity + Data Quality (DQ) opportunity + Risk mitigation + Redundant, Obsolete, and Trivial (ROT) storage decommissioning savings.", bullet_style))
     story.append(Spacer(1, 10))
     
     # Governance Maturity Scoring Formulas
@@ -1005,8 +1005,8 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("• <b>Ownership Assignment %</b>: (Assets with >= 1 owner / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
     story.append(Paragraph("• <b>Glossary Linkage %</b>: (Assets with >= 1 glossary term / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
     story.append(Paragraph("• <b>Classification Coverage %</b>: (Assets with >= 1 classification / Total Assets) * 100. Thresholds: [40, 60, 75, 90]%.", bullet_style))
-    story.append(Paragraph("• <b>DQ Rule Coverage %</b>: (Assets with >= 1 DQ rules run / Total Assets) * 100. Thresholds: [25, 50, 70, 85]%.", bullet_style))
-    story.append(Paragraph("• <b>DQ Pass Rate %</b>: (Total rules passed / Total rules run) * 100. Thresholds: [70, 80, 90, 95]%.", bullet_style))
+    story.append(Paragraph("• <b>Data Quality (DQ) Rule Coverage %</b>: (Assets with >= 1 DQ rules run / Total Assets) * 100. Thresholds: [25, 50, 70, 85]%.", bullet_style))
+    story.append(Paragraph("• <b>Data Quality (DQ) Pass Rate %</b>: (Total rules passed / Total rules run) * 100. Thresholds: [70, 80, 90, 95]%.", bullet_style))
     story.append(Paragraph("• <b>Maturity Scoring Step-mapping</b>: Raw percentages map to 1-5 levels based on the thresholds: Score = 1.0 (if &lt; thresholds[0]), 2.0 (if &lt; thresholds[1]), 3.0 (if &lt; thresholds[2]), 4.0 (if &lt; thresholds[3]), 5.0 (if &gt;= thresholds[3]).", bullet_style))
     story.append(Paragraph("• <b>Metadata Management Maturity</b>: Weighted average of its indicators: Documentation (30%), Ownership (30%), Glossary Linkage (20%), and Classification (20%).", bullet_style))
     story.append(Paragraph("• <b>Data Quality Maturity</b>: Weighted average of its indicators: Rule Coverage (40%) and Pass Rate (60%).", bullet_style))
