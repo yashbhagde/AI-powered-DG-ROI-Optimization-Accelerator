@@ -273,10 +273,6 @@ class MaturityAssessmentEngine:
                     status = "Red"
                     gaps.append(f"{raw_val:.1f}% {name.lower()} (Status: {status}, Target: >= {thresholds[3]}%)")
 
-        # Prioritized recommendations based on lowest raw metrics
-        raw_metrics = assessment["audit_trail"]["raw_metrics"]
-        sorted_metrics = sorted(raw_metrics.items(), key=lambda x: x[1])
-
         reco_map = {
             "documentation_coverage": {
                 "reco": "Increase business description coverage.",
@@ -316,22 +312,26 @@ class MaturityAssessmentEngine:
             }
         }
 
+        # Prioritized recommendations based on lowest raw metrics that exist in reco_map
+        raw_metrics = assessment["audit_trail"]["raw_metrics"]
+        filtered_metrics = {k: v for k, v in raw_metrics.items() if k in reco_map}
+        sorted_metrics = sorted(filtered_metrics.items(), key=lambda x: x[1])
+
         # Pick top 3 recommendations
         for key, val in sorted_metrics[:3]:
-            if key in reco_map:
-                current_score = assessment["overall_maturity_score"]
-                reco_info = reco_map[key]
-                
-                # Calculate estimated improvement if this metric reached level 4 (thresholds[2])
-                # We mock a 0.5 maturity boost for the recommendation
-                target_score = min(5.0, current_score + 0.4)
-                
-                recommendations.append({
-                    "recommendation": reco_info["reco"],
-                    "rationale": reco_info["rationale"],
-                    "expected_business_impact": reco_info["impact"],
-                    "expected_maturity_improvement": reco_info["improvement"].format(current=current_score, target=target_score)
-                })
+            current_score = assessment["overall_maturity_score"]
+            reco_info = reco_map[key]
+            
+            # Calculate estimated improvement if this metric reached level 4 (thresholds[2])
+            # We mock a 0.5 maturity boost for the recommendation
+            target_score = min(5.0, current_score + 0.4)
+            
+            recommendations.append({
+                "recommendation": reco_info["reco"],
+                "rationale": reco_info["rationale"],
+                "expected_business_impact": reco_info["impact"],
+                "expected_maturity_improvement": reco_info["improvement"].format(current=current_score, target=target_score)
+            })
 
         return {
             "strengths": strengths,
