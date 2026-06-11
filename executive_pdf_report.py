@@ -968,6 +968,7 @@ def build_pdf_report(platform, input_file, output_file):
     story.append(Paragraph("<b>Model Baseline Constants & Citation Sources</b>", ParagraphStyle('SubheadingAppendix', parent=body_style, fontName='Helvetica-Bold', spaceAfter=2)))
     params_data = [
         [Paragraph("Parameter Constants", th_style), Paragraph("Value", th_style), Paragraph("Research Context / Citation Source", th_style)],
+        [Paragraph(f"TCO ({platform.upper()})", td_style), Paragraph(f"{format_currency(operating_cost)}/yr", td_style), Paragraph(f"Estimated annual operating cost (licensing + administration headcount support).", td_style)],
         [Paragraph("Loaded Analyst Rate", td_style), Paragraph(f"${roi_engine.hourly_analyst_rate:.2f}/hr", td_style), Paragraph("U.S. Labor Bureau senior loaded rate averages (1.35x multiplier).", td_style)],
         [Paragraph("Hours Saved per Search", td_style), Paragraph(f"{roi_engine.hours_saved_per_search:.1f} hrs", td_style), Paragraph("Forrester TEI data catalog productivity metrics.", td_style)],
         [Paragraph("Search/Discovery Ratio", td_style), Paragraph(f"{roi_engine.search_ratio * 100:.1f}%", td_style), Paragraph("Manual human query proportion versus scheduled pipeline queries.", td_style)],
