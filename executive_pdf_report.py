@@ -930,9 +930,11 @@ def build_pdf_report(platform, input_file, output_file):
         ]))
 
     # Top 3 Recommendations Section
-    story.append(Paragraph("IV. Prioritized Action Plan & Recommendations", heading_style))
-    story.append(Paragraph("Actionable remediation roadmap to accelerate maturity and unlock business value:", body_style))
-    story.append(Spacer(1, 6))
+    reco_elements = [
+        Paragraph("IV. Prioritized Action Plan & Recommendations", heading_style),
+        Paragraph("Actionable remediation roadmap to accelerate maturity and unlock business value:", body_style),
+        Spacer(1, 6)
+    ]
 
     for i, reco in enumerate(reco_results["recommendations"], 1):
         reco_text = (
@@ -948,12 +950,17 @@ def build_pdf_report(platform, input_file, output_file):
             ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
             ('LINELEFT', (0,0), (0,-1), 3, colors.HexColor("#3182CE")), # Blue accent left line
         ]))
-        story.append(reco_table)
-        story.append(Spacer(1, 6))
+        if i == 1:
+            reco_elements.append(reco_table)
+            story.append(KeepTogether(reco_elements))
+            story.append(Spacer(1, 6))
+        else:
+            story.append(reco_table)
+            story.append(Spacer(1, 6))
         
     # 6. Appendix: ROI Methodology & Assumptions
-    from reportlab.platypus import PageBreak
-    story.append(PageBreak())
+    from reportlab.platypus import CondPageBreak
+    story.append(CondPageBreak(600))
     
     story.append(Paragraph("APPENDIX: ROI METHODOLOGY & ASSUMPTIONS", heading_style))
     story.append(Paragraph(
