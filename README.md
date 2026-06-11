@@ -63,8 +63,16 @@ graph TD
 ### 1. Governance Maturity Scores
 * **Metadata Management (Weight: 20%)**:
   Weighted average of Documentation Coverage (30%), Ownership Coverage (30%), Glossary Linkage (20%), and Classification Coverage (20%).
+  * *Quality-Aware Heuristics:* Documentation checks filter out placeholders (e.g. `"tbd"`, `"todo"`, `"none"`) or description texts that duplicate the asset name, requiring at least 3 descriptive words to score.
 * **Data Quality (Weight: 20%)**:
   Weighted average of DQ Rule Coverage (40%) and DQ Pass Rate (60%).
+  * *Freshness Decay:* Data quality pass rates are penalized/decayed based on the age of the `last_profiled` run (10% penalty for 8–30 days, 50% penalty for >30 days or never profiled).
+* **Asset Criticality & Tiered Health Status**:
+  Assets are tiered based on query activity and active user counts:
+  * **Tier 1 (Critical)**: $\ge$ 100 queries/mo or $\ge$ 10 users. *GHI Health Threshold: $\ge$ 80%*
+  * **Tier 2 (Core)**: $\ge$ 10 queries/mo or $\ge$ 3 users. *GHI Health Threshold: $\ge$ 60%*
+  * **Tier 3 (Local)**: All others. *GHI Health Threshold: $\ge$ 40%*
+  * *Health Status:* Assets are flagged as `"Healthy"` or `"Action Needed"` based on GHI scores against their respective Criticality Tier health threshold.
 * **Data Security & Privacy (Compliance) (Weight: 15%)**:
   Weighted average of Classification Coverage (50%) and Sensitive Data Governance (50%). Sensitive Data Governance measures the percentage of sensitive assets (PII/Confidential) that have owners and classification tags assigned.
 * **Stewardship & Governance Administration (Weight: 15%)**:
@@ -114,12 +122,11 @@ To ensure calculations are robust and auditable, the model incorporates the foll
 
 ---
 
-## Caching & Performance Optimization
+## Caching, Rate Limiting & Performance Optimization
 
-To minimize LLM token usage and ensure fast, predictable runs, a local client-side cache is built into the Scoring Engine:
-- **Metadata Hashing**: Computes unique hashes for each asset based on metadata values (description, owners, glossary, data quality pass rate).
-- **Selective LLM Analysis**: Only assets with new or modified metadata are analyzed via LLM APIs. 
-- **Instant Execution**: Cached assets skip the LLM inference stage entirely, allowing daily report generation to complete in seconds with zero token overhead for unmodified datasets.
+To prevent API exhaustion and minimize cost, the engine incorporates advanced performance controls:
+- **Metadata Caching**: Computes unique MD5 hashes for each asset based on metadata. Unchanged assets bypass LLM validation entirely, executing instantly with zero API cost.
+- **Dynamic Rate Limit Discovery**: On startup, the engine queries the active provider (Anthropic, OpenAI, or Gemini) with a lightweight connection ping. It dynamically parses the response headers (e.g. `anthropic-ratelimit-*` or `x-ratelimit-*`) to discover the exact rate limits, automatically configuring the client rate limiter to consume exactly **60% of the RPM/TPM thresholds** as a safety margin. Provider-specific default maps serve as fallbacks if headers are absent (e.g. Gemini).
 
 ---
 
