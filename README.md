@@ -18,12 +18,12 @@ Rather than relying on manual audits, the accelerator embeds AI at the core of t
 
 ```mermaid
 graph TD
-    A["Any Data Catalog JSON <br>(Alation, Collibra, Purview, Ataccama, IDMC)"] -->|Raw JSON Payload| B[Canonical Mapper]
+    A["Any Data Catalog JSON - Alation, Collibra, Purview, Ataccama, IDMC"] -->|Raw JSON Payload| B[Canonical Mapper]
     B -->|Vendor-Agnostic CanonicalAsset| C[AI Metadata Auditor]
     B -->|Vendor-Agnostic CanonicalAsset| D[Maturity & ROI Engine]
     
     C -->|Batch LLM Call| E{Uncached Assets?}
-    E -->|Yes| F[LiteLLM API Router <br>(Gemini / Claude / GPT)]
+    E -->|Yes| F["LiteLLM API Router - Gemini, Claude, GPT"]
     E -->|No| G[(MD5 Metadata Cache)]
     F -->|Save Output| G
     
@@ -31,7 +31,7 @@ graph TD
     
     D -->|Governance Health Index & ROI Metrics| H[Report Compiler]
     
-    H -->|Concurrent Execution| I[6-Agent Advisory Board <br>(Compliance, Stewardship, DQ, Lineage, Lifecycle, Metadata)]
+    H -->|Concurrent Execution| I["6-Agent Advisory Board - Compliance, Stewardship, DQ, Lineage, Lifecycle, Metadata"]
     I -->|Asynchronous LiteLLM Narrative & Actions| H
     
     H -->|PDF Exporter| J[Timestamped Run Subfolder]
@@ -40,6 +40,7 @@ graph TD
     J -->|Auto-Generated SQL/GE Rules| M["DQ Assertions (.csv)"]
     J -->|Sensitivity Proposals| N["Tag Recommendations (.csv)"]
 ```
+
 
 1. **Ingest / Raw Data**: Ingests raw JSON payloads exported from any major catalog vendor.
 2. **Canonical Mapping**: Automatically maps diverse vendor schemas into Pydantic models defined in [canonical_metadata_model.py](canonical_metadata_model.py).
