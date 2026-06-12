@@ -217,10 +217,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-reports/*.pdf
-.rate_limit_cache.json
-# Generated reports
-reports/*.pdf
+# Generated reports and subfolders
+reports/
+!reports/.gitkeep
 
 # macOS
 .DS_Store
@@ -228,4 +227,5 @@ reports/*.pdf
 # Local outputs
 demo_output.txt
 .governance_score_cache.json
+.rate_limit_cache.json
 

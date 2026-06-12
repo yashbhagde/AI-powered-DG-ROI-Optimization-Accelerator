@@ -224,6 +224,277 @@ def generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_
         
     print(f"Successfully generated Remediation Task Registry CSV at '{csv_output_file}'")
 
+def generate_dq_assertions_csv(platform, raw_assets, canonical_assets, csv_output_file):
+    import csv
+    
+    raw_map = {}
+    plat_lower = platform.lower()
+    for raw in raw_assets:
+        if plat_lower == "alation":
+            raw_map[f"alation_{raw.get('id', '')}"] = raw
+        elif plat_lower == "collibra":
+            raw_map[f"collibra_{raw.get('id', '')}"] = raw
+        elif plat_lower in ["informatica", "informatica_idmc", "idmc"]:
+            raw_map[f"informatica_{raw.get('assetId', '')}"] = raw
+        elif plat_lower == "ataccama":
+            raw_map[f"ataccama_{raw.get('id', '')}"] = raw
+        elif plat_lower == "purview":
+            raw_map[f"purview_{raw.get('guid', '')}"] = raw
+            
+    rows = []
+    
+    for asset in canonical_assets:
+        asset_id = asset.asset_id
+        raw_asset = raw_map.get(asset_id, {})
+        raw_columns = raw_asset.get("columns", [])
+        
+        if raw_columns:
+            for col in raw_columns:
+                col_name = col.get("name", "")
+                is_col_sensitive = "ssn" in col_name.lower() or "tax" in col_name.lower() or "routing" in col_name.lower() or "phone" in col_name.lower() or "email" in col_name.lower() or "salary" in col_name.lower()
+                severity = "CRITICAL" if is_col_sensitive else "HIGH" if col.get("is_primary_key", False) else "MEDIUM"
+                
+                # 1. Uniqueness & Completeness for Primary Keys
+                if col.get("is_primary_key", False):
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Uniqueness",
+                        "Rule_Description": f"Ensure primary key column '{col_name}' contains unique values.",
+                        "SQL_Implementation": f"SELECT COUNT({col_name}) - COUNT(DISTINCT {col_name}) AS duplicate_count FROM {asset.name};",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_be_unique", "kwargs": {{"column": "{col_name}"}}}}',
+                        "Severity": severity
+                    })
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Completeness",
+                        "Rule_Description": f"Verify primary key column '{col_name}' contains no null values.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE {col_name} IS NULL;",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {{"column": "{col_name}"}}}}',
+                        "Severity": severity
+                    })
+                # 2. Integrity for Foreign Keys
+                elif col_name.endswith("_id") or col_name.endswith("_key") or col_name.endswith("_fk"):
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Integrity",
+                        "Rule_Description": f"Validate referential integrity constraint for key '{col_name}'.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE {col_name} IS NOT NULL AND {col_name} NOT IN (SELECT distinct parent_id_field FROM parent_table);",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {{"column": "{col_name}", "value_set": []}}}}',
+                        "Severity": severity
+                    })
+                # 3. Validity for Formatted Strings
+                elif "email" in col_name.lower():
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Validity",
+                        "Rule_Description": f"Verify column '{col_name}' matches email address format.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE {col_name} NOT LIKE '%@%.%';",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_match_regex", "kwargs": {{"column": "{col_name}", "regex": "^[^@]+@[^@]+\\\\.[^@]+$"}}}}',
+                        "Severity": severity
+                    })
+                elif "phone" in col_name.lower():
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Validity",
+                        "Rule_Description": f"Verify column '{col_name}' contains a valid telephone number string length.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE LENGTH(REGEXP_REPLACE({col_name}, '[^0-9]', '')) < 10;",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_value_lengths_to_be_between", "kwargs": {{"column": "{col_name}", "min_value": 7, "max_value": 15}}}}',
+                        "Severity": severity
+                    })
+                elif "ssn" in col_name.lower() or "tax" in col_name.lower():
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Validity",
+                        "Rule_Description": f"Ensure sensitive column '{col_name}' conforms to government Tax ID format.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE {col_name} IS NOT NULL AND NOT REGEXP_LIKE({col_name}, '^[0-9]{{3}}-[0-9]{{2}}-[0-9]{{4}}$');",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_match_regex", "kwargs": {{"column": "{col_name}", "regex": "^[0-9]{{3}}-[0-9]{{2}}-[0-9]{{4}}$"}}}}',
+                        "Severity": severity
+                    })
+                # 4. Accuracy for Numeric Limits & Financials
+                elif "limit" in col_name.lower() or "salary" in col_name.lower() or "amount" in col_name.lower() or "balance" in col_name.lower():
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Accuracy",
+                        "Rule_Description": f"Ensure numeric bounds check for column '{col_name}' is non-negative.",
+                        "SQL_Implementation": f"SELECT COUNT(*) FROM {asset.name} WHERE {col_name} < 0;",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_be_between", "kwargs": {{"column": "{col_name}", "min_value": 0}}}}',
+                        "Severity": severity
+                    })
+                # 5. Completeness for standard columns
+                else:
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Column_Name": col_name,
+                        "DQ_Dimension": "Completeness",
+                        "Rule_Description": f"Check population rate and completeness of column '{col_name}'.",
+                        "SQL_Implementation": f"SELECT SUM(CASE WHEN {col_name} IS NULL THEN 1 ELSE 0 END) AS null_count FROM {asset.name};",
+                        "Great_Expectations_JSON": f'{{"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {{"column": "{col_name}"}}}}',
+                        "Severity": "LOW"
+                    })
+        else:
+            # Table-Level Rule Fallbacks
+            asset_name_lower = asset.name.lower()
+            # 6. Timeliness for pipeline ingestion logs
+            if "sales" in asset_name_lower or "transaction" in asset_name_lower or "fact" in asset_name_lower:
+                rows.append({
+                    "Asset_ID": asset_id,
+                    "Asset_Name": asset.name,
+                    "Column_Name": "N/A (Table-Level)",
+                    "DQ_Dimension": "Timeliness",
+                    "Rule_Description": f"Monitor data pipeline ingestion fresh updates on table '{asset.name}'.",
+                    "SQL_Implementation": f"SELECT CASE WHEN MAX(last_modified) < CURRENT_TIMESTAMP - INTERVAL '1 DAY' THEN 1 ELSE 0 END AS stale_flag FROM {asset.name};",
+                    "Great_Expectations_JSON": f'{{"expectation_type": "expect_table_row_count_to_be_between", "kwargs": {{"min_value": 1}}}}',
+                    "Severity": "HIGH"
+                })
+
+    fieldnames = [
+        "Asset_ID", "Asset_Name", "Column_Name", "DQ_Dimension", 
+        "Rule_Description", "SQL_Implementation", "Great_Expectations_JSON", "Severity"
+    ]
+    
+    with open(csv_output_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+        
+    print(f"Successfully generated Auto-Generated DQ Rules CSV at '{csv_output_file}'")
+
+def generate_tag_recommendations_csv(platform, raw_assets, canonical_assets, csv_output_file):
+    import csv
+    
+    raw_map = {}
+    plat_lower = platform.lower()
+    for raw in raw_assets:
+        if plat_lower == "alation":
+            raw_map[f"alation_{raw.get('id', '')}"] = raw
+        elif plat_lower == "collibra":
+            raw_map[f"collibra_{raw.get('id', '')}"] = raw
+        elif plat_lower in ["informatica", "informatica_idmc", "idmc"]:
+            raw_map[f"informatica_{raw.get('assetId', '')}"] = raw
+        elif plat_lower == "ataccama":
+            raw_map[f"ataccama_{raw.get('id', '')}"] = raw
+        elif plat_lower == "purview":
+            raw_map[f"purview_{raw.get('guid', '')}"] = raw
+            
+    rows = []
+    
+    for asset in canonical_assets:
+        asset_id = asset.asset_id
+        raw_asset = raw_map.get(asset_id, {})
+        raw_columns = raw_asset.get("columns", [])
+        
+        is_table_sensitive = any(c.lower() in ["pii", "phi", "pci", "confidential", "restricted", "sensitive"] for c in asset.classifications)
+        table_name_lower = asset.name.lower()
+        
+        if raw_columns:
+            for col in raw_columns:
+                col_name = col.get("name", "").lower()
+                
+                suggested_tag = None
+                reasoning = None
+                confidence = "LOW"
+                
+                if "ssn" in col_name or "tax" in col_name:
+                    suggested_tag = "Confidential PII - Tax ID"
+                    reasoning = f"Column name '{col.get('name')}' matches tax registry key patterns."
+                    confidence = "HIGH"
+                elif "phone" in col_name:
+                    suggested_tag = "Confidential PII - Phone"
+                    reasoning = f"Column name '{col.get('name')}' indicates telephone contact details."
+                    confidence = "HIGH"
+                elif "email" in col_name:
+                    suggested_tag = "Confidential PII - Email"
+                    reasoning = f"Column name '{col.get('name')}' indicates electronic contact details."
+                    confidence = "HIGH"
+                elif "routing" in col_name or "bank" in col_name or "account_no" in col_name or "cc_no" in col_name:
+                    suggested_tag = "Highly Restricted Financial - Banking Details"
+                    reasoning = f"Column name '{col.get('name')}' indicates ACH/payment properties."
+                    confidence = "HIGH"
+                elif "salary" in col_name or "payroll" in col_name or "income" in col_name:
+                    suggested_tag = "Confidential Financial - Compensation"
+                    reasoning = f"Column name '{col.get('name')}' represents sensitive salary or remuneration values."
+                    confidence = "HIGH"
+                elif "medical" in col_name or "patient" in col_name or "health" in col_name or "diagnosis" in col_name:
+                    suggested_tag = "Confidential PHI - Health Record"
+                    reasoning = f"Metadata terms align with Protected Health Information (PHI) indicators."
+                    confidence = "MEDIUM"
+                elif "address" in col_name or "postal" in col_name or "zip" in col_name:
+                    suggested_tag = "PII - Location Details"
+                    reasoning = f"Column represents residential location metadata."
+                    confidence = "MEDIUM"
+                
+                if suggested_tag:
+                    rows.append({
+                        "Asset_ID": asset_id,
+                        "Asset_Name": asset.name,
+                        "Asset_Type": asset.asset_type,
+                        "Column_Name": col.get("name"),
+                        "Suggested_Tag": suggested_tag,
+                        "Confidence_Score": confidence,
+                        "Reasoning": reasoning,
+                        "Action_Required": f"Apply '{suggested_tag}' tag in {platform.upper()} and configure masking rules in database."
+                    })
+        
+        suggested_table_tag = None
+        table_reasoning = None
+        table_confidence = "LOW"
+        
+        if "hr_" in table_name_lower or "employee" in table_name_lower:
+            suggested_table_tag = "Confidential PII - HR Data"
+            table_reasoning = "Table naming convention represents human resource registry data."
+            table_confidence = "HIGH"
+        elif "finance" in table_name_lower or "payroll" in table_name_lower or "ledger" in table_name_lower:
+            suggested_table_tag = "Confidential Financial - Accounting"
+            table_reasoning = "Table represents corporate general ledger or accounting transaction data."
+            table_confidence = "HIGH"
+        elif "audit" in table_name_lower or "log" in table_name_lower:
+            suggested_table_tag = "Internal - System Logs"
+            table_reasoning = "Table represents operational execution or security audit log data."
+            table_confidence = "MEDIUM"
+        elif is_table_sensitive:
+            suggested_table_tag = "Confidential - Business Sensitive"
+            table_reasoning = "Inherited sensitive classification from vendor's source metadata."
+            table_confidence = "HIGH"
+            
+        if suggested_table_tag:
+            rows.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Asset_Type": asset.asset_type,
+                "Column_Name": "N/A (Table-Level)",
+                "Suggested_Tag": suggested_table_tag,
+                "Confidence_Score": table_confidence,
+                "Reasoning": table_reasoning,
+                "Action_Required": f"Apply governance tag '{suggested_table_tag}' to table catalog asset."
+            })
+            
+    fieldnames = [
+        "Asset_ID", "Asset_Name", "Asset_Type", "Column_Name", 
+        "Suggested_Tag", "Confidence_Score", "Reasoning", "Action_Required"
+    ]
+    
+    with open(csv_output_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+        
+    print(f"Successfully generated Tag Recommendations CSV at '{csv_output_file}'")
+
 def build_pdf_report(platform, input_file, output_file):
     # 1. Load and parse raw metadata
     if not os.path.exists(input_file):
@@ -1028,29 +1299,39 @@ def build_pdf_report(platform, input_file, output_file):
     doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)
     print(f"Successfully generated PDF report at '{output_file}'")
     
-    # Generate CSV Remediation Task Registry
-    csv_output_file = os.path.splitext(output_file)[0] + "_remediation_registry.csv"
-    generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, csv_output_file)
+    # Generate CSV Registries (Remediation Tasks, DQ Rules, and Sensitive Tag Recommendations)
+    base_csv_path = os.path.splitext(output_file)[0]
+    remediation_csv = base_csv_path + "_remediation_registry.csv"
+    dq_csv = base_csv_path + "_dq_assertions_registry.csv"
+    tag_csv = base_csv_path + "_tag_recommendations_registry.csv"
+    
+    generate_remediation_csv(platform, canonical_assets, scored_df, roi_df, remediation_csv)
+    generate_dq_assertions_csv(platform, raw_assets, canonical_assets, dq_csv)
+    generate_tag_recommendations_csv(platform, raw_assets, canonical_assets, tag_csv)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Executive Data Governance PDF Report.")
     parser.add_argument("--platform", type=str, default="alation", help="Platform name (e.g. alation)")
     parser.add_argument("--input", type=str, default="alation/sample_alation_metadata.json", help="Input JSON file containing platform mock metadata")
-    parser.add_argument("--output", type=str, default=None, help="Output PDF report path. If omitted, saves dynamically in 'reports/' with timestamp.")
+    parser.add_argument("--output", type=str, default=None, help="Output PDF report path. If omitted, saves dynamically in a new run folder inside 'reports/'.")
     args = parser.parse_args()
     
-    # Resolve output path
+    # Resolve main reports directory
     reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
     os.makedirs(reports_dir, exist_ok=True)
     
+    # Create the timestamped run folder
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_folder = os.path.join(reports_dir, f"{args.platform}_{timestamp}")
+    os.makedirs(run_folder, exist_ok=True)
+    
     if args.output is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = os.path.join(reports_dir, f"{args.platform}_executive_report_{timestamp}.pdf")
+        output_file = os.path.join(run_folder, f"{args.platform}_executive_report.pdf")
     else:
-        # If user provided a path, check if it's absolute or relative to reports
+        # If user provided a path, save inside the new run folder
         if os.path.isabs(args.output):
-            output_file = args.output
+            output_file = os.path.join(run_folder, os.path.basename(args.output))
         else:
-            output_file = os.path.join(reports_dir, args.output)
+            output_file = os.path.join(run_folder, args.output)
             
     build_pdf_report(args.platform, args.input, output_file)
