@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow will install Python dependencies, run tests, audit dependencies, lint code, check static types, and validate data mappers.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Python package
@@ -21,20 +21,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
+        python -m pip install ruff bandit pip-audit mypy pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+    - name: Lint and Format Check with Ruff
       run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        ruff check .
+        ruff format --check .
+    - name: Security scan with Bandit
+      run: |
+        # scan code for common security bugs
+        bandit -r . -x ./.venv,./tests --severity-level medium
+    - name: Audit dependencies with pip-audit
+      run: |
+        # check requirements for known vulnerability CVEs
+        pip-audit -r requirements.txt
+    - name: Type check with mypy
+      run: |
+        # enforce static type annotations
+        mypy --ignore-missing-imports .
     - name: Test with pytest
       run: |
         if ls test_*.py tests/*.py 1> /dev/null 2>&1; then
@@ -42,3 +52,8 @@ jobs:
         else
         echo "No tests found. Skipping pytest."
         fi
+    - name: Validate Mock Data Generation and Ingest
+      run: |
+        # ensure mappers and generation logic runs cleanly
+        python generate_all_mock_data.py --num-assets 5
+        python executive_pdf_report.py --platform alation --input alation/sample_alation_metadata.json
