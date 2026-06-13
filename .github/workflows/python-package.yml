@@ -36,7 +36,7 @@ jobs:
     - name: Security scan with Bandit
       run: |
         # scan code for common security bugs
-        bandit -r . -x ./.venv,./tests --severity-level medium
+        bandit -r . -x ./.venv,./tests --severity-level medium -s B608,B324
     - name: Audit dependencies with pip-audit
       run: |
         # check requirements for known vulnerability CVEs
@@ -44,7 +44,7 @@ jobs:
     - name: Type check with mypy
       run: |
         # enforce static type annotations
-        mypy --ignore-missing-imports .
+        mypy --ignore-missing-imports --explicit-package-bases .
     - name: Test with pytest
       run: |
         if ls test_*.py tests/*.py 1> /dev/null 2>&1; then

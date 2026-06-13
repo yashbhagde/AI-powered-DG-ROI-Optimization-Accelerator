@@ -9,6 +9,7 @@ from canonical_metadata_model import map_raw_to_canonical
 from governance_scoring_engine import GovernanceScoringEngine
 from roi_calculation_engine import ROICalculationEngine
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Process raw data governance metadata from a single platform, map to canonical model, and run scoring & ROI analysis."
@@ -18,28 +19,28 @@ def main():
         type=str,
         required=True,
         choices=["alation", "collibra", "informatica_idmc", "ataccama", "purview"],
-        help="The source platform/vendor of the metadata (e.g., alation, collibra)."
+        help="The source platform/vendor of the metadata (e.g., alation, collibra).",
     )
     parser.add_argument(
         "--input",
         type=str,
         required=True,
-        help="Path to the JSON file containing the raw metadata (a list of asset objects or a single asset object)."
+        help="Path to the JSON file containing the raw metadata (a list of asset objects or a single asset object).",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
         default=None,
-        help="Directory to save the analysis reports (scores.csv and roi.csv). If not specified, reports won't be saved."
+        help="Directory to save the analysis reports (scores.csv and roi.csv). If not specified, reports won't be saved.",
     )
-    
+
     args = parser.parse_args()
 
     # 1. Load Raw JSON Metadata
     if not os.path.exists(args.input):
         print(f"Error: Input file '{args.input}' does not exist.", file=sys.stderr)
         sys.exit(1)
-        
+
     try:
         with open(args.input, "r") as f:
             raw_data = json.load(f)
@@ -91,30 +92,55 @@ def main():
 
     # Display Scores
     print("\n--- GOVERNANCE SCORES & RISK PROFILE ---")
-    score_cols = ["asset_id", "name", "documentation_score", "data_quality_score", "security_risk_score", "governance_health_index"]
+    score_cols = [
+        "asset_id",
+        "name",
+        "documentation_score",
+        "data_quality_score",
+        "security_risk_score",
+        "governance_health_index",
+    ]
     try:
-        print(tabulate(scored_df[score_cols], headers='keys', tablefmt='psql', showindex=False))
+        print(tabulate(scored_df[score_cols], headers="keys", tablefmt="psql", showindex=False))
     except ImportError:
         print(scored_df[score_cols])
 
     # 4. ROI Financial Calculations
     print("\nCalculating Financial ROI and Opportunity Savings...")
     roi_engine = ROICalculationEngine()
-    
+
     # Customize cost for single platform if we want, or use defaults
     roi_df = roi_engine.calculate_catalog_roi(canonical_assets, scored_df)
 
     # Display ROI table
     print("\n--- FINANCIAL SAVINGS BREAKDOWN ---")
-    roi_cols = ["asset_id", "name", "is_rot", "is_sensitive", "realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "realized_compute_savings", "total_realized_savings", "total_opportunity_savings"]
+    roi_cols = [
+        "asset_id",
+        "name",
+        "is_rot",
+        "is_sensitive",
+        "realized_discovery_savings",
+        "realized_dq_savings",
+        "realized_risk_savings",
+        "realized_compute_savings",
+        "total_realized_savings",
+        "total_opportunity_savings",
+    ]
     display_roi_df = roi_df[roi_cols].copy()
-    
+
     # Format currency for print
-    for col in ["realized_discovery_savings", "realized_dq_savings", "realized_risk_savings", "realized_compute_savings", "total_realized_savings", "total_opportunity_savings"]:
+    for col in [
+        "realized_discovery_savings",
+        "realized_dq_savings",
+        "realized_risk_savings",
+        "realized_compute_savings",
+        "total_realized_savings",
+        "total_opportunity_savings",
+    ]:
         display_roi_df[col] = display_roi_df[col].apply(lambda x: f"${x:,.2f}")
-        
+
     try:
-        print(tabulate(display_roi_df, headers='keys', tablefmt='psql', showindex=False))
+        print(tabulate(display_roi_df, headers="keys", tablefmt="psql", showindex=False))
     except ImportError:
         print(display_roi_df)
 
@@ -142,13 +168,14 @@ def main():
         os.makedirs(args.output_dir, exist_ok=True)
         scores_csv = os.path.join(args.output_dir, f"{args.platform}_governance_scores.csv")
         roi_csv = os.path.join(args.output_dir, f"{args.platform}_governance_roi.csv")
-        
+
         scored_df.to_csv(scores_csv, index=False)
         roi_df.to_csv(roi_csv, index=False)
-        
+
         print(f"\n[Saved] Governance scores saved to: {scores_csv}")
         print(f"[Saved] ROI calculations saved to: {roi_csv}")
     print("=" * 80)
+
 
 if __name__ == "__main__":
     main()

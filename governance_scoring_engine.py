@@ -12,18 +12,19 @@ from canonical_metadata_model import CanonicalAsset
 # Load environment variables
 load_dotenv()
 
+
 class APIRateLimiter:
     def __init__(self, rpm_limit=600, tpm_limit=600000, rpd_limit=6000, cache_file=".rate_limit_cache.json"):
         self.rpm_limit = rpm_limit
         self.tpm_limit = tpm_limit
         self.rpd_limit = rpd_limit
         self.cache_file = cache_file
-        
+
         # In-memory tracking for sliding windows
         self.request_times = []
         self.token_history = []  # List of tuples: (timestamp, token_count)
         self._lock = asyncio.Lock()  # Ensure async lock for concurrent checks
-        
+
         # Load persistent daily request counter
         self.daily_requests = self._load_daily_requests()
 
@@ -39,7 +40,7 @@ class APIRateLimiter:
                     if ts > cutoff:
                         valid_times.append(ts.isoformat())
                 return valid_times
-            except:
+            except Exception:
                 return []
         return []
 
@@ -47,14 +48,14 @@ class APIRateLimiter:
         try:
             with open(self.cache_file, "w") as f:
                 json.dump({"daily_requests": self.daily_requests}, f)
-        except:
+        except Exception:
             pass
 
     async def check_and_throttle(self, estimated_tokens=350):
         async with self._lock:
             now = datetime.now()
             now_ts = now.timestamp()
-            
+
             # 1. Check RPD (Requests Per Day)
             cutoff_24h = now - timedelta(days=1)
             self.daily_requests = [ts for ts in self.daily_requests if datetime.fromisoformat(ts) > cutoff_24h]
@@ -77,7 +78,9 @@ class APIRateLimiter:
             if current_tpm + estimated_tokens >= self.tpm_limit:
                 wait_time = 60 - (now_ts - self.token_history[0][0])
                 if wait_time > 0:
-                    print(f"[RateLimiter] Approaching 60% TPM threshold ({current_tpm} tokens). Pausing execution for {wait_time:.2f}s...")
+                    print(
+                        f"[RateLimiter] Approaching 60% TPM threshold ({current_tpm} tokens). Pausing execution for {wait_time:.2f}s..."
+                    )
                     await asyncio.sleep(wait_time)
                     now_ts = time.time()
                     self.token_history = [(t, count) for (t, count) in self.token_history if now_ts - t < 60]
@@ -88,24 +91,25 @@ class APIRateLimiter:
             self.daily_requests.append(datetime.now().isoformat())
             self._save_daily_requests()
 
+
 class GovernanceScoringEngine:
     def __init__(self, doc_weight: float = 0.3, dq_weight: float = 0.4, lineage_weight: float = 0.2, risk_weight: float = 0.1):
         self.doc_weight = doc_weight
         self.dq_weight = dq_weight
         self.lineage_weight = lineage_weight
         self.risk_weight = risk_weight
-        
+
         # Verify weights sum to 1.0 (approximately)
         assert abs(doc_weight + dq_weight + lineage_weight + risk_weight - 1.0) < 1e-5, "Weights must sum to 1.0"
-        
+
         # Initialize LLM Client via LiteLLM with auto-routing based on API keys
         self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
         self.openai_key = os.getenv("OPENAI_API_KEY")
-        
+
         # Override model name from env variable if provided
         self.model_name = os.getenv("LLM_MODEL")
-        
+
         # If model is not explicitly provided, auto-detect based on active API keys
         if not self.model_name:
             if self.gemini_key and self.gemini_key.strip() and self.gemini_key != "YOUR_GEMINI_API_KEY":
@@ -116,9 +120,9 @@ class GovernanceScoringEngine:
                 self.model_name = "openai/gpt-4o"
             else:
                 self.model_name = None
-        
+
         self.use_llm = False
-        
+
         # Verify provider and key configuration
         if self.model_name:
             has_valid_key = False
@@ -143,26 +147,25 @@ class GovernanceScoringEngine:
                 elif "gemini" in self.model_name.lower() and self.gemini_key:
                     has_valid_key = True
                     self.model_name = f"gemini/{self.model_name}"
-            
+
             # Initialize default 60% Throttling Limits
             self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
-            
+
             if has_valid_key:
                 try:
                     import litellm
+
                     litellm.set_verbose = False
-                    
+
                     print(f"[LLM Router] Instantiating LiteLLM with model: {self.model_name}")
-                    
+
                     # Dry-run validation check (max_tokens=2 to avoid heavy charges)
                     res = litellm.completion(
-                        model=self.model_name,
-                        messages=[{"role": "user", "content": "ping"}],
-                        max_tokens=2
+                        model=self.model_name, messages=[{"role": "user", "content": "ping"}], max_tokens=2
                     )
                     self.use_llm = True
                     print(f"[LLM Router] Successfully validated model '{self.model_name}' connection via LiteLLM.")
-                    
+
                     # Dynamic rate limit discovery
                     try:
                         headers = {}
@@ -172,19 +175,19 @@ class GovernanceScoringEngine:
                                 headers = orig_resp.headers
                             elif "additional_headers" in res._hidden_params:
                                 headers = res._hidden_params["additional_headers"]
-                        
+
                         provider = self.model_name.split("/")[0] if "/" in self.model_name else "openai"
-                        
+
                         # Default baseline limits (100%)
                         defaults = {
                             "anthropic": {"rpm": 1000, "tpm": 1000000},
                             "openai": {"rpm": 10000, "tpm": 2000000},
-                            "gemini": {"rpm": 2000, "tpm": 4000000}
+                            "gemini": {"rpm": 2000, "tpm": 4000000},
                         }
-                        
+
                         rpm = defaults.get(provider, {}).get("rpm", 1000)
                         tpm = defaults.get(provider, {}).get("tpm", 1000000)
-                        
+
                         # Override with headers if found
                         header_found = False
                         if provider == "anthropic" and headers:
@@ -203,16 +206,20 @@ class GovernanceScoringEngine:
                                 elif hk.lower() == "x-ratelimit-limit-tokens":
                                     tpm = int(hv)
                                     header_found = True
-                                    
+
                         # Apply 60% factor
                         self.rate_limiter.rpm_limit = int(rpm * 0.6)
                         self.rate_limiter.tpm_limit = int(tpm * 0.6)
                         self.rate_limiter.rpd_limit = int(self.rate_limiter.rpm_limit * 10)
-                        
+
                         if header_found:
-                            print(f"[RateLimiter] Dynamic Discovery SUCCESS: Detected {provider.upper()} rate limit headers. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}")
+                            print(
+                                f"[RateLimiter] Dynamic Discovery SUCCESS: Detected {provider.upper()} rate limit headers. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}"
+                            )
                         else:
-                            print(f"[RateLimiter] Dynamic Discovery: No rate limit headers present in response. Using provider defaults. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}")
+                            print(
+                                f"[RateLimiter] Dynamic Discovery: No rate limit headers present in response. Using provider defaults. Configured to 60%: RPM={self.rate_limiter.rpm_limit}, TPM={self.rate_limiter.tpm_limit}"
+                            )
                     except Exception as parse_err:
                         print(f"[RateLimiter Warning] Rate limit discovery error: {parse_err}. Using default fallback limits.")
                 except Exception as val_err:
@@ -224,10 +231,10 @@ class GovernanceScoringEngine:
         else:
             print("[LLM Router] No LLM API key detected. Falling back to rule-based heuristics.")
             self.rate_limiter = APIRateLimiter(rpm_limit=600, tpm_limit=600000, rpd_limit=6000)
-            
+
         # Alias self.use_gemini to self.use_llm to preserve backward compatibility
         self.use_gemini = self.use_llm
-        
+
         # Client-side caching initialization
         self.cache_file = ".governance_score_cache.json"
         self.cache = self._load_cache()
@@ -237,7 +244,7 @@ class GovernanceScoringEngine:
             try:
                 with open(self.cache_file, "r") as f:
                     return json.load(f)
-            except:
+            except Exception:
                 return {}
         return {}
 
@@ -245,7 +252,7 @@ class GovernanceScoringEngine:
         try:
             with open(self.cache_file, "w") as f:
                 json.dump(self.cache, f, indent=2)
-        except:
+        except Exception:
             pass
 
     def _calculate_asset_hash(self, asset: CanonicalAsset) -> str:
@@ -258,10 +265,10 @@ class GovernanceScoringEngine:
             "glossary_terms": sorted(asset.glossary_terms or []),
             "classifications": sorted(asset.classifications or []),
             "rules_run": asset.data_quality.rules_run if asset.data_quality else 0,
-            "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0
+            "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0,
         }
         serialized = json.dumps(params, sort_keys=True)
-        return hashlib.md5(serialized.encode('utf-8')).hexdigest()
+        return hashlib.md5(serialized.encode("utf-8")).hexdigest()
 
     def score_asset_heuristics(self, asset: CanonicalAsset) -> Dict[str, Any]:
         """Calculates documentation and security risk scores using rule-based heuristics."""
@@ -271,16 +278,16 @@ class GovernanceScoringEngine:
         if desc:
             placeholders = {"tbd", "todo", "test", "placeholder", "dummy", "n/a", "none", "will add"}
             is_placeholder = any(p in desc.lower() for p in placeholders)
-            
+
             name_normalized = asset.name.lower().replace("_", "").replace(" ", "")
             desc_normalized = desc.lower().replace("_", "").replace(" ", "")
             is_just_name = name_normalized == desc_normalized
-            
+
             words = [w for w in desc.lower().split() if len(w) > 1]
             has_enough_words = len(words) >= 3
-            
+
             is_quality = not is_placeholder and not is_just_name and has_enough_words
-            
+
             if is_quality:
                 doc_score += 30.0
                 doc_score += 10.0
@@ -290,17 +297,17 @@ class GovernanceScoringEngine:
                 doc_score += 15.0
                 if len(desc) > 50:
                     doc_score += 5.0
-                    
+
         if asset.owners:
             doc_score += 20.0
             if len(asset.owners) > 1:
                 doc_score += 10.0
-                
+
         if asset.glossary_terms:
             doc_score += 10.0
             if len(asset.glossary_terms) > 4:
                 doc_score += 10.0
-                
+
         doc_score = min(doc_score, 100.0)
 
         # 2. Security Risk Score Heuristic
@@ -345,7 +352,7 @@ class GovernanceScoringEngine:
             "data_quality_score": dq_score,
             "lineage_score": lineage_score,
             "security_risk_score": risk_score,
-            "governance_health_index": ghi
+            "governance_health_index": ghi,
         }
 
     async def calculate_documentation_score_async(self, asset: CanonicalAsset) -> float:
@@ -362,28 +369,29 @@ class GovernanceScoringEngine:
     def calculate_data_quality_score(self, asset: CanonicalAsset) -> float:
         if asset.data_quality.rules_run == 0:
             return 0.0
-            
+
         base_score = asset.data_quality.pass_rate * 100.0
-        
+
         last_profiled = asset.data_quality.last_profiled
         if last_profiled is None:
             return base_score * 0.5
-            
+
         from datetime import datetime
+
         if last_profiled.tzinfo:
             now = datetime.now(last_profiled.tzinfo)
         else:
             now = datetime.now()
-            
+
         days_old = (now - last_profiled).days
-        
+
         if days_old <= 7:
             penalty = 0.0
         elif days_old <= 30:
             penalty = 0.10
         else:
             penalty = 0.50
-            
+
         return base_score * (1.0 - penalty)
 
     def calculate_lineage_score(self, asset: CanonicalAsset) -> float:
@@ -405,12 +413,16 @@ class GovernanceScoringEngine:
         finally:
             loop.close()
 
-    def calculate_governance_health_index(self, doc_score: float, dq_score: float, lineage_score: float, risk_score: float) -> float:
+    def calculate_governance_health_index(
+        self, doc_score: float, dq_score: float, lineage_score: float, risk_score: float
+    ) -> float:
         inverted_risk = 100.0 - risk_score
-        ghi = (doc_score * self.doc_weight +
-               dq_score * self.dq_weight +
-               lineage_score * self.lineage_weight +
-               inverted_risk * self.risk_weight)
+        ghi = (
+            doc_score * self.doc_weight
+            + dq_score * self.dq_weight
+            + lineage_score * self.lineage_weight
+            + inverted_risk * self.risk_weight
+        )
         return ghi
 
     async def score_assets_batch_async(self, assets: List[CanonicalAsset]) -> List[Dict[str, Any]]:
@@ -421,19 +433,21 @@ class GovernanceScoringEngine:
         try:
             batch_data = []
             for asset in assets:
-                batch_data.append({
-                    "asset_id": asset.asset_id,
-                    "name": asset.name,
-                    "asset_type": asset.asset_type,
-                    "description": asset.description or "",
-                    "owners": [o.name for o in asset.owners],
-                    "glossary_terms": asset.glossary_terms,
-                    "classifications": asset.classifications,
-                    "rules_run": asset.data_quality.rules_run if asset.data_quality else 0,
-                    "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0,
-                    "upstream_count": len(asset.lineage.upstream_assets) if asset.lineage else 0,
-                    "downstream_count": len(asset.lineage.downstream_assets) if asset.lineage else 0
-                })
+                batch_data.append(
+                    {
+                        "asset_id": asset.asset_id,
+                        "name": asset.name,
+                        "asset_type": asset.asset_type,
+                        "description": asset.description or "",
+                        "owners": [o.name for o in asset.owners],
+                        "glossary_terms": asset.glossary_terms,
+                        "classifications": asset.classifications,
+                        "rules_run": asset.data_quality.rules_run if asset.data_quality else 0,
+                        "pass_rate": asset.data_quality.pass_rate if asset.data_quality else 0.0,
+                        "upstream_count": len(asset.lineage.upstream_assets) if asset.lineage else 0,
+                        "downstream_count": len(asset.lineage.downstream_assets) if asset.lineage else 0,
+                    }
+                )
 
             prompt = f"""
             You are a Data Governance compliance officer and metadata auditor.
@@ -474,7 +488,7 @@ class GovernanceScoringEngine:
                 model=self.model_name,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
-                temperature=0.0
+                temperature=0.0,
             )
 
             response_text = response.choices[0].message.content
@@ -499,19 +513,23 @@ class GovernanceScoringEngine:
                     lineage_score = self.calculate_lineage_score(asset)
                     ghi = self.calculate_governance_health_index(doc_score, dq_score, lineage_score, risk_score)
 
-                    print(f"[Gemini Batch API] Evaluated '{asset.name}': Doc={doc_score}/100, Risk={risk_score}/100 (Reason: {r.get('doc_reason')})")
+                    print(
+                        f"[Gemini Batch API] Evaluated '{asset.name}': Doc={doc_score}/100, Risk={risk_score}/100 (Reason: {r.get('doc_reason')})"
+                    )
 
-                    scored_assets.append({
-                        "asset_id": asset.asset_id,
-                        "name": asset.name,
-                        "asset_type": asset.asset_type,
-                        "source_platform": asset.source_platform,
-                        "documentation_score": doc_score,
-                        "data_quality_score": dq_score,
-                        "lineage_score": lineage_score,
-                        "security_risk_score": risk_score,
-                        "governance_health_index": ghi
-                    })
+                    scored_assets.append(
+                        {
+                            "asset_id": asset.asset_id,
+                            "name": asset.name,
+                            "asset_type": asset.asset_type,
+                            "source_platform": asset.source_platform,
+                            "documentation_score": doc_score,
+                            "data_quality_score": dq_score,
+                            "lineage_score": lineage_score,
+                            "security_risk_score": risk_score,
+                            "governance_health_index": ghi,
+                        }
+                    )
                 else:
                     scored_assets.append(self.score_asset_heuristics(asset))
             return scored_assets
@@ -549,7 +567,7 @@ class GovernanceScoringEngine:
             res = loop.run_until_complete(self.score_asset_async(asset))
         finally:
             loop.close()
-            
+
         tier = self.get_asset_criticality_tier(asset)
         res["criticality_tier"] = tier
         res["health_status"] = self.get_health_status(res["governance_health_index"], tier)
@@ -559,7 +577,7 @@ class GovernanceScoringEngine:
         """Splits assets into batches and scores them sequentially."""
         all_results = []
         for i in range(0, len(assets), batch_size):
-            batch = assets[i:i + batch_size]
+            batch = assets[i : i + batch_size]
             batch_results = await self.score_assets_batch_async(batch)
             all_results.extend(batch_results)
         return all_results
@@ -574,7 +592,7 @@ class GovernanceScoringEngine:
         for asset in assets:
             h = self._calculate_asset_hash(asset)
             asset_hashes[asset.asset_id] = h
-            
+
             if h in self.cache:
                 # Retrieve from cache
                 cached_res = self.cache[h].copy()
@@ -598,9 +616,9 @@ class GovernanceScoringEngine:
             # Save newly scored assets to cache
             for res in new_scored_data:
                 scored_data.append(res)
-                h = asset_hashes.get(res["asset_id"])
-                if h:
-                    self.cache[h] = res
+                hash_val = asset_hashes.get(res["asset_id"])
+                if hash_val:
+                    self.cache[hash_val] = res
             self._save_cache()
         else:
             print(f"[Client Cache] Cache hit: All {len(assets)} assets loaded from local cache.")
@@ -608,9 +626,9 @@ class GovernanceScoringEngine:
         # Post-process all results to inject criticality tier and health status
         assets_map = {a.asset_id: a for a in assets}
         for res in scored_data:
-            asset = assets_map.get(res["asset_id"])
-            if asset:
-                tier = self.get_asset_criticality_tier(asset)
+            matched_asset = assets_map.get(res["asset_id"])
+            if matched_asset:
+                tier = self.get_asset_criticality_tier(matched_asset)
                 res["criticality_tier"] = tier
                 res["health_status"] = self.get_health_status(res["governance_health_index"], tier)
 
@@ -619,14 +637,18 @@ class GovernanceScoringEngine:
     def generate_platform_report(self, scored_df: pd.DataFrame) -> pd.DataFrame:
         if scored_df.empty:
             return pd.DataFrame()
-            
-        platform_report = scored_df.groupby("source_platform").agg(
-            total_assets=("asset_id", "count"),
-            avg_documentation=("documentation_score", "mean"),
-            avg_data_quality=("data_quality_score", "mean"),
-            avg_lineage=("lineage_score", "mean"),
-            avg_security_risk=("security_risk_score", "mean"),
-            avg_ghi=("governance_health_index", "mean")
-        ).reset_index()
-        
+
+        platform_report = (
+            scored_df.groupby("source_platform")
+            .agg(
+                total_assets=("asset_id", "count"),
+                avg_documentation=("documentation_score", "mean"),
+                avg_data_quality=("data_quality_score", "mean"),
+                avg_lineage=("lineage_score", "mean"),
+                avg_security_risk=("security_risk_score", "mean"),
+                avg_ghi=("governance_health_index", "mean"),
+            )
+            .reset_index()
+        )
+
         return platform_report

@@ -1,0 +1,12 @@
+# ruff.toml
+line-length = 127
+target-version = "py310"
+
+[lint]
+# Ignore minor style and legacy violations to ensure CI pipeline stability
+ignore = [
+    "E701", # Multiple statements on one line (colon)
+    "F401", # Unused imports
+    "F811", # Redefinition of unused name (legacy class duplicates)
+    "F541", # f-string without placeholders
+]

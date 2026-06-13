@@ -5,6 +5,7 @@ import litellm
 from typing import List, Dict, Any
 from canonical_metadata_model import CanonicalAsset
 
+
 class SpecialistAgent:
     def __init__(self, name: str, persona: str, model_name: str):
         self.name = name
@@ -39,12 +40,13 @@ class SpecialistAgent:
                 model=self.model_name,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"},
-                temperature=0.0
+                temperature=0.0,
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             print(f"[SpecialistAgent Exception] '{self.name}' analysis failed: {e}. Falling back to heuristics.")
-            return None
+            return {}
+
 
 class MaturityAssessmentEngine:
     def __init__(self, config_path: str = "maturity_config.json"):
@@ -60,20 +62,32 @@ class MaturityAssessmentEngine:
                         "name": "Metadata Management",
                         "weight": 0.5,
                         "indicators": {
-                          "documentation_coverage": {"name": "Documentation Coverage", "weight": 0.3, "thresholds": [40, 60, 75, 90]},
-                          "ownership_coverage": {"name": "Ownership Coverage", "weight": 0.3, "thresholds": [40, 60, 75, 90]},
-                          "glossary_linkage": {"name": "Glossary Linkage", "weight": 0.2, "thresholds": [40, 60, 75, 90]},
-                          "classification_coverage": {"name": "Classification Coverage", "weight": 0.2, "thresholds": [40, 60, 75, 90]}
-                        }
+                            "documentation_coverage": {
+                                "name": "Documentation Coverage",
+                                "weight": 0.3,
+                                "thresholds": [40, 60, 75, 90],
+                            },
+                            "ownership_coverage": {
+                                "name": "Ownership Coverage",
+                                "weight": 0.3,
+                                "thresholds": [40, 60, 75, 90],
+                            },
+                            "glossary_linkage": {"name": "Glossary Linkage", "weight": 0.2, "thresholds": [40, 60, 75, 90]},
+                            "classification_coverage": {
+                                "name": "Classification Coverage",
+                                "weight": 0.2,
+                                "thresholds": [40, 60, 75, 90],
+                            },
+                        },
                     },
                     "data_quality": {
                         "name": "Data Quality",
                         "weight": 0.5,
                         "indicators": {
-                          "rule_coverage": {"name": "DQ Rule Coverage", "weight": 0.4, "thresholds": [25, 50, 70, 85]},
-                          "pass_rate": {"name": "DQ Pass Rate", "weight": 0.6, "thresholds": [70, 80, 90, 95]}
-                        }
-                    }
+                            "rule_coverage": {"name": "DQ Rule Coverage", "weight": 0.4, "thresholds": [25, 50, 70, 85]},
+                            "pass_rate": {"name": "DQ Pass Rate", "weight": 0.6, "thresholds": [70, 80, 90, 95]},
+                        },
+                    },
                 }
             }
         with open(self.config_path, "r") as f:
@@ -95,53 +109,62 @@ class MaturityAssessmentEngine:
                 "lineage_coverage": 0.0,
                 "rot_identification": 0.0,
                 "storage_tier_optimization": 0.0,
-                "role_access_control": 0.0
+                "role_access_control": 0.0,
             }
 
         # 1. Documentation Coverage
-        doc_count = sum(1 for a in assets if a.description and len(a.description.strip()) >= 50)
+        doc_count = sum([1 for a in assets if a.description and len(a.description.strip()) >= 50])
         doc_pct = (doc_count / total_assets) * 100.0
 
         # 2. Ownership Coverage
-        owner_count = sum(1 for a in assets if a.owners and len(a.owners) >= 1)
+        owner_count = sum([1 for a in assets if a.owners and len(a.owners) >= 1])
         owner_pct = (owner_count / total_assets) * 100.0
 
         # 3. Glossary Linkage
-        glossary_count = sum(1 for a in assets if a.glossary_terms and len(a.glossary_terms) >= 1)
+        glossary_count = sum([1 for a in assets if a.glossary_terms and len(a.glossary_terms) >= 1])
         glossary_pct = (glossary_count / total_assets) * 100.0
 
         # 4. Classification Coverage
-        class_count = sum(1 for a in assets if a.classifications and len(a.classifications) >= 1)
+        class_count = sum([1 for a in assets if a.classifications and len(a.classifications) >= 1])
         class_pct = (class_count / total_assets) * 100.0
 
         # 5. DQ Rule Coverage
-        rule_count = sum(1 for a in assets if a.data_quality and a.data_quality.rules_run > 0)
+        rule_count = sum([1 for a in assets if a.data_quality is not None and a.data_quality.rules_run > 0])
         rule_pct = (rule_count / total_assets) * 100.0
 
         # 6. DQ Pass Rate
-        total_rules_run = sum(a.data_quality.rules_run for a in assets if a.data_quality)
-        total_rules_passed = sum(a.data_quality.rules_passed for a in assets if a.data_quality)
-        
+        total_rules_run = sum([a.data_quality.rules_run for a in assets if a.data_quality is not None])
+        total_rules_passed = sum([a.data_quality.rules_passed for a in assets if a.data_quality is not None])
+
         pass_rate_pct = (total_rules_passed / total_rules_run * 100.0) if total_rules_run > 0 else 0.0
 
         # 7. Sensitive Data Governance
-        sensitive_assets = [a for a in assets if any(c.lower() in ["pii", "phi", "pci", "confidential"] for c in a.classifications)]
+        sensitive_assets = [
+            a for a in assets if any(c.lower() in ["pii", "phi", "pci", "confidential"] for c in a.classifications)
+        ]
         if not sensitive_assets:
             sensitive_data_gov_pct = 100.0
         else:
-            governed_sensitive = sum(1 for a in sensitive_assets if a.owners and a.classifications)
+            governed_sensitive = sum([1 for a in sensitive_assets if a.owners and a.classifications])
             sensitive_data_gov_pct = (governed_sensitive / len(sensitive_assets)) * 100.0
 
         # 8. Stewardship Assignment
-        steward_count = sum(1 for a in assets if any("steward" in o.role.lower() for o in a.owners))
+        steward_count = sum([1 for a in assets if any("steward" in o.role.lower() for o in a.owners)])
         stewardship_assignment_pct = (steward_count / total_assets) * 100.0
 
         # 9. Lineage Coverage
-        lineage_count = sum(1 for a in assets if a.lineage and (a.lineage.upstream_assets or a.lineage.downstream_assets))
+        lineage_count = sum(
+            [
+                1
+                for a in assets
+                if a.lineage is not None and (len(a.lineage.upstream_assets) > 0 or len(a.lineage.downstream_assets) > 0)
+            ]
+        )
         lineage_coverage_pct = (lineage_count / total_assets) * 100.0
 
         # 10. ROT Identification (Active Asset Cataloging)
         from datetime import datetime, timezone
+
         now = datetime.now(timezone.utc)
         rot_count = 0
         for a in assets:
@@ -164,7 +187,9 @@ class MaturityAssessmentEngine:
         if not low_query_assets:
             storage_tier_optimization_pct = 100.0
         else:
-            optimized_storage = sum(1 for a in low_query_assets if a.usage.storage_tier in ["Standard-IA", "Glacier", "DeepArchive"])
+            optimized_storage = sum(
+                1 for a in low_query_assets if a.usage.storage_tier in ["Standard-IA", "Glacier", "DeepArchive"]
+            )
             storage_tier_optimization_pct = (optimized_storage / len(low_query_assets)) * 100.0
 
         # 12. Role & Access Control (Access management alignment)
@@ -183,7 +208,7 @@ class MaturityAssessmentEngine:
             "lineage_coverage": lineage_coverage_pct,
             "rot_identification": rot_identification_pct,
             "storage_tier_optimization": storage_tier_optimization_pct,
-            "role_access_control": role_access_control_pct
+            "role_access_control": role_access_control_pct,
         }
 
     def map_percentage_to_score(self, pct: float, thresholds: List[float]) -> float:
@@ -209,24 +234,24 @@ class MaturityAssessmentEngine:
         for disp_key, disp_config in self.config.get("disciplines", {}).items():
             disp_name = disp_config.get("name", disp_key)
             disp_weight = disp_config.get("weight", 0.0)
-            
+
             indicator_results = {}
             weighted_score_sum = 0.0
-            
+
             for ind_key, ind_config in disp_config.get("indicators", {}).items():
                 ind_name = ind_config.get("name", ind_key)
                 ind_weight = ind_config.get("weight", 0.0)
                 thresholds = ind_config.get("thresholds", [40, 60, 75, 90])
-                
+
                 raw_val = raw_metrics.get(ind_key, 0.0)
                 score = self.map_percentage_to_score(raw_val, thresholds)
-                
+
                 indicator_results[ind_key] = {
                     "name": ind_name,
                     "raw_percentage": raw_val,
                     "score": score,
                     "weight": ind_weight,
-                    "thresholds": thresholds
+                    "thresholds": thresholds,
                 }
                 weighted_score_sum += score * ind_weight
 
@@ -234,7 +259,7 @@ class MaturityAssessmentEngine:
                 "name": disp_name,
                 "score": weighted_score_sum,
                 "weight": disp_weight,
-                "indicators": indicator_results
+                "indicators": indicator_results,
             }
             overall_score += weighted_score_sum * disp_weight
             overall_weight_sum += disp_weight
@@ -245,9 +270,7 @@ class MaturityAssessmentEngine:
             "total_assets": len(assets),
             "disciplines": results,
             "overall_maturity_score": final_maturity_score,
-            "audit_trail": {
-                "raw_metrics": raw_metrics
-            }
+            "audit_trail": {"raw_metrics": raw_metrics},
         }
 
     def generate_recommendations_and_gaps(self, assessment: Dict[str, Any]) -> Dict[str, Any]:
@@ -261,7 +284,7 @@ class MaturityAssessmentEngine:
                 raw_val = ind_data["raw_percentage"]
                 thresholds = ind_data["thresholds"]
                 name = ind_data["name"]
-                
+
                 # Check status
                 if raw_val >= thresholds[3]:
                     status = "Green"
@@ -278,38 +301,38 @@ class MaturityAssessmentEngine:
                 "reco": "Increase business description coverage.",
                 "rationale": "Over 50% of assets lack standard descriptions, making self-service data discovery slow and redundant.",
                 "impact": "Improves data discovery productivity and reduces onboarding overhead.",
-                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}."
+                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}.",
             },
             "ownership_coverage": {
                 "reco": "Assign data owners and stewards to unowned datasets.",
                 "rationale": "Unowned assets create compliance and operational risk with no clear contact for issues.",
                 "impact": "Establishes clear ownership lines and faster data issue resolution.",
-                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}."
+                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}.",
             },
             "glossary_linkage": {
                 "reco": "Link data catalog assets to the standardized Business Glossary.",
                 "rationale": "Without glossary mapping, columns have inconsistent meaning across domains.",
                 "impact": "Aligns cross-team terminology and improves report accuracy.",
-                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}."
+                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}.",
             },
             "classification_coverage": {
                 "reco": "Ensure security and sensitivity tags are applied to all schema tables.",
                 "rationale": "High risk of security non-compliance when PII/Confidential tags are omitted.",
                 "impact": "Reduces data breach risk and ensures regulatory compliance.",
-                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}."
+                "improvement": "Increases Metadata Management maturity from {current:.2f} to {target:.2f}.",
             },
             "rule_coverage": {
                 "reco": "Establish data quality rules for Critical Data Elements.",
                 "rationale": "Popular datasets are run without data quality validation rules configured.",
                 "impact": "Avoids pipeline failures and business decision-making errors.",
-                "improvement": "Increases Data Quality maturity from {current:.2f} to {target:.2f}."
+                "improvement": "Increases Data Quality maturity from {current:.2f} to {target:.2f}.",
             },
             "pass_rate": {
                 "reco": "Remediate failing data quality rule validations.",
                 "rationale": "Active data quality pipelines show high rates of validation test failures.",
                 "impact": "Improves overall trust in enterprise business reports.",
-                "improvement": "Increases Data Quality maturity from {current:.2f} to {target:.2f}."
-            }
+                "improvement": "Increases Data Quality maturity from {current:.2f} to {target:.2f}.",
+            },
         }
 
         # Prioritized recommendations based on lowest raw metrics that exist in reco_map
@@ -321,23 +344,23 @@ class MaturityAssessmentEngine:
         for key, val in sorted_metrics[:3]:
             current_score = assessment["overall_maturity_score"]
             reco_info = reco_map[key]
-            
+
             # Calculate estimated improvement if this metric reached level 4 (thresholds[2])
             # We mock a 0.5 maturity boost for the recommendation
             target_score = min(5.0, current_score + 0.4)
-            
-            recommendations.append({
-                "recommendation": reco_info["reco"],
-                "rationale": reco_info["rationale"],
-                "expected_business_impact": reco_info["impact"],
-                "expected_maturity_improvement": reco_info["improvement"].format(current=current_score, target=target_score)
-            })
 
-        return {
-            "strengths": strengths,
-            "gaps": gaps,
-            "recommendations": recommendations
-        }
+            recommendations.append(
+                {
+                    "recommendation": reco_info["reco"],
+                    "rationale": reco_info["rationale"],
+                    "expected_business_impact": reco_info["impact"],
+                    "expected_maturity_improvement": reco_info["improvement"].format(
+                        current=current_score, target=target_score
+                    ),
+                }
+            )
+
+        return {"strengths": strengths, "gaps": gaps, "recommendations": recommendations}
 
     def _run_async(self, coro):
         try:
@@ -348,55 +371,58 @@ class MaturityAssessmentEngine:
         if loop.is_running():
             try:
                 import nest_asyncio
+
                 nest_asyncio.apply()
-            except:
+            except Exception:
                 pass
             return loop.run_until_complete(coro)
         else:
             return loop.run_until_complete(coro)
 
-    async def generate_discipline_details_agentic(self, assessment: Dict[str, Any], model_name: str) -> Dict[str, Dict[str, Any]]:
+    async def generate_discipline_details_agentic(
+        self, assessment: Dict[str, Any], model_name: str
+    ) -> Dict[str, Dict[str, Any]]:
         raw_metrics = assessment["audit_trail"]["raw_metrics"]
         disciplines = assessment["disciplines"]
-        
+
         # Define specialist agent personas
         agents = {
             "metadata_management": SpecialistAgent(
                 "Metadata Management Specialist",
                 "You are a senior data steward managing asset documentation coverage, metadata tags, and glossary mappings to ensure data discovery efficiency.",
-                model_name
+                model_name,
             ),
             "data_quality": SpecialistAgent(
                 "Data Quality Engineer",
                 "You are a data quality engineer responsible for DQ rule configurations, pipeline pass rates, and identifying data validation issues.",
-                model_name
+                model_name,
             ),
             "data_security_privacy": SpecialistAgent(
                 "Security & Privacy Auditor",
                 "You are an enterprise data privacy and security auditor ensuring CCPA/GDPR compliance, PII security, and classification tagging.",
-                model_name
+                model_name,
             ),
             "stewardship_governance": SpecialistAgent(
                 "Stewardship Administrator",
                 "You are a data governance office steward coordinator ensuring active data steward assignment and accountability across all business domains.",
-                model_name
+                model_name,
             ),
             "data_architecture_lineage": SpecialistAgent(
                 "Data Architecture & Lineage Specialist",
                 "You are an enterprise data architect modeling end-to-end data pipelines, upstream/downstream lineages, and cross-system integrations.",
-                model_name
+                model_name,
             ),
             "data_lifecycle_storage": SpecialistAgent(
                 "Data Lifecycle & ROT Optimizer",
                 "You are a storage optimization analyst identifying Redundant, Obsolete, and Trivial (ROT) data candidates and cost-effective tiering options.",
-                model_name
-            )
+                model_name,
+            ),
         }
-        
+
         # Fire analysis tasks concurrently
         tasks = []
         discipline_keys = list(agents.keys())
-        
+
         for key in discipline_keys:
             # Compile key-specific raw metrics subset to minimize prompt size
             sub_metrics = {}
@@ -405,54 +431,50 @@ class MaturityAssessmentEngine:
                     "documentation_coverage": raw_metrics.get("documentation_coverage", 0.0),
                     "ownership_coverage": raw_metrics.get("ownership_coverage", 0.0),
                     "glossary_linkage": raw_metrics.get("glossary_linkage", 0.0),
-                    "classification_coverage": raw_metrics.get("classification_coverage", 0.0)
+                    "classification_coverage": raw_metrics.get("classification_coverage", 0.0),
                 }
             elif key == "data_quality":
                 sub_metrics = {
                     "rule_coverage": raw_metrics.get("rule_coverage", 0.0),
-                    "pass_rate": raw_metrics.get("pass_rate", 0.0)
+                    "pass_rate": raw_metrics.get("pass_rate", 0.0),
                 }
             elif key == "data_security_privacy":
                 sub_metrics = {
                     "classification_coverage": raw_metrics.get("classification_coverage", 0.0),
-                    "sensitive_data_governance": raw_metrics.get("sensitive_data_governance", 0.0)
+                    "sensitive_data_governance": raw_metrics.get("sensitive_data_governance", 0.0),
                 }
             elif key == "stewardship_governance":
-                sub_metrics = {
-                    "stewardship_assignment": raw_metrics.get("stewardship_assignment", 0.0)
-                }
+                sub_metrics = {"stewardship_assignment": raw_metrics.get("stewardship_assignment", 0.0)}
             elif key == "data_architecture_lineage":
-                sub_metrics = {
-                    "lineage_coverage": raw_metrics.get("lineage_coverage", 0.0)
-                }
+                sub_metrics = {"lineage_coverage": raw_metrics.get("lineage_coverage", 0.0)}
             elif key == "data_lifecycle_storage":
                 sub_metrics = {
                     "rot_identification": raw_metrics.get("rot_identification", 0.0),
-                    "storage_tier_optimization": raw_metrics.get("storage_tier_optimization", 0.0)
+                    "storage_tier_optimization": raw_metrics.get("storage_tier_optimization", 0.0),
                 }
-            
+
             score_val = disciplines[key]["score"]
             tasks.append(agents[key].analyze(sub_metrics, score_val))
-            
+
         print(f"[Multi-Agent System] Launching 6 specialist agents concurrently via {model_name}...")
         results = await asyncio.gather(*tasks)
-        
+
         compiled_details = {}
         for idx, key in enumerate(discipline_keys):
             agent_res = results[idx]
             score_val = disciplines[key]["score"]
-            
+
             if agent_res and "reasoning" in agent_res:
                 compiled_details[key] = {
                     "score_str": f"Score: {score_val:.1f} / 5.0",
                     "reasoning": agent_res["reasoning"],
                     "strengths": agent_res["strengths"],
                     "gaps": agent_res["gaps"],
-                    "actions": agent_res["actions"]
+                    "actions": agent_res["actions"],
                 }
             else:
                 compiled_details[key] = self._get_heuristic_details_for_key(key, score_val, raw_metrics)
-                
+
         return compiled_details
 
     def generate_discipline_details(self, assessment: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
@@ -460,13 +482,13 @@ class MaturityAssessmentEngine:
         gemini_key = os.getenv("GEMINI_API_KEY")
         anthropic_key = os.getenv("ANTHROPIC_API_KEY")
         openai_key = os.getenv("OPENAI_API_KEY")
-        
+
         has_llm = bool(
-            (gemini_key and gemini_key.strip() and gemini_key != "YOUR_GEMINI_API_KEY") or
-            (anthropic_key and anthropic_key.strip() and anthropic_key != "YOUR_ANTHROPIC_API_KEY") or
-            (openai_key and openai_key.strip() and openai_key != "YOUR_OPENAI_API_KEY")
+            (gemini_key and gemini_key.strip() and gemini_key != "YOUR_GEMINI_API_KEY")
+            or (anthropic_key and anthropic_key.strip() and anthropic_key != "YOUR_ANTHROPIC_API_KEY")
+            or (openai_key and openai_key.strip() and openai_key != "YOUR_OPENAI_API_KEY")
         )
-        
+
         # Override model name from env variable if provided
         model_name = os.getenv("LLM_MODEL")
         if not model_name:
@@ -476,22 +498,22 @@ class MaturityAssessmentEngine:
                 model_name = "anthropic/claude-3-5-sonnet-20241022"
             elif openai_key and openai_key.strip() and openai_key != "YOUR_OPENAI_API_KEY":
                 model_name = "openai/gpt-4o"
-        
+
         if has_llm and model_name:
             try:
                 return self._run_async(self.generate_discipline_details_agentic(assessment, model_name))
             except Exception as e:
                 print(f"[Multi-Agent System Warning] Agentic details run failed: {e}. Falling back to heuristics.")
-        
+
         # Heuristic fallback for all disciplines
         raw_metrics = assessment["audit_trail"]["raw_metrics"]
         disciplines = assessment["disciplines"]
-        
+
         compiled_details = {}
         for key in disciplines.keys():
             score_val = disciplines[key]["score"]
             compiled_details[key] = self._get_heuristic_details_for_key(key, score_val, raw_metrics)
-            
+
         return compiled_details
 
     def _get_heuristic_details_for_key(self, key: str, score_val: float, raw_metrics: Dict[str, float]) -> Dict[str, Any]:
@@ -507,15 +529,24 @@ class MaturityAssessmentEngine:
             )
             mm_strengths = []
             mm_gaps = []
-            if mm_doc >= 75: mm_strengths.append(f"{mm_doc:.0f}% documented assets")
-            else: mm_gaps.append(f"Only {mm_doc:.0f}% documented assets")
-            if mm_class >= 75: mm_strengths.append(f"{mm_class:.0f}% asset classification")
-            else: mm_gaps.append(f"Only {mm_class:.0f}% classification coverage")
-            if mm_own >= 75: mm_strengths.append(f"{mm_own:.0f}% ownership assigned")
-            else: mm_gaps.append(f"Only {mm_own:.0f}% ownership assigned")
-            if mm_own < 60: mm_gaps.append("Steward coverage — critical gap")
-            if mm_gloss < 75: mm_gaps.append(f"{100 - mm_gloss:.0f}% of business terms unmapped")
-            else: mm_strengths.append(f"{mm_gloss:.0f}% glossary term linkage")
+            if mm_doc >= 75:
+                mm_strengths.append(f"{mm_doc:.0f}% documented assets")
+            else:
+                mm_gaps.append(f"Only {mm_doc:.0f}% documented assets")
+            if mm_class >= 75:
+                mm_strengths.append(f"{mm_class:.0f}% asset classification")
+            else:
+                mm_gaps.append(f"Only {mm_class:.0f}% classification coverage")
+            if mm_own >= 75:
+                mm_strengths.append(f"{mm_own:.0f}% ownership assigned")
+            else:
+                mm_gaps.append(f"Only {mm_own:.0f}% ownership assigned")
+            if mm_own < 60:
+                mm_gaps.append("Steward coverage — critical gap")
+            if mm_gloss < 75:
+                mm_gaps.append(f"{100 - mm_gloss:.0f}% of business terms unmapped")
+            else:
+                mm_strengths.append(f"{mm_gloss:.0f}% glossary term linkage")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": mm_reasoning,
@@ -524,8 +555,8 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Drive steward assignment to >=80% via targeted ownership campaign",
                     "2. Complete business glossary term mapping for remaining unmapped assets",
-                    "3. Mandate owner assignment as a condition for asset publication"
-                ]
+                    "3. Mandate owner assignment as a condition for asset publication",
+                ],
             }
         elif key == "data_quality":
             dq_rule = raw_metrics.get("rule_coverage", 0.0)
@@ -537,11 +568,15 @@ class MaturityAssessmentEngine:
             )
             dq_strengths = ["Active DQ monitors deployed"]
             dq_gaps = []
-            if dq_rule >= 50: dq_strengths.append("Critical asset DQ coverage configured")
-            else: dq_gaps.append(f"Only {dq_rule:.0f}% assets have DQ rules")
+            if dq_rule >= 50:
+                dq_strengths.append("Critical asset DQ coverage configured")
+            else:
+                dq_gaps.append(f"Only {dq_rule:.0f}% assets have DQ rules")
             dq_strengths.append("DQ validation rules active")
-            if dq_pass >= 95: dq_strengths.append(f"{dq_pass:.0f}% DQ pass rate achieved")
-            else: dq_gaps.append(f"{100 - dq_pass:.0f}% DQ failure rate — requires remediation")
+            if dq_pass >= 95:
+                dq_strengths.append(f"{dq_pass:.0f}% DQ pass rate achieved")
+            else:
+                dq_gaps.append(f"{100 - dq_pass:.0f}% DQ failure rate — requires remediation")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": dq_reasoning,
@@ -550,8 +585,8 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Prioritize DQ rule coverage for 100% of critical data elements",
                     "2. Investigate and resolve root causes of validation failures",
-                    "3. Expand DQ rule coverage to >=70% across all cataloged assets"
-                ]
+                    "3. Expand DQ rule coverage to >=70% across all cataloged assets",
+                ],
             }
         elif key == "data_security_privacy":
             dsp_class = raw_metrics.get("classification_coverage", 0.0)
@@ -562,10 +597,14 @@ class MaturityAssessmentEngine:
             )
             dsp_strengths = []
             dsp_gaps = []
-            if dsp_class >= 75: dsp_strengths.append(f"{dsp_class:.0f}% classification coverage")
-            else: dsp_gaps.append(f"Only {dsp_class:.0f}% classification coverage")
-            if dsp_gov >= 80: dsp_strengths.append("Sensitive data stewardship active")
-            else: dsp_gaps.append(f"PII data stewardship gap: {100 - dsp_gov:.0f}% unassigned")
+            if dsp_class >= 75:
+                dsp_strengths.append(f"{dsp_class:.0f}% classification coverage")
+            else:
+                dsp_gaps.append(f"Only {dsp_class:.0f}% classification coverage")
+            if dsp_gov >= 80:
+                dsp_strengths.append("Sensitive data stewardship active")
+            else:
+                dsp_gaps.append(f"PII data stewardship gap: {100 - dsp_gov:.0f}% unassigned")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": dsp_reasoning,
@@ -574,8 +613,8 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Run automated cognitive scans to tag hidden PII/sensitive fields",
                     "2. Restrict public classification for fields containing SSN or tax details",
-                    "3. Enforce data owner validation sign-off on sensitive datasets"
-                ]
+                    "3. Enforce data owner validation sign-off on sensitive datasets",
+                ],
             }
         elif key == "stewardship_governance":
             sg_assign = raw_metrics.get("stewardship_assignment", 0.0)
@@ -585,8 +624,10 @@ class MaturityAssessmentEngine:
             )
             sg_strengths = []
             sg_gaps = []
-            if sg_assign >= 75: sg_strengths.append(f"{sg_assign:.0f}% active steward coverage")
-            else: sg_gaps.append(f"Stewardship gap: {100 - sg_assign:.0f}% unassigned assets")
+            if sg_assign >= 75:
+                sg_strengths.append(f"{sg_assign:.0f}% active steward coverage")
+            else:
+                sg_gaps.append(f"Stewardship gap: {100 - sg_assign:.0f}% unassigned assets")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": sg_reasoning,
@@ -595,8 +636,8 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Define clear stewardship roles and responsibilities matrix",
                     "2. Recruit domain-level business stewards for core catalog schemas",
-                    "3. Implement alerts for assets missing designated stewards"
-                ]
+                    "3. Implement alerts for assets missing designated stewards",
+                ],
             }
         elif key == "data_architecture_lineage":
             dal_lineage = raw_metrics.get("lineage_coverage", 0.0)
@@ -606,8 +647,10 @@ class MaturityAssessmentEngine:
             )
             dal_strengths = []
             dal_gaps = []
-            if dal_lineage >= 60: dal_strengths.append("Lineage traces active across analytics workflows")
-            else: dal_gaps.append(f"Only {dal_lineage:.0f}% lineage connectivity mapped")
+            if dal_lineage >= 60:
+                dal_strengths.append("Lineage traces active across analytics workflows")
+            else:
+                dal_gaps.append(f"Only {dal_lineage:.0f}% lineage connectivity mapped")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": dal_reasoning,
@@ -616,8 +659,8 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Harvest upstream/downstream lineage automatically from ETL logs",
                     "2. Target 100% lineage mapping for critical transactional tables",
-                    "3. Connect isolated catalog assets to parent data schemas"
-                ]
+                    "3. Connect isolated catalog assets to parent data schemas",
+                ],
             }
         elif key == "data_lifecycle_storage":
             dls_rot = raw_metrics.get("rot_identification", 0.0)
@@ -628,10 +671,14 @@ class MaturityAssessmentEngine:
             )
             dls_strengths = []
             dls_gaps = []
-            if dls_rot >= 85: dls_strengths.append("ROT storage candidates minimized and clean")
-            else: dls_gaps.append(f"Elevated ROT waste: {100 - dls_rot:.0f}% inactive candidate tables")
-            if dls_tier >= 75: dls_strengths.append("Cost-optimized storage tiering active")
-            else: dls_gaps.append(f"Unoptimized storage tiers: {100 - dls_tier:.0f}% cold data on hot tier")
+            if dls_rot >= 85:
+                dls_strengths.append("ROT storage candidates minimized and clean")
+            else:
+                dls_gaps.append(f"Elevated ROT waste: {100 - dls_rot:.0f}% inactive candidate tables")
+            if dls_tier >= 75:
+                dls_strengths.append("Cost-optimized storage tiering active")
+            else:
+                dls_gaps.append(f"Unoptimized storage tiers: {100 - dls_tier:.0f}% cold data on hot tier")
             return {
                 "score_str": f"Score: {score_val:.1f} / 5.0",
                 "reasoning": dls_reasoning,
@@ -640,7 +687,7 @@ class MaturityAssessmentEngine:
                 "actions": [
                     "1. Enforce automated lifecycle policies to tier cold storage assets",
                     "2. Establish formal ROT archive and decommissioning processes",
-                    "3. Decommission sandbox database exports older than 180 days"
-                ]
+                    "3. Decommission sandbox database exports older than 180 days",
+                ],
             }
         return {}

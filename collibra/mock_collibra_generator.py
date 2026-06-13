@@ -2,9 +2,10 @@ import json
 import os
 from datetime import datetime, timedelta
 
+
 def generate_collibra_metadata(num_assets=None):
     now = datetime.utcnow()
-    
+
     # Rich mock data representing a Collibra asset export.
     # Mimics Collibra's relations and attribute types, including tables, schemas, columns, and terms.
     collibra_export = [
@@ -14,23 +15,27 @@ def generate_collibra_metadata(num_assets=None):
             "name": "Finance Production CRM Database",
             "type": "Database",
             "attributes": [
-                {"type": "Description", "value": "Primary transactional database for global customer relations and billing details."},
-                {"type": "Data Classification", "value": "Confidential"}
+                {
+                    "type": "Description",
+                    "value": "Primary transactional database for global customer relations and billing details.",
+                },
+                {"type": "Data Classification", "value": "Confidential"},
             ],
             "relations": [
-                {"type": "Owned By", "target": "CRM Data Steward Group", "role": "Business Steward", "email": "crm_stewards@company.com"}
+                {
+                    "type": "Owned By",
+                    "target": "CRM Data Steward Group",
+                    "role": "Business Steward",
+                    "email": "crm_stewards@company.com",
+                }
             ],
-            "dataQuality": {
-                "rulesRun": 4,
-                "rulesPassed": 4,
-                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"
-            },
+            "dataQuality": {"rulesRun": 4, "rulesPassed": 4, "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"},
             "usage": {
                 "queryCount": 1400,
                 "userCount": 28,
-                "sizeInBytes": 1024 * 1024 * 1024 * 900, # 900 GB
-                "lastAccessed": (now - timedelta(minutes=45)).isoformat() + "Z"
-            }
+                "sizeInBytes": 1024 * 1024 * 1024 * 900,  # 900 GB
+                "lastAccessed": (now - timedelta(minutes=45)).isoformat() + "Z",
+            },
         },
         # 2. Table Asset: customer_crm_staging
         {
@@ -40,24 +45,24 @@ def generate_collibra_metadata(num_assets=None):
             "attributes": [
                 {"type": "Description", "value": "Landing zone table for CRM customer contact details, imported hourly."},
                 {"type": "Data Classification", "value": "Confidential"},
-                {"type": "Security Level", "value": "Level 3 - Restricted PII"}
+                {"type": "Security Level", "value": "Level 3 - Restricted PII"},
             ],
             "relations": [
                 {"type": "Owned By", "target": "CRM Data Team", "role": "Technical Owner", "email": "crm_devs@company.com"},
                 {"type": "Associated Glossary Term", "target": "Customer Contact"},
                 {"type": "Part of Database", "target": "Finance Production CRM Database"},
-                {"type": "Feeds upstream of", "target": "alation_101"} # Lineage trace
+                {"type": "Feeds upstream of", "target": "alation_101"},  # Lineage trace
             ],
             "dataQuality": {
                 "rulesRun": 10,
-                "rulesPassed": 6, # 60% pass rate (low quality risk)
-                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"
+                "rulesPassed": 6,  # 60% pass rate (low quality risk)
+                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z",
             },
             "usage": {
                 "queryCount": 670,
                 "userCount": 15,
-                "sizeInBytes": 1024 * 1024 * 1024 * 5, # 5 GB
-                "lastAccessed": (now - timedelta(hours=4)).isoformat() + "Z"
+                "sizeInBytes": 1024 * 1024 * 1024 * 5,  # 5 GB
+                "lastAccessed": (now - timedelta(hours=4)).isoformat() + "Z",
             },
             # Real-world Collibra representation of child assets (columns)
             "columns": [
@@ -65,9 +70,7 @@ def generate_collibra_metadata(num_assets=None):
                     "id": "2001_1",
                     "name": "crm_contact_id",
                     "type": "Table Column",
-                    "attributes": [
-                        {"type": "Description", "value": "Surrogate primary key of CRM contact."}
-                    ]
+                    "attributes": [{"type": "Description", "value": "Surrogate primary key of CRM contact."}],
                 },
                 {
                     "id": "2001_2",
@@ -75,18 +78,16 @@ def generate_collibra_metadata(num_assets=None):
                     "type": "Table Column",
                     "attributes": [
                         {"type": "Description", "value": "Raw mobile/home phone number of client."},
-                        {"type": "Data Classification", "value": "Confidential PII"}
-                    ]
+                        {"type": "Data Classification", "value": "Confidential PII"},
+                    ],
                 },
                 {
                     "id": "2001_3",
                     "name": "email_address",
                     "type": "Table Column",
-                    "attributes": [
-                        {"type": "Description", "value": "Primary customer contact email address."}
-                    ]
-                }
-            ]
+                    "attributes": [{"type": "Description", "value": "Primary customer contact email address."}],
+                },
+            ],
         },
         # 3. ROT Table Asset: legacy_marketing_prospects_2021
         {
@@ -94,19 +95,19 @@ def generate_collibra_metadata(num_assets=None):
             "name": "Legacy Marketing Prospects 2021",
             "type": "Database Table",
             "attributes": [
-                {"type": "Description", "value": "Old marketing prospect list from 2021 campaigns. Retained for compliance, but inactive."}
+                {
+                    "type": "Description",
+                    "value": "Old marketing prospect list from 2021 campaigns. Retained for compliance, but inactive.",
+                }
             ],
-            "relations": [], # Empty relations (no owner/steward - compliance risk!)
-            "dataQuality": {
-                "rulesRun": 0,
-                "rulesPassed": 0
-            },
+            "relations": [],  # Empty relations (no owner/steward - compliance risk!)
+            "dataQuality": {"rulesRun": 0, "rulesPassed": 0},
             "usage": {
-                "queryCount": 0, # ROT candidate
+                "queryCount": 0,  # ROT candidate
                 "userCount": 0,
-                "sizeInBytes": 1024 * 1024 * 1024 * 850, # 850 GB
-                "lastAccessed": (now - timedelta(days=365)).isoformat() + "Z"
-            }
+                "sizeInBytes": 1024 * 1024 * 1024 * 850,  # 850 GB
+                "lastAccessed": (now - timedelta(days=365)).isoformat() + "Z",
+            },
         },
         # 4. Glossary Term Asset (Business Metadata)
         {
@@ -114,23 +115,28 @@ def generate_collibra_metadata(num_assets=None):
             "name": "Customer Contact",
             "type": "Business Term",
             "attributes": [
-                {"type": "Definition", "value": "A representation of the communication endpoints (email, phone, address) used to reach an enterprise customer."},
-                {"type": "Status", "value": "Approved"}
+                {
+                    "type": "Definition",
+                    "value": "A representation of the communication endpoints (email, phone, address) used to reach an enterprise customer.",
+                },
+                {"type": "Status", "value": "Approved"},
             ],
             "relations": [
-                {"type": "Owned By", "target": "Sarah Steward", "role": "Business Steward", "email": "sarah.steward@company.com"},
-                {"type": "Governs Term", "target": "Staging Customer CRM Data"}
+                {
+                    "type": "Owned By",
+                    "target": "Sarah Steward",
+                    "role": "Business Steward",
+                    "email": "sarah.steward@company.com",
+                },
+                {"type": "Governs Term", "target": "Staging Customer CRM Data"},
             ],
-            "dataQuality": {
-                "rulesRun": 0,
-                "rulesPassed": 0
-            },
+            "dataQuality": {"rulesRun": 0, "rulesPassed": 0},
             "usage": {
                 "queryCount": 200,
                 "userCount": 50,
                 "sizeInBytes": 0,
-                "lastAccessed": (now - timedelta(days=5)).isoformat() + "Z"
-            }
+                "lastAccessed": (now - timedelta(days=5)).isoformat() + "Z",
+            },
         },
         # 5. File Asset
         {
@@ -139,22 +145,18 @@ def generate_collibra_metadata(num_assets=None):
             "type": "File",
             "attributes": [
                 {"type": "Description", "value": "Daily backup file containing customer email and phone exports."},
-                {"type": "Data Classification", "value": "Confidential"}
+                {"type": "Data Classification", "value": "Confidential"},
             ],
             "relations": [
                 {"type": "Owned By", "target": "CRM Data Team", "role": "Technical Owner", "email": "crm_devs@company.com"}
             ],
-            "dataQuality": {
-                "rulesRun": 5,
-                "rulesPassed": 4,
-                "lastProfiled": (now - timedelta(days=2)).isoformat() + "Z"
-            },
+            "dataQuality": {"rulesRun": 5, "rulesPassed": 4, "lastProfiled": (now - timedelta(days=2)).isoformat() + "Z"},
             "usage": {
                 "queryCount": 12,
                 "userCount": 2,
                 "sizeInBytes": 1024 * 1024 * 180,
-                "lastAccessed": (now - timedelta(days=1)).isoformat() + "Z"
-            }
+                "lastAccessed": (now - timedelta(days=1)).isoformat() + "Z",
+            },
         },
         # 6. View Asset
         {
@@ -167,85 +169,92 @@ def generate_collibra_metadata(num_assets=None):
             "relations": [
                 {"type": "Owned By", "target": "CRM Data Team", "role": "Technical Owner", "email": "crm_devs@company.com"}
             ],
-            "dataQuality": {
-                "rulesRun": 4,
-                "rulesPassed": 4,
-                "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"
-            },
+            "dataQuality": {"rulesRun": 4, "rulesPassed": 4, "lastProfiled": (now - timedelta(days=1)).isoformat() + "Z"},
             "usage": {
                 "queryCount": 540,
                 "userCount": 12,
                 "sizeInBytes": 1024 * 1024 * 12,
-                "lastAccessed": (now - timedelta(hours=2)).isoformat() + "Z"
-            }
-        }
+                "lastAccessed": (now - timedelta(hours=2)).isoformat() + "Z",
+            },
+        },
     ]
-    
+
     if num_assets and num_assets > len(collibra_export):
         import random
+
         target_count = num_assets
         current_id = 2006
-        
+
         types = ["Database", "Database Table", "Business Term", "Report", "File", "View"]
         names_pool = {
             "Database": ["Analytics_DB", "HR_Prod_DB", "Inventory_DB", "Compliance_DB"],
-            "Database Table": ["billing_history", "user_profiles", "session_metrics", "device_logs", "payroll_adjustments", "supplier_list"],
+            "Database Table": [
+                "billing_history",
+                "user_profiles",
+                "session_metrics",
+                "device_logs",
+                "payroll_adjustments",
+                "supplier_list",
+            ],
             "Business Term": ["Billing Date", "Account Balance", "Employee Level", "Risk Score", "Vendor Tier"],
             "Report": ["Monthly Financial Summary", "Operational KPI Dashboard", "Compliance Auditing Log"],
             "File": ["export_dump.csv", "backup_data.json", "log_extract.txt"],
-            "View": ["active_users_v", "monthly_sales_v", "inventory_summary_v"]
+            "View": ["active_users_v", "monthly_sales_v", "inventory_summary_v"],
         }
         classifications = ["Confidential", "Internal", "Public", "Highly Restricted"]
-        
+
         while len(collibra_export) < target_count:
             asset_type = random.choice(types)
             name = f"{random.choice(names_pool[asset_type])} {current_id}"
-            
+
             is_rot = random.random() < 0.15
-            
+
             if is_rot:
                 query_count = 0
                 user_count = 0
-                size_in_bytes = random.randint(1024 * 1024 * 500, 1024 * 1024 * 1024 * 300) # 500MB to 300GB
+                size_in_bytes = random.randint(1024 * 1024 * 500, 1024 * 1024 * 1024 * 300)  # 500MB to 300GB
                 last_accessed = (now - timedelta(days=random.randint(185, 500))).isoformat() + "Z"
             else:
                 query_count = random.randint(50, 2000)
                 user_count = random.randint(5, 100)
-                size_in_bytes = 0 if asset_type in ["Report", "Business Term"] else random.randint(1024 * 1024 * 20, 1024 * 1024 * 1024 * 50)
+                size_in_bytes = (
+                    0
+                    if asset_type in ["Report", "Business Term"]
+                    else random.randint(1024 * 1024 * 20, 1024 * 1024 * 1024 * 50)
+                )
                 last_accessed = (now - timedelta(days=random.randint(0, 30))).isoformat() + "Z"
-                
+
             attributes = [{"type": "Description", "value": f"Mock Collibra {asset_type} for scaled dataset tests."}]
-            
+
             # PII & Classification
             if random.random() < 0.3:
                 classification = random.choice(classifications)
                 attributes.append({"type": "Data Classification", "value": classification})
                 if classification in ["Confidential", "Highly Restricted"] and random.random() > 0.5:
                     attributes.append({"type": "Security Level", "value": "Restricted PII"})
-                    
+
             relations = []
-            if random.random() > 0.4: # 60% chance of owner/steward
-                relations.append({
-                    "type": "Owned By",
-                    "target": f"Steward Group {random.randint(1,5)}",
-                    "role": "Business Steward",
-                    "email": f"steward.{random.randint(1,5)}@company.com"
-                })
-                
+            if random.random() > 0.4:  # 60% chance of owner/steward
+                relations.append(
+                    {
+                        "type": "Owned By",
+                        "target": f"Steward Group {random.randint(1, 5)}",
+                        "role": "Business Steward",
+                        "email": f"steward.{random.randint(1, 5)}@company.com",
+                    }
+                )
+
             rules_run = random.choice([0, 4, 8, 12])
             if rules_run > 0:
                 rules_passed = random.randint(int(rules_run * 0.4), rules_run)
                 dq = {
                     "rulesRun": rules_run,
                     "rulesPassed": rules_passed,
-                    "lastProfiled": (now - timedelta(days=random.randint(1, 7))).isoformat() + "Z"
+                    "lastProfiled": (now - timedelta(days=random.randint(1, 7))).isoformat() + "Z",
                 }
             else:
-                dq = {
-                    "rulesRun": 0,
-                    "rulesPassed": 0
-                }
-                
+                dq = {"rulesRun": 0, "rulesPassed": 0}
+
             asset = {
                 "id": str(current_id),
                 "name": name,
@@ -257,26 +266,29 @@ def generate_collibra_metadata(num_assets=None):
                     "queryCount": query_count,
                     "userCount": user_count,
                     "sizeInBytes": size_in_bytes,
-                    "lastAccessed": last_accessed
-                }
+                    "lastAccessed": last_accessed,
+                },
             }
-            
+
             collibra_export.append(asset)
             current_id += 1
-            
+
     return collibra_export
+
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Generate Collibra mock metadata.")
     parser.add_argument("--num-assets", type=int, default=None, help="Total number of assets to generate")
     args = parser.parse_args()
-    
+
     metadata = generate_collibra_metadata(args.num_assets)
     output_path = os.path.join(os.path.dirname(__file__), "sample_collibra_metadata.json")
     with open(output_path, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"[Collibra] Mock metadata written to '{output_path}' ({len(metadata)} assets)")
+
 
 if __name__ == "__main__":
     main()
