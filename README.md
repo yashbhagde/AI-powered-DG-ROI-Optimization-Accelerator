@@ -140,6 +140,40 @@ To protect operational budgets and prevent API failures, the framework features:
 
 ---
 
+## CI/CD Pipeline & Quality Assurance
+
+To maintain high standards of code quality, security, and static type safety, the repository includes a complete validation suite integrated via GitHub Actions (defined in `.github/workflows/python-package.yml`).
+
+### Running Quality Checks Locally
+
+You can run the same pipeline checks locally using the following commands:
+
+1. **Code Formatting & Linting (Ruff)**:
+   ```bash
+   ruff format --check .
+   ruff check .
+   ```
+2. **Security Scan (Bandit)**:
+   ```bash
+   bandit -r . -x ./.venv,./tests --severity-level medium -s B608,B324
+   ```
+   *(Skips string SQL representation and cache hashing false positives)*
+3. **Dependency Vulnerability Audit (pip-audit)**:
+   ```bash
+   pip-audit -r requirements.txt
+   ```
+4. **Static Type Safety Check (Mypy)**:
+   ```bash
+   mypy --ignore-missing-imports --explicit-package-bases .
+   ```
+5. **E2E Ingest & Generation Tests**:
+   ```bash
+   python generate_all_mock_data.py --num-assets 5
+   python executive_pdf_report.py --platform alation --input alation/sample_alation_metadata.json
+   ```
+
+---
+
 ## Quick Start Guide
 
 ### Setup & Ingestion
