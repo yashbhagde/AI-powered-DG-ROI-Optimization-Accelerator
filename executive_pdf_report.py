@@ -495,6 +495,115 @@ def generate_tag_recommendations_csv(platform, raw_assets, canonical_assets, csv
         
     print(f"Successfully generated Tag Recommendations CSV at '{csv_output_file}'")
 
+def get_top_vulnerabilities(platform, canonical_assets, scored_df, roi_df):
+    scored_dict = scored_df.set_index("asset_id").to_dict(orient="index")
+    roi_dict = roi_df.set_index("asset_id").to_dict(orient="index")
+    
+    candidates = []
+    
+    for asset in canonical_assets:
+        asset_id = asset.asset_id
+        scores = scored_dict.get(asset_id, {})
+        roi = roi_dict.get(asset_id, {})
+        
+        doc_score = scores.get("documentation_score", 0.0)
+        dq_score = scores.get("data_quality_score", 0.0)
+        pass_rate = asset.data_quality.pass_rate if asset.data_quality else 0.0
+        rules_run = asset.data_quality.rules_run if asset.data_quality else 0
+        
+        is_sensitive = roi.get("is_sensitive", False)
+        is_rot = roi.get("is_rot", False)
+        
+        owner_names = [o.name for o in asset.owners if "owner" in o.role.lower() or o.role == ""]
+        
+        # 1. Unowned Sensitive Data
+        if is_sensitive and not owner_names and asset.usage.query_count >= 10:
+            query_count = asset.usage.query_count
+            risk_score = 100 + min(400, query_count)
+            opportunity_risk_savings = roi.get("opportunity_risk_savings", 0.0)
+            candidates.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Category": "Unowned Sensitive Data",
+                "Severity": "CRITICAL",
+                "Exposure": f"${opportunity_risk_savings:,.2f}",
+                "Action": "Contains PII/Confidential data but has NO owner assigned. Assign Business Owner immediately.",
+                "Risk_Score": risk_score
+            })
+            
+        # 2. Sensitive Quality Failures
+        if is_sensitive and rules_run > 0 and pass_rate < 0.90:
+            risk_score = 85 + int((1.0 - pass_rate) * 100)
+            opportunity_dq_savings = roi.get("opportunity_dq_savings", 0.0)
+            candidates.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Category": "Sensitive Quality Failures",
+                "Severity": "HIGH",
+                "Exposure": f"${opportunity_dq_savings:,.2f}",
+                "Action": f"Sensitive PII data is failing rules (pass rate: {pass_rate*100:.1f}%). Remediate source pipeline.",
+                "Risk_Score": risk_score
+            })
+            
+        # 3. Unmonitored Critical Pipelines
+        if (asset.usage.query_count >= 100 or asset.usage.user_count >= 10) and rules_run == 0:
+            query_count = asset.usage.query_count
+            risk_score = 70 + min(80, int(query_count * 0.1))
+            opportunity_dq_savings = roi.get("opportunity_dq_savings", 0.0)
+            candidates.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Category": "Unmonitored Pipeline",
+                "Severity": "HIGH",
+                "Exposure": f"${opportunity_dq_savings:,.2f}",
+                "Action": "Critical dataset with high query activity has ZERO quality rules configured. Setup DQ profiling checks.",
+                "Risk_Score": risk_score
+            })
+            
+        # 4. Cloud Storage Waste (ROT)
+        if is_rot and asset.usage.size_in_bytes > 50 * 1024 * 1024 * 1024:
+            size_in_gb = asset.usage.size_in_bytes / (1024 ** 3)
+            risk_score = 50 + min(50, int(size_in_gb * 0.01))
+            opportunity_storage_savings = roi.get("opportunity_storage_savings", 0.0)
+            candidates.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Category": "Cloud Storage Waste (ROT)",
+                "Severity": "MEDIUM",
+                "Exposure": f"${opportunity_storage_savings:,.2f}",
+                "Action": f"Large asset ({size_in_gb:.1f} GB) is inactive (>180 days). Archive or decommission to recover storage costs.",
+                "Risk_Score": risk_score
+            })
+            
+        # 5. Undocumented Critical Assets
+        if asset.usage.query_count >= 100 and doc_score < 60.0:
+            query_count = asset.usage.query_count
+            risk_score = 40 + min(60, int(query_count * 0.05))
+            opportunity_discovery_savings = roi.get("opportunity_discovery_savings", 0.0)
+            candidates.append({
+                "Asset_ID": asset_id,
+                "Asset_Name": asset.name,
+                "Category": "Undocumented Asset",
+                "Severity": "MEDIUM",
+                "Exposure": f"${opportunity_discovery_savings:,.2f}",
+                "Action": f"Critical asset lacks descriptive documentation (score: {doc_score:.0f}%). Author standard definitions.",
+                "Risk_Score": risk_score
+            })
+
+    # Sort candidates by Risk_Score descending and take top 5
+    candidates.sort(key=lambda x: x["Risk_Score"], reverse=True)
+    
+    seen_assets = set()
+    top_5 = []
+    for c in candidates:
+        if c["Asset_ID"] not in seen_assets:
+            seen_assets.add(c["Asset_ID"])
+            top_5.append(c)
+            if len(top_5) == 5:
+                break
+                
+    return top_5
+
 def build_pdf_report(platform, input_file, output_file):
     # 1. Load and parse raw metadata
     if not os.path.exists(input_file):
@@ -1110,8 +1219,94 @@ def build_pdf_report(platform, input_file, output_file):
         ]))
         return t
 
-    # 5. Domain Detail Section
-    story.append(Paragraph("III. Discipline-Level Domain Detail", heading_style))
+    # 5. Top 5 Enterprise Governance Vulnerabilities
+    story.append(Paragraph("III. Top 5 Enterprise Governance Vulnerabilities", heading_style))
+    story.append(Paragraph(
+        "The highest-risk cataloged data assets prioritized by cross-referencing classification exposure, "
+        "operational pipeline usage metrics, data quality pass rates, and stewardship coverage gaps:",
+        body_style
+    ))
+    story.append(Spacer(1, 4))
+    
+    vulnerabilities = get_top_vulnerabilities(platform, canonical_assets, scored_df, roi_df)
+    
+    if not vulnerabilities:
+        story.append(Paragraph("No critical vulnerabilities detected. All assets comply with baseline policy checks.", body_style))
+    else:
+        v_headers = [
+            Paragraph("Risk Profile / Category", th_style),
+            Paragraph("Target Asset (ID)", th_style),
+            Paragraph("Severity", th_style),
+            Paragraph("Exposure / Opportunity", th_style),
+            Paragraph("Remediation Action Required", th_style)
+        ]
+        v_data = [v_headers]
+        
+        v_table_styles = [
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1A365D")),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('PADDING', (0,0), (-1,-1), 5),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ]
+        
+        row_num = 1
+        for v in vulnerabilities:
+            sev = v["Severity"]
+            if sev == "CRITICAL":
+                badge_bg = "#FFF5F5"
+                badge_text_color = "#C53030"
+                badge_border = "#FEB2B2"
+            elif sev == "HIGH":
+                badge_bg = "#FFFAF0"
+                badge_text_color = "#DD6B20"
+                badge_border = "#FEEBC8"
+            else:
+                badge_bg = "#FFFFF0"
+                badge_text_color = "#B7791F"
+                badge_border = "#FEFCBF"
+                
+            badge_style = ParagraphStyle(
+                f'VSevBadge_{row_num}',
+                parent=styles['Normal'],
+                fontName='Helvetica-Bold',
+                fontSize=7.5,
+                leading=9,
+                textColor=colors.HexColor(badge_text_color),
+                alignment=1
+            )
+            
+            p_badge = Paragraph(f"<b>{sev}</b>", badge_style)
+            t_badge = Table([[p_badge]], colWidths=[55])
+            t_badge.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(badge_bg)),
+                ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor(badge_border)),
+                ('TOPPADDING', (0,0), (-1,-1), 2),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+                ('LEFTPADDING', (0,0), (-1,-1), 4),
+                ('RIGHTPADDING', (0,0), (-1,-1), 4),
+            ]))
+            
+            v_data.append([
+                Paragraph(f"<b>{v['Category']}</b>", td_style),
+                Paragraph(f"{v['Asset_Name']} ({v['Asset_ID']})", td_style),
+                t_badge,
+                Paragraph(v["Exposure"], td_bold_style),
+                Paragraph(v["Action"], td_style)
+            ])
+            
+            if row_num % 2 == 0:
+                v_table_styles.append(('BACKGROUND', (0, row_num), (-1, row_num), colors.HexColor("#F7FAFC")))
+            row_num += 1
+            
+        t_vulnerabilities = Table(v_data, colWidths=[110, 100, 65, 85, 144])
+        t_vulnerabilities.setStyle(TableStyle(v_table_styles))
+        story.append(KeepTogether(t_vulnerabilities))
+        
+    story.append(Spacer(1, 15))
+    
+    # 6. Domain Detail Section
+    story.append(Paragraph("IV. Discipline-Level Domain Detail", heading_style))
     story.append(Spacer(1, 4))
     
     for idx, (disp_key, disp_info) in enumerate(discipline_details.items(), 1):
