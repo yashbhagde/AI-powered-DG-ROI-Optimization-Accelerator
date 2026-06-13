@@ -52,8 +52,11 @@ def main():
         # Check if they nested it under a platform key or if it's a single asset
         if args.platform in raw_data and isinstance(raw_data[args.platform], list):
             raw_assets = raw_data[args.platform]
+        elif "results" in raw_data and isinstance(raw_data["results"], list):
+            raw_assets = raw_data["results"]
         else:
             raw_assets = [raw_data]
+
     elif isinstance(raw_data, list):
         raw_assets = raw_data
     else:

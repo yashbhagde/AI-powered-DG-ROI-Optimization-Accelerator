@@ -578,8 +578,10 @@ class GovernanceScoringEngine:
             if h in self.cache:
                 # Retrieve from cache
                 cached_res = self.cache[h].copy()
+                cached_res["asset_id"] = asset.asset_id
                 cached_res["name"] = asset.name
                 scored_data.append(cached_res)
+
             else:
                 uncached_assets.append(asset)
 

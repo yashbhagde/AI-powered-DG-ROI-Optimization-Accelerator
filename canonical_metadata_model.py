@@ -229,10 +229,16 @@ def map_collibra_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
         data_warehouse_size=usage_raw.get("dataWarehouseSize", det["data_warehouse_size"])
     )
 
+    raw_type = raw.get("type", "Table")
+    if isinstance(raw_type, dict):
+        asset_type = raw_type.get("name", "Table")
+    else:
+        asset_type = str(raw_type)
+
     return CanonicalAsset(
         asset_id=asset_id,
         name=raw.get("name", "Unnamed Asset"),
-        asset_type=raw.get("type", "Table"),
+        asset_type=asset_type,
         source_platform="collibra",
         source_id=source_id,
         description=description,
@@ -243,6 +249,7 @@ def map_collibra_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
         lineage=AssetLineage(upstream_assets=upstream, downstream_assets=downstream),
         usage=usage
     )
+
 
 def map_informatica_to_canonical(raw: Dict[str, Any]) -> CanonicalAsset:
     """Maps raw Informatica IDMC asset metadata to CanonicalAsset."""

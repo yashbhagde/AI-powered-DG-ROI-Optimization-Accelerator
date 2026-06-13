@@ -507,8 +507,11 @@ def build_pdf_report(platform, input_file, output_file):
     if isinstance(raw_data, dict):
         if platform in raw_data:
             raw_assets = raw_data[platform]
+        elif "results" in raw_data and isinstance(raw_data["results"], list):
+            raw_assets = raw_data["results"]
         else:
             raw_assets = [raw_data]
+
     elif isinstance(raw_data, list):
         raw_assets = raw_data
     else:
@@ -884,34 +887,37 @@ def build_pdf_report(platform, input_file, output_file):
     else:
         fin_section_subtitle = (
             f"<font color='{tcs_text_color}'><b>&#9888; ROI Calculations Suspended</b></font> — "
-            f"<b>Telemetry Confidence Score (TCS): {tcs_result.display_pct}</b> ({tcs_result.complete_assets}/{tcs_result.total_assets} assets have complete telemetry).<br/><br/>"
-            f"The Telemetry Confidence Score (TCS) represents the verified coverage of metadata and telemetry logs harvested from our data infrastructure. It serves as an auditability safeguard, ensuring that all reported financial ROI calculations are backed by concrete logs rather than speculative estimations. "
-            f"Financial metrics require &ge;50% telemetry completeness to be meaningful and are suspended to prevent misleading decisions."
+            f"<b>Telemetry Confidence Score (TCS): {tcs_result.display_pct}</b>.<br/><br/>"
+            f"The data catalog payload is missing the required metadata attributes and relations. "
+            f"Without physical database sizes, query log history, classifications, or lineage traces, the "
+            f"TCS components cannot be calculated. Financial ROI calculations are suspended to prevent "
+            f"misleading projections."
         )
 
-    # Append component-specific coverage details
-    size_cov = tcs_result.size_coverage * 100.0
-    query_cov = tcs_result.query_coverage * 100.0
-    owner_cov = tcs_result.owner_coverage * 100.0
-    lineage_cov = tcs_result.lineage_coverage * 100.0
-    steward_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("stewardship_assignment", 0.0)
-    doc_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("documentation_coverage", 0.0)
-    dq_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("rule_coverage", 0.0)
-    glossary_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("glossary_linkage", 0.0)
-    class_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("classification_coverage", 0.0)
+    # Append component-specific coverage details (only when TCS is high or medium)
+    if tcs_result.tier != "low":
+        size_cov = tcs_result.size_coverage * 100.0
+        query_cov = tcs_result.query_coverage * 100.0
+        owner_cov = tcs_result.owner_coverage * 100.0
+        lineage_cov = tcs_result.lineage_coverage * 100.0
+        steward_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("stewardship_assignment", 0.0)
+        doc_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("documentation_coverage", 0.0)
+        dq_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("rule_coverage", 0.0)
+        glossary_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("glossary_linkage", 0.0)
+        class_cov = maturity_results.get("audit_trail", {}).get("raw_metrics", {}).get("classification_coverage", 0.0)
 
-    fin_section_subtitle += (
-        f"<br/><br/><b>Telemetry & Metadata Coverage Breakdown:</b><br/>"
-        f"&bull; <b>Size Coverage ({size_cov:.1f}%):</b> Measures assets with populated physical size (drives storage optimization and Redundant, Obsolete, and Trivial (ROT) savings).<br/>"
-        f"&bull; <b>Query Logs ({query_cov:.1f}%):</b> Measures assets with active query history (drives data discovery productivity and Total Cost of Ownership (TCO) compute optimization).<br/>"
-        f"&bull; <b>Owner Assignment ({owner_cov:.1f}%):</b> Measures assets with defined technical/business owners (drives compliance and risk savings).<br/>"
-        f"&bull; <b>Lineage Trace ({lineage_cov:.1f}%):</b> Measures assets with mapped lineage relationships (drives Root Cause Analysis time savings).<br/>"
-        f"&bull; <b>Stewardship Assignment ({steward_cov:.1f}%):</b> Measures assets with actively assigned data stewards (drives daily metadata upkeep).<br/>"
-        f"&bull; <b>Documentation Coverage ({doc_cov:.1f}%):</b> Measures assets with robust description text (drives catalog search and discovery speed).<br/>"
-        f"&bull; <b>Data Quality (DQ) Rule Coverage ({dq_cov:.1f}%):</b> Measures assets with active data quality profile runs (drives DQ incident avoidance savings).<br/>"
-        f"&bull; <b>Glossary Linkage ({glossary_cov:.1f}%):</b> Measures assets mapped to business glossary terms (drives semantic search accuracy).<br/>"
-        f"&bull; <b>Classification Coverage ({class_cov:.1f}%):</b> Measures assets carrying active Personally Identifiable Information (PII) classifications (drives sensitive data compliance)."
-    )
+        fin_section_subtitle += (
+            f"<br/><br/><b>Telemetry & Metadata Coverage Breakdown:</b><br/>"
+            f"&bull; <b>Size Coverage ({size_cov:.1f}%):</b> Measures assets with populated physical size (drives storage optimization and Redundant, Obsolete, and Trivial (ROT) savings).<br/>"
+            f"&bull; <b>Query Logs ({query_cov:.1f}%):</b> Measures assets with active query history (drives data discovery productivity and Total Cost of Ownership (TCO) compute optimization).<br/>"
+            f"&bull; <b>Owner Assignment ({owner_cov:.1f}%):</b> Measures assets with defined technical/business owners (drives compliance and risk savings).<br/>"
+            f"&bull; <b>Lineage Trace ({lineage_cov:.1f}%):</b> Measures assets with mapped lineage relationships (drives Root Cause Analysis time savings).<br/>"
+            f"&bull; <b>Stewardship Assignment ({steward_cov:.1f}%):</b> Measures assets with actively assigned data stewards (drives daily metadata upkeep).<br/>"
+            f"&bull; <b>Documentation Coverage ({doc_cov:.1f}%):</b> Measures assets with robust description text (drives catalog search and discovery speed).<br/>"
+            f"&bull; <b>Data Quality (DQ) Rule Coverage ({dq_cov:.1f}%):</b> Measures assets with active data quality profile runs (drives DQ incident avoidance savings).<br/>"
+            f"&bull; <b>Glossary Linkage ({glossary_cov:.1f}%):</b> Measures assets mapped to business glossary terms (drives semantic search accuracy).<br/>"
+            f"&bull; <b>Classification Coverage ({class_cov:.1f}%):</b> Measures assets carrying active Personally Identifiable Information (PII) classifications (drives sensitive data compliance)."
+        )
 
     story.append(Paragraph("II. Program Financial Performance & ROI Analysis", heading_style))
 
