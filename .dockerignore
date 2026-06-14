@@ -1,0 +1,28 @@
+# Git & configuration files
+.git
+.github
+.gitignore
+.pre-commit-config.yaml
+.secrets.baseline
+
+# Python virtual environment and caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ruff_cache/
+.mypy_cache/
+
+# Local cache files (prevent baking credentials/caches into the image)
+.governance_score_cache.json
+.rate_limit_cache.json
+.env
+
+# Local outputs & reports
+reports/
+demo_output.txt
+error.log
+
+# System files
+.DS_Store
