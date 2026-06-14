@@ -193,9 +193,25 @@ You can run the same pipeline checks locally using the following commands:
    ```
 
 ### Running Reports
-To run the accelerator on a platform input (e.g., Alation):
+
+#### Option A: Local Python Execution
+To run the accelerator directly in your local Python environment:
 ```bash
 python executive_pdf_report.py --platform alation --input alation/sample_alation_metadata.json
+```
+
+#### Option B: Docker Execution (Lightweight & Containerized)
+You can run the generator in a fully isolated container using the pre-configured [Dockerfile](Dockerfile):
+```bash
+# 1. Build the lightweight image
+docker build -t dg-roi-accelerator .
+
+# 2. Run the container (mounts local /reports directory to write output files)
+docker run --rm \
+  -e GEMINI_API_KEY="your-api-key" \
+  -v "$(pwd)/reports:/app/reports" \
+  dg-roi-accelerator \
+  --platform alation --input alation/sample_alation_metadata.json
 ```
 
 ### Output Deliverables
